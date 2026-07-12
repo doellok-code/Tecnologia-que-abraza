@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tecnología que crea, imagina y juega</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #FBE4EC 0%, #FDF1DD 35%, #E3F1F7 70%, #EFE4F5 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 32px 20px; position: relative; overflow: hidden;
+    font-family: 'Source Sans 3', sans-serif;
+  }
+  .display { font-family: 'Fraunces', serif; }
+  .fondo {
+    position: fixed; inset: 0; pointer-events: none; opacity: 0.45; filter: blur(0.3px);
+    background-image:
+      radial-gradient(ellipse 180px 140px at 6% 10%, #F4A6C6 0%, transparent 70%),
+      radial-gradient(ellipse 160px 130px at 92% 8%, #A8D8E8 0%, transparent 70%),
+      radial-gradient(ellipse 170px 140px at 8% 92%, #F7CB7B 0%, transparent 70%),
+      radial-gradient(ellipse 180px 140px at 94% 90%, #CBA8E0 0%, transparent 70%);
+  }
+  .deco { position: fixed; pointer-events: none; }
+  .container { max-width: 430px; width: 100%; position: relative; z-index: 1; }
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadein 0.35s ease; }
+  @keyframes fadein { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  .label { color: #D9678C; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; margin-bottom: 8px; display: block; text-align: center; }
+  h1 { color: #5B4B6E; font-size: 25px; font-weight: 600; margin-bottom: 16px; line-height: 1.25; text-align: center; }
+  h2 { color: #5B4B6E; font-size: 20px; font-weight: 600; line-height: 1.4; margin-bottom: 24px; }
+  .subtitle { color: #7C7191; font-size: 14.5px; line-height: 1.6; margin-bottom: 24px; text-align: center; }
+  .icon-wrap { text-align: center; font-size: 36px; margin-bottom: 14px; }
+
+  /* Menú */
+  .menu-card {
+    background: #FFFCFA; border-radius: 16px; padding: 20px;
+    margin-bottom: 12px; cursor: pointer; border: 2px solid transparent;
+    display: flex; align-items: center; gap: 16px;
+    transition: border-color 0.15s, transform 0.1s;
+    box-shadow: 0 1px 8px rgba(91,75,110,0.08);
+  }
+  .menu-card:hover { border-color: #D9678C; }
+  .menu-card:active { transform: scale(0.98); }
+  .menu-icon { font-size: 30px; flex-shrink: 0; }
+  .menu-titulo { color: #5B4B6E; font-size: 16px; font-weight: 600; font-family: 'Fraunces', serif; margin-bottom: 3px; }
+  .menu-desc { color: #7C7191; font-size: 13px; line-height: 1.4; }
+
+  /* Botones */
+  .btn-primary { padding: 15px; border-radius: 13px; border: none; background: #5B4B6E; color: #FFFCFA; font-size: 15.5px; font-weight: 600; cursor: pointer; font-family: 'Source Sans 3', sans-serif; width: 100%; transition: transform 0.15s; margin-bottom: 10px; }
+  .btn-primary:active { transform: scale(0.97); }
+  .btn-secondary { width: 100%; padding: 13px; border-radius: 12px; border: 2px solid #E8D9E8; background: transparent; color: #5B4B6E; font-size: 14.5px; font-weight: 600; cursor: pointer; font-family: 'Source Sans 3', sans-serif; transition: transform 0.15s; margin-bottom: 10px; }
+  .btn-secondary:active { transform: scale(0.97); }
+  .btn-volver { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 13px; border-radius: 12px; border: 1px solid #E8D9E8; background: transparent; color: #7C7191; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Source Sans 3', sans-serif; margin-top: 4px; transition: transform 0.15s; }
+  .btn-volver:active { transform: scale(0.97); }
+
+  /* Preguntas calculadora */
+  .progress-wrap { height: 4px; background: #F0E0EC; border-radius: 4px; margin-bottom: 22px; overflow: hidden; }
+  .progress-bar { height: 100%; background: #D9678C; border-radius: 4px; transition: width 0.3s ease; }
+  .q-num { color: #D9678C; font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+  .opciones { display: flex; flex-direction: column; gap: 10px; }
+  .opt-btn { padding: 15px 18px; border-radius: 12px; border: 2px solid #E8D9E8; background: #FFFCFA; color: #5B4B6E; font-size: 15px; font-weight: 500; cursor: pointer; font-family: 'Source Sans 3', sans-serif; text-align: left; transition: border-color 0.15s, transform 0.1s; }
+  .opt-btn:hover { border-color: #D9678C; }
+  .opt-btn:active { transform: scale(0.98); }
+
+  /* Resultado calculadora */
+  .resultado-card { background: #FFFCFA; border-radius: 18px; padding: 26px 24px; margin-bottom: 18px; box-shadow: 0 1px 10px rgba(91,75,110,0.09); }
+  .resultado-label { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: #D9678C; margin-bottom: 10px; }
+  .resultado-nombre { font-size: 22px; font-weight: 600; line-height: 1.3; margin-bottom: 12px; font-family: 'Fraunces', serif; }
+  .resultado-texto { font-size: 14.5px; line-height: 1.65; color: #6B5D7D; }
+
+  /* Generador proyectos */
+  .gen-card { background: #FFFCFA; border-radius: 18px; padding: 26px 24px; margin-bottom: 20px; box-shadow: 0 2px 16px rgba(91,75,110,0.1); display: none; animation: fadein 0.4s ease; }
+  .gen-card.visible { display: block; }
+  .gen-tag { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #CBA8E0; margin-bottom: 6px; display: block; }
+  .gen-perfil { font-size: 11.5px; color: #A8D8E8; font-weight: 600; margin-bottom: 14px; display: block; }
+  .gen-titulo { color: #5B4B6E; font-size: 20px; font-weight: 600; line-height: 1.35; margin-bottom: 10px; font-family: 'Fraunces', serif; }
+  .gen-desc { color: #7C7191; font-size: 14.5px; line-height: 1.65; }
+
+  .intro-box { background: #FFFCFA; border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 8px rgba(91,75,110,0.08); }
+  .intro-texto { color: #6B5D7D; font-size: 14.5px; line-height: 1.65; }
+</style>
+</head>
+<body>
+
+<div class="fondo"></div>
+
+<!-- Decorativos acuarela -->
+<svg class="deco" style="top:-20px;left:-16px;width:54px;height:54px;transform:rotate(-12deg);opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rf1"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="6"/></filter></defs>
+  <g filter="url(#rf1)">
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(6 50 50)"/>
+    <ellipse cx="50" cy="30" rx="14" ry="22" fill="#F4A6C6" opacity="0.55" transform="rotate(78 50 50)"/>
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(150 50 50)"/>
+    <ellipse cx="50" cy="30" rx="14" ry="22" fill="#F4A6C6" opacity="0.55" transform="rotate(222 50 50)"/>
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(294 50 50)"/>
+    <circle cx="50" cy="50" r="9" fill="#F7D88A" opacity="0.8"/>
+  </g>
+</svg>
+<svg class="deco" style="top:8px;right:-22px;width:64px;height:42px;opacity:0.85" viewBox="0 0 100 65">
+  <defs><filter id="rn1"><feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="7"/></filter></defs>
+  <g filter="url(#rn1)">
+    <ellipse cx="28" cy="42" rx="24" ry="19" fill="#A8D8E8" opacity="0.45"/>
+    <ellipse cx="55" cy="28" rx="28" ry="24" fill="#A8D8E8" opacity="0.5"/>
+    <ellipse cx="78" cy="44" rx="20" ry="16" fill="#A8D8E8" opacity="0.4"/>
+  </g>
+</svg>
+<svg class="deco" style="bottom:60px;left:6px;width:34px;height:34px;opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rs1"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="11"/><feDisplacementMap in="SourceGraphic" scale="8"/></filter></defs>
+  <path filter="url(#rs1)" d="M50 6 L60 38 L94 38 L66 58 L78 92 L50 70 L22 92 L34 58 L6 38 L40 38 Z" fill="#F7CB7B" opacity="0.6"/>
+</svg>
+<svg class="deco" style="bottom:16px;right:4px;width:40px;height:40px;opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rc1"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="9"/><feDisplacementMap in="SourceGraphic" scale="7"/></filter></defs>
+  <path filter="url(#rc1)" d="M50 88 C-4 52 6 8 30 8 C42 8 50 16 50 26 C50 16 58 8 70 8 C94 8 104 52 50 88 Z" fill="#CBA8E0" opacity="0.55"/>
+</svg>
+
+<div class="container">
+
+  <!-- MENÚ PRINCIPAL -->
+  <div id="screen-menu" class="screen active">
+    <div class="icon-wrap">✨</div>
+    <span class="label display">Capítulo 8 · Regalo</span>
+    <h1 class="display">Tecnología que crea, imagina y juega</h1>
+    <p class="subtitle">Dos herramientas para pasar del consumo a la creación. Elegí por dónde empezar.</p>
+    <div class="menu-card" onclick="irA('screen-calc-q0')">
+      <span class="menu-icon">🔍</span>
+      <div>
+        <p class="menu-titulo">¿Consume o crea?</p>
+        <p class="menu-desc">Descubrí qué tipo de vínculo tiene tu hijo/a con la tecnología ahora mismo</p>
+      </div>
+    </div>
+    <div class="menu-card" onclick="irA('screen-proyectos')">
+      <span class="menu-icon">🎨</span>
+      <div>
+        <p class="menu-titulo">Proyectos creativos con tecnología</p>
+        <p class="menu-desc">Ideas concretas para crear juntos, en casa o en el jardín</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== CALCULADORA CONSUMO / CREACIÓN ==================== -->
+  <div id="screen-calc-q0" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:0%"></div></div>
+    <p class="q-num">1 de 5</p>
+    <h2 class="display">¿Mira contenido sin tocar ni interactuar con la pantalla?</h2>
+    <div class="opciones">
+      <button class="opt-btn" onclick="calcResponder(1,true)">Nunca</button>
+      <button class="opt-btn" onclick="calcResponder(2,true)">A veces</button>
+      <button class="opt-btn" onclick="calcResponder(3,true)">Casi siempre</button>
+      <button class="opt-btn" onclick="calcResponder(4,true)">Siempre</button>
+    </div>
+    <button class="btn-volver" onclick="irA('screen-menu')">← Volver al menú</button>
+  </div>
+
+  <div id="screen-calc-q1" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:20%"></div></div>
+    <p class="q-num">2 de 5</p>
+    <h2 class="display">¿Busca o elige activamente lo que quiere ver o jugar?</h2>
+    <div class="opciones">
+      <button class="opt-btn" onclick="calcResponder(1,false)">Nunca</button>
+      <button class="opt-btn" onclick="calcResponder(2,false)">A veces</button>
+      <button class="opt-btn" onclick="calcResponder(3,false)">Casi siempre</button>
+      <button class="opt-btn" onclick="calcResponder(4,false)">Siempre</button>
+    </div>
+    <button class="btn-volver" onclick="irA('screen-calc-q0')">← Volver</button>
+  </div>
+
+  <div id="screen-calc-q2" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:40%"></div></div>
+    <p class="q-num">3 de 5</p>
+    <h2 class="display">¿Repite siempre el mismo video, juego o canción?</h2>
+    <div class="opciones">
+      <button class="opt-btn" onclick="calcResponder(1,true)">Nunca</button>
+      <button class="opt-btn" onclick="calcResponder(2,true)">A veces</button>
+      <button class="opt-btn" onclick="calcResponder(3,true)">Casi siempre</button>
+      <button class="opt-btn" onclick="calcResponder(4,true)">Siempre</button>
+    </div>
+    <button class="btn-volver" onclick="irA('screen-calc-q1')">← Volver</button>
+  </div>
+
+  <div id="screen-calc-q3" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:60%"></div></div>
+    <p class="q-num">4 de 5</p>
+    <h2 class="display">¿Te muestra o te llama para que veas lo que está haciendo?</h2>
+    <div class="opciones">
+      <button class="opt-btn" onclick="calcResponder(1,false)">Nunca</button>
+      <button class="opt-btn" onclick="calcResponder(2,false)">A veces</button>
+      <button class="opt-btn" onclick="calcResponder(3,false)">Casi siempre</button>
+      <button class="opt-btn" onclick="calcResponder(4,false)">Siempre</button>
+    </div>
+    <button class="btn-volver" onclick="irA('screen-calc-q2')">← Volver</button>
+  </div>
+
+  <div id="screen-calc-q4" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:80%"></div></div>
+    <p class="q-num">5 de 5</p>
+    <h2 class="display">¿Después de usar la tecnología, lo actúa, lo dibuja o lo cuenta con sus palabras?</h2>
+    <div class="opciones">
+      <button class="opt-btn" onclick="calcResponder(1,false)">Nunca</button>
+      <button class="opt-btn" onclick="calcResponder(2,false)">A veces</button>
+      <button class="opt-btn" onclick="calcResponder(3,false)">Casi siempre</button>
+      <button class="opt-btn" onclick="calcResponder(4,false)">Siempre</button>
+    </div>
+    <button class="btn-volver" onclick="irA('screen-calc-q3')">← Volver</button>
+  </div>
+
+  <div id="screen-calc-resultado" class="screen">
+    <span class="label display">Resultado · ¿Consume o crea?</span>
+    <div class="resultado-card">
+      <p class="resultado-label" id="calc-label"></p>
+      <h2 class="resultado-nombre display" id="calc-nombre"></h2>
+      <p class="resultado-texto" id="calc-texto"></p>
+    </div>
+    <button class="btn-primary" onclick="irA('screen-proyectos')">Ver proyectos creativos</button>
+    <button class="btn-secondary" onclick="reiniciarCalc()">↺ Volver a hacerlo</button>
+    <button class="btn-volver" onclick="irA('screen-menu')">← Volver al menú</button>
+  </div>
+
+  <!-- ==================== GENERADOR DE PROYECTOS ==================== -->
+  <div id="screen-proyectos" class="screen">
+    <span class="label display">Proyectos creativos</span>
+    <div class="intro-box" style="margin-bottom:20px;">
+      <p class="intro-texto">Ideas para usar la tecnología como herramienta de creación, no de consumo. Cada proyecto deja algo hecho por el niño/a.</p>
+    </div>
+    <div class="gen-card" id="proyecto-card">
+      <span class="gen-tag" id="proyecto-tag"></span>
+      <span class="gen-perfil" id="proyecto-perfil"></span>
+      <p class="gen-titulo display" id="proyecto-titulo"></p>
+      <p class="gen-desc" id="proyecto-desc"></p>
+    </div>
+    <button class="btn-primary" id="btn-proyecto" onclick="generarProyecto()">Quiero una idea</button>
+    <button class="btn-secondary" id="btn-otro-proyecto" onclick="generarProyecto()" style="display:none">Otra idea</button>
+    <button class="btn-volver" onclick="irA('screen-menu')">← Volver al menú</button>
+  </div>
+
+</div>
+
+<script>
+  function irA(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  // ---- CALCULADORA ----
+  const calcResp = [];
+  let calcPaso = 0;
+
+  function calcResponder(valor, invertida) {
+    const puntaje = invertida ? 5 - valor : valor;
+    calcResp.push(puntaje);
+    calcPaso++;
+    if (calcPaso < 5) { irA('screen-calc-q' + calcPaso); }
+    else { mostrarCalcResultado(); }
+  }
+
+  function mostrarCalcResultado() {
+    const total = calcResp.reduce((a, b) => a + b, 0);
+    const pct = total / 20;
+    let label, nombre, texto;
+    if (pct < 0.45) {
+      label = 'Más consumo que creación, por ahora';
+      nombre = 'Una foto de este momento';
+      texto = 'No es un diagnóstico, es una invitación. Sumar pequeños momentos donde la tecnología sea punto de partida para crear algo propio puede cambiar mucho la experiencia. El generador de proyectos tiene ideas para empezar hoy.';
+    } else if (pct < 0.75) {
+      label = 'En equilibrio entre mirar y crear';
+      nombre = 'Hay consumo y hay creación';
+      texto = 'Ya hay momentos donde la tecnología es herramienta y no solo pantalla. Seguir corriendo la balanza hacia lo creativo, sin eliminar lo otro, es el camino.';
+    } else {
+      label = 'La tecnología es puente, no pantalla';
+      nombre = 'Crea, muestra y cuenta';
+      texto = 'La tecnología es punto de partida, no destino. Eso es exactamente lo que el capítulo 8 describe como pasar de consumidor a creador.';
+    }
+    document.getElementById('calc-label').textContent = label;
+    document.getElementById('calc-nombre').textContent = nombre;
+    document.getElementById('calc-texto').textContent = texto;
+    irA('screen-calc-resultado');
+  }
+
+  function reiniciarCalc() { calcResp.length = 0; calcPaso = 0; irA('screen-calc-q0'); }
+
+  // ---- PROYECTOS ----
+  const proyectos = [
+    { tag: "🎵 Exploración sonora", perfil: "👨‍👩‍👧 Familia", titulo: "Álbum de sonidos de casa", desc: "Recorren la casa grabando sonidos: la canilla, el ventilador, los pasos. Después escuchan y adivinan qué es cada uno." },
+    { tag: "📖 Narrativa visual", perfil: "👨‍👩‍👧 Familia · 🍎 Docente", titulo: "El libro de fotos del día", desc: "El niño/a fotografía 5 momentos del día. Al final arman juntos una historia con esas fotos en orden." },
+    { tag: "🎬 Documentación", perfil: "🍎 Docente", titulo: "Mini documental del jardín", desc: "Graban en video un momento especial de sala: la plantita que creció, el juego de bloques, la ronda. Lo ven juntos y lo nombran." },
+    { tag: "🎶 Creación sonora", perfil: "👨‍👩‍👧 Familia · 🍎 Docente", titulo: "Orquesta de sonidos inventados", desc: "Graban sonidos con objetos de la casa o sala (golpear, soplar, raspar). Los mezclan y crean una 'canción' propia." },
+    { tag: "💌 Comunicación creativa", perfil: "👨‍👩‍👧 Familia · 🍎 Docente", titulo: "Carta animada para un familiar", desc: "El niño/a dibuja algo, lo fotografían y graban un mensaje de voz explicando el dibujo. Se lo mandan a un abuelo o tío lejano." },
+    { tag: "🔬 Exploración científica", perfil: "🍎 Docente", titulo: "El museo de las texturas", desc: "Fotografían objetos con texturas distintas: áspero, suave, rugoso. Arman una 'exposición' con las fotos y las etiquetan." },
+    { tag: "🎬 Animación", perfil: "👨‍👩‍👧 Familia · 🍎 Docente", titulo: "Stop motion de plastilina", desc: "Hacen una figura con plastilina, la mueven poquito a poquito sacando fotos. Al final ven su propio corto animado." },
+    { tag: "🌤️ Observación del entorno", perfil: "🍎 Docente", titulo: "Diario visual del clima", desc: "Cada día sacan una foto del cielo desde la ventana del jardín. Al final de la semana comparan y cuentan qué cambió." },
+    { tag: "🎭 Narrativa oral", perfil: "👨‍👩‍👧 Familia · 🍎 Docente", titulo: "La voz de los personajes", desc: "Eligen un cuento conocido y graban las voces de cada personaje. Después lo escuchan con el libro en mano, como si fuera una radio." },
+    { tag: "🍋 Expresión creativa", perfil: "👨‍👩‍👧 Familia · 🍎 Docente", titulo: "Video receta", desc: "Preparan algo simple juntos (limonada, ensalada de frutas) y graban los pasos como si fuera un programa de cocina. El niño/a es el conductor." }
+  ];
+  let ultimoProyecto = -1;
+
+  function generarProyecto() {
+    let idx;
+    do { idx = Math.floor(Math.random() * proyectos.length); } while (idx === ultimoProyecto && proyectos.length > 1);
+    ultimoProyecto = idx;
+    const p = proyectos[idx];
+    const card = document.getElementById('proyecto-card');
+    card.classList.remove('visible');
+    void card.offsetWidth;
+    document.getElementById('proyecto-tag').textContent = p.tag;
+    document.getElementById('proyecto-perfil').textContent = p.perfil;
+    document.getElementById('proyecto-titulo').textContent = p.titulo;
+    document.getElementById('proyecto-desc').textContent = p.desc;
+    card.classList.add('visible');
+    document.getElementById('btn-proyecto').style.display = 'none';
+    document.getElementById('btn-otro-proyecto').style.display = 'block';
+  }
+</script>
+</body>
+</html>

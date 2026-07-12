@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El derecho a una infancia con tiempo</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #FBE4EC 0%, #FDF1DD 35%, #E3F1F7 70%, #EFE4F5 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 32px 20px; position: relative; overflow: hidden;
+    font-family: 'Source Sans 3', sans-serif;
+  }
+  .display { font-family: 'Fraunces', serif; }
+  .fondo {
+    position: fixed; inset: 0; pointer-events: none; opacity: 0.45; filter: blur(0.3px);
+    background-image:
+      radial-gradient(ellipse 180px 140px at 6% 10%, #F4A6C6 0%, transparent 70%),
+      radial-gradient(ellipse 160px 130px at 92% 8%, #A8D8E8 0%, transparent 70%),
+      radial-gradient(ellipse 170px 140px at 8% 92%, #F7CB7B 0%, transparent 70%),
+      radial-gradient(ellipse 180px 140px at 94% 90%, #CBA8E0 0%, transparent 70%);
+  }
+  .deco { position: fixed; pointer-events: none; }
+  .container { max-width: 430px; width: 100%; position: relative; z-index: 1; }
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadein 0.35s ease; }
+  @keyframes fadein { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  .label { color: #D9678C; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; margin-bottom: 8px; display: block; text-align: center; }
+  h1 { color: #5B4B6E; font-size: 24px; font-weight: 600; margin-bottom: 14px; line-height: 1.25; text-align: center; }
+  h2 { color: #5B4B6E; font-size: 20px; font-weight: 600; line-height: 1.4; margin-bottom: 24px; }
+  .subtitle { color: #7C7191; font-size: 14.5px; line-height: 1.6; margin-bottom: 24px; text-align: center; }
+  .icon-wrap { text-align: center; font-size: 36px; margin-bottom: 14px; }
+
+  /* Menú */
+  .menu-card {
+    background: #FFFCFA; border-radius: 16px; padding: 20px;
+    margin-bottom: 12px; cursor: pointer; border: 2px solid transparent;
+    display: flex; align-items: center; gap: 16px;
+    transition: border-color 0.15s, transform 0.1s;
+    box-shadow: 0 1px 8px rgba(91,75,110,0.08);
+  }
+  .menu-card:hover { border-color: #D9678C; }
+  .menu-card:active { transform: scale(0.98); }
+  .menu-icon { font-size: 30px; flex-shrink: 0; }
+  .menu-titulo { color: #5B4B6E; font-size: 16px; font-weight: 600; font-family: 'Fraunces', serif; margin-bottom: 3px; }
+  .menu-desc { color: #7C7191; font-size: 13px; line-height: 1.4; }
+
+  /* Botones */
+  .btn-primary { padding: 15px; border-radius: 13px; border: none; background: #5B4B6E; color: #FFFCFA; font-size: 15.5px; font-weight: 600; cursor: pointer; font-family: 'Source Sans 3', sans-serif; width: 100%; transition: transform 0.15s; margin-bottom: 10px; }
+  .btn-primary:active { transform: scale(0.97); }
+  .btn-secondary { width: 100%; padding: 13px; border-radius: 12px; border: 2px solid #E8D9E8; background: transparent; color: #5B4B6E; font-size: 14.5px; font-weight: 600; cursor: pointer; font-family: 'Source Sans 3', sans-serif; transition: transform 0.15s; margin-bottom: 10px; }
+  .btn-secondary:active { transform: scale(0.97); }
+  .btn-volver { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 13px; border-radius: 12px; border: 1px solid #E8D9E8; background: transparent; color: #7C7191; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Source Sans 3', sans-serif; margin-top: 4px; }
+  .btn-volver:active { transform: scale(0.97); }
+
+  /* Medidor */
+  .progress-wrap { height: 4px; background: #F0E0EC; border-radius: 4px; margin-bottom: 22px; overflow: hidden; }
+  .progress-bar { height: 100%; background: #D9678C; border-radius: 4px; transition: width 0.3s ease; }
+  .q-num { color: #D9678C; font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+  .opciones { display: flex; flex-direction: column; gap: 10px; }
+  .opt-btn { padding: 15px 18px; border-radius: 12px; border: 2px solid #E8D9E8; background: #FFFCFA; color: #5B4B6E; font-size: 14.5px; font-weight: 500; cursor: pointer; font-family: 'Source Sans 3', sans-serif; text-align: left; transition: border-color 0.15s; }
+  .opt-btn:hover { border-color: #D9678C; }
+  .resultado-card { background: #FFFCFA; border-radius: 18px; padding: 24px; margin-bottom: 18px; box-shadow: 0 1px 10px rgba(91,75,110,0.09); }
+  .resultado-label { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: #D9678C; margin-bottom: 10px; }
+  .resultado-nombre { font-size: 21px; font-weight: 600; line-height: 1.3; margin-bottom: 12px; font-family: 'Fraunces', serif; color: #5B4B6E; }
+  .resultado-texto { font-size: 14.5px; line-height: 1.65; color: #6B5D7D; }
+
+  /* Subir foto */
+  .upload-box { background: #FFFCFA; border-radius: 16px; padding: 28px 24px; text-align: center; box-shadow: 0 1px 8px rgba(91,75,110,0.08); margin-bottom: 20px; }
+  .upload-icon { font-size: 40px; margin-bottom: 12px; }
+  .upload-texto { color: #7C7191; font-size: 14.5px; line-height: 1.6; margin-bottom: 18px; }
+
+  /* Rompecabezas */
+  .tablero { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 18px; padding: 8px; background: #E3D9C8; border-radius: 12px; }
+  .celda { aspect-ratio: 1; border: 2px dashed #D8CDBE; border-radius: 8px; background: #FFFCFA; cursor: pointer; }
+  .pieza { width: 100%; height: 100%; border-radius: 6px; cursor: pointer; }
+  .pieza.seleccionada { outline: 3px solid #D9678C; outline-offset: -3px; }
+  .bandeja { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; min-height: 60px; padding: 8px; background: #FFFCFA; border-radius: 12px; margin-bottom: 16px; }
+  .instruccion { color: #D9678C; font-size: 12.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; text-align: center; }
+
+  /* Memotest */
+  .memo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 18px; }
+  .memo-carta { aspect-ratio: 1; border-radius: 10px; cursor: pointer; position: relative; }
+  .memo-dorso { width: 100%; height: 100%; border-radius: 10px; background: linear-gradient(135deg, #5B4B6E, #7A6A8E); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .memo-frente { width: 100%; height: 100%; border-radius: 10px; background-size: cover; background-position: center; display: none; }
+  .memo-carta.vuelta .memo-dorso { display: none; }
+  .memo-carta.vuelta .memo-frente { display: block; }
+  .memo-carta.resuelta { opacity: 0.5; }
+  .memo-info { color: #7C7191; font-size: 13.5px; margin-bottom: 14px; text-align: center; }
+
+  /* Ganado */
+  .ganado-card { background: #FFFCFA; border-radius: 18px; padding: 26px 24px; margin-bottom: 20px; box-shadow: 0 2px 16px rgba(91,75,110,0.1); text-align: center; }
+  .ganado-img { width: 100%; border-radius: 12px; margin-bottom: 14px; }
+  .ganado-titulo { color: #5B4B6E; font-size: 22px; font-weight: 600; font-family: 'Fraunces', serif; margin-bottom: 6px; }
+  .ganado-sub { color: #7C7191; font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="fondo"></div>
+
+<!-- Decorativos -->
+<svg class="deco" style="top:-20px;left:-16px;width:54px;height:54px;transform:rotate(-12deg);opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rf1"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="6"/></filter></defs>
+  <g filter="url(#rf1)">
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(6 50 50)"/>
+    <ellipse cx="50" cy="30" rx="14" ry="22" fill="#F4A6C6" opacity="0.55" transform="rotate(78 50 50)"/>
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(150 50 50)"/>
+    <ellipse cx="50" cy="30" rx="14" ry="22" fill="#F4A6C6" opacity="0.55" transform="rotate(222 50 50)"/>
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(294 50 50)"/>
+    <circle cx="50" cy="50" r="9" fill="#F7D88A" opacity="0.8"/>
+  </g>
+</svg>
+<svg class="deco" style="top:8px;right:-22px;width:64px;height:42px;opacity:0.85" viewBox="0 0 100 65">
+  <defs><filter id="rn1"><feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="7"/></filter></defs>
+  <g filter="url(#rn1)">
+    <ellipse cx="28" cy="42" rx="24" ry="19" fill="#A8D8E8" opacity="0.45"/>
+    <ellipse cx="55" cy="28" rx="28" ry="24" fill="#A8D8E8" opacity="0.5"/>
+    <ellipse cx="78" cy="44" rx="20" ry="16" fill="#A8D8E8" opacity="0.4"/>
+  </g>
+</svg>
+<svg class="deco" style="bottom:60px;left:6px;width:34px;height:34px;opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rs1"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="11"/><feDisplacementMap in="SourceGraphic" scale="8"/></filter></defs>
+  <path filter="url(#rs1)" d="M50 6 L60 38 L94 38 L66 58 L78 92 L50 70 L22 92 L34 58 L6 38 L40 38 Z" fill="#F7CB7B" opacity="0.6"/>
+</svg>
+<svg class="deco" style="bottom:16px;right:4px;width:40px;height:40px;opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rc1"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="9"/><feDisplacementMap in="SourceGraphic" scale="7"/></filter></defs>
+  <path filter="url(#rc1)" d="M50 88 C-4 52 6 8 30 8 C42 8 50 16 50 26 C50 16 58 8 70 8 C94 8 104 52 50 88 Z" fill="#CBA8E0" opacity="0.55"/>
+</svg>
+
+<div class="container">
+
+  <!-- MENÚ -->
+  <div id="screen-menu" class="screen active">
+    <div class="icon-wrap">⏳</div>
+    <span class="label display">Capítulo 13 · Regalo</span>
+    <h1 class="display">El derecho a una infancia con tiempo</h1>
+    <p class="subtitle">Para cerrar el libro: reflexioná y después jugá juntos.</p>
+    <div class="menu-card" onclick="irA('screen-medidor-q0')">
+      <span class="menu-icon">🕐</span>
+      <div>
+        <p class="menu-titulo">¿Cuánto tiempo libre real tiene?</p>
+        <p class="menu-desc">3 preguntas para mirar el tiempo no estructurado de tu hijo/a.</p>
+      </div>
+    </div>
+    <div class="menu-card" onclick="irA('screen-rompe-upload')">
+      <span class="menu-icon">🧩</span>
+      <div>
+        <p class="menu-titulo">Rompecabezas familiar</p>
+        <p class="menu-desc">Subí una foto y armen el rompecabezas juntos.</p>
+      </div>
+    </div>
+    <div class="menu-card" onclick="irA('screen-memo-upload')">
+      <span class="menu-icon">🃏</span>
+      <div>
+        <p class="menu-titulo">Memotest familiar</p>
+        <p class="menu-desc">Subí una foto y jueguen a encontrar los pares.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MEDIDOR DE TIEMPO LIBRE ==================== -->
+  <div id="screen-medidor-q0" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:0%"></div></div>
+    <p class="q-num">1 de 3</p>
+    <h2 class="display">¿Cuántos momentos del día tiene tu hijo/a sin actividad dirigida, sin pantalla y sin agenda?</h2>
+    <div class="opciones">
+      <button class="opt-btn" onclick="medResponder(1)">Casi ninguno</button>
+      <button class="opt-btn" onclick="medResponder(2)">Uno o dos momentos cortos</button>
+      <button class="opt-btn" onclick="medResponder(3)">Bastantes momentos a lo largo del día</button>
+      <button class="opt-btn" onclick="medResponder(4)">La mayor parte del tiempo es libre</button>
+    </div>
+    <button class="btn-volver" onclick="irA('screen-menu')">← Volver al menú</button>
+  </div>
+
+  <div id="screen-medidor-q1" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:33%"></div></div>
+    <p class="q-num">2 de 3</p>
+    <h2 class="display">Cuando se aburre, ¿qué pasa primero?</h2>
+    <div class="opciones">
+      <button class="opt-btn" onclick="medResponder(1)">Le damos una pantalla para que se entretenga</button>
+      <button class="opt-btn" onclick="medResponder(2)">Le proponemos una actividad dirigida</button>
+      <button class="opt-btn" onclick="medResponder(3)">Esperamos y termina inventando algo solo/a</button>
+      <button class="opt-btn" onclick="medResponder(4)">Hay de todo según el momento y el día</button>
+    </div>
+    <button class="btn-volver" onclick="irA('screen-medidor-q0')">← Volver</button>
+  </div>
+
+  <div id="screen-medidor-q2" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:66%"></div></div>
+    <p class="q-num">3 de 3</p>
+    <h2 class="display">¿Los días libres tienen tiempo sin programar, sin salidas ni actividades organizadas?</h2>
+    <div class="opciones">
+      <button class="opt-btn" onclick="medResponder(1)">Casi nunca, siempre hay algo planeado</button>
+      <button class="opt-btn" onclick="medResponder(2)">A veces hay algún momento libre</button>
+      <button class="opt-btn" onclick="medResponder(3)">Sí, hay bastante tiempo sin estructura</button>
+      <button class="opt-btn" onclick="medResponder(4)">La mayor parte del tiempo es sin agenda</button>
+    </div>
+    <button class="btn-volver" onclick="irA('screen-medidor-q1')">← Volver</button>
+  </div>
+
+  <div id="screen-medidor-resultado" class="screen">
+    <span class="label display">Resultado · Tiempo libre</span>
+    <div class="resultado-card">
+      <p class="resultado-label" id="med-label"></p>
+      <h2 class="resultado-nombre display" id="med-nombre"></h2>
+      <p class="resultado-texto" id="med-texto"></p>
+    </div>
+    <button class="btn-primary" onclick="irA('screen-menu')">Volver al menú</button>
+    <button class="btn-volver" onclick="reiniciarMed()">↺ Volver a hacerlo</button>
+  </div>
+
+  <!-- ==================== ROMPECABEZAS ==================== -->
+  <div id="screen-rompe-upload" class="screen">
+    <span class="label display">Rompecabezas familiar</span>
+    <div class="upload-box">
+      <div class="upload-icon">🧩</div>
+      <p class="upload-texto">Subí una foto familiar y la convertimos en un rompecabezas de 9 piezas para armar juntos.</p>
+      <input type="file" id="rompe-input" accept="image/*" onchange="iniciarRompe(event)" style="display:none">
+      <button class="btn-primary" onclick="document.getElementById('rompe-input').click()">📷 Subir foto</button>
+    </div>
+    <button class="btn-volver" onclick="irA('screen-menu')">← Volver al menú</button>
+  </div>
+
+  <div id="screen-rompe-juego" class="screen">
+    <span class="label display">Rompecabezas · <span id="rompe-movs">0</span> movimientos</span>
+    <p class="instruccion" id="rompe-instruccion">Tocá una pieza de abajo para seleccionarla</p>
+    <div class="tablero" id="rompe-tablero"></div>
+    <p class="instruccion">Piezas disponibles</p>
+    <div class="bandeja" id="rompe-bandeja"></div>
+    <button class="btn-secondary" onclick="reiniciarRompe()">↺ Reiniciar</button>
+    <button class="btn-volver" onclick="irA('screen-rompe-upload')">← Cambiar foto</button>
+  </div>
+
+  <div id="screen-rompe-ganado" class="screen">
+    <div class="ganado-card">
+      <img id="rompe-foto-ganada" class="ganado-img" src="" alt="Foto familiar">
+      <p class="ganado-titulo display">¡Lo armaron! 🎉</p>
+      <p class="ganado-sub" id="rompe-movs-final"></p>
+    </div>
+    <button class="btn-primary" onclick="irA('screen-rompe-upload')">Jugar con otra foto</button>
+    <button class="btn-volver" onclick="irA('screen-menu')">← Volver al menú</button>
+  </div>
+
+  <!-- ==================== MEMOTEST ==================== -->
+  <div id="screen-memo-upload" class="screen">
+    <span class="label display">Memotest familiar</span>
+    <div class="upload-box">
+      <div class="upload-icon">🃏</div>
+      <p class="upload-texto">Subí una foto familiar y la convertimos en un memotest de 12 cartas para encontrar los pares juntos.</p>
+      <input type="file" id="memo-input" accept="image/*" onchange="iniciarMemo(event)" style="display:none">
+      <button class="btn-primary" onclick="document.getElementById('memo-input').click()">📷 Subir foto</button>
+    </div>
+    <button class="btn-volver" onclick="irA('screen-menu')">← Volver al menú</button>
+  </div>
+
+  <div id="screen-memo-juego" class="screen">
+    <span class="label display">Memotest</span>
+    <p class="memo-info">Movimientos: <strong id="memo-movs">0</strong> · Encontrá todos los pares</p>
+    <div class="memo-grid" id="memo-grid"></div>
+    <button class="btn-secondary" onclick="reiniciarMemo()">↺ Reiniciar</button>
+    <button class="btn-volver" onclick="irA('screen-memo-upload')">← Cambiar foto</button>
+  </div>
+
+  <div id="screen-memo-ganado" class="screen">
+    <div class="ganado-card">
+      <img id="memo-foto-ganada" class="ganado-img" src="" alt="Foto familiar">
+      <p class="ganado-titulo display">¡Lo lograron! 🎉</p>
+      <p class="ganado-sub" id="memo-movs-final"></p>
+    </div>
+    <button class="btn-primary" onclick="irA('screen-memo-upload')">Jugar con otra foto</button>
+    <button class="btn-volver" onclick="irA('screen-menu')">← Volver al menú</button>
+  </div>
+
+</div>
+
+<script>
+  function irA(id) {
+    document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  // ---- MEDIDOR ----
+  var medResp = []; var medPaso = 0;
+  function medResponder(v) {
+    medResp.push(v); medPaso++;
+    if (medPaso < 3) { irA('screen-medidor-q' + medPaso); }
+    else { mostrarMedResultado(); }
+  }
+  function mostrarMedResultado() {
+    var total = medResp.reduce(function(a,b){return a+b;},0);
+    var pct = total / 12;
+    var label, nombre, texto;
+    if (pct < 0.45) {
+      label = 'Tiempo libre muy acotado';
+      nombre = 'La agenda ocupa casi todo';
+      texto = 'El capítulo 13 propone algo contracultural: proteger el tiempo sin estructura. No hace falta agregar actividades — hace falta quitar algunas. Un solo momento de juego libre sin agenda puede ser el punto de partida.';
+    } else if (pct < 0.75) {
+      label = 'Tiempo libre presente, con margen para crecer';
+      nombre = 'Hay espacio, aunque podría ser más';
+      texto = 'Ya hay momentos libres en la rutina. La pregunta del capítulo 13 es si esos momentos son realmente libres — sin pantalla, sin propuesta dirigida, sin objetivo. Eso marca la diferencia.';
+    } else {
+      label = 'Tiempo libre bien presente';
+      nombre = 'La infancia tiene tiempo para ser infancia';
+      texto = 'Hay espacio real para el juego libre, el aburrimiento creativo y el tiempo sin agenda. Eso es exactamente lo que el capítulo 13 defiende como derecho. Sostenerlo en el tiempo es el verdadero logro.';
+    }
+    document.getElementById('med-label').textContent = label;
+    document.getElementById('med-nombre').textContent = nombre;
+    document.getElementById('med-texto').textContent = texto;
+    irA('screen-medidor-resultado');
+  }
+  function reiniciarMed() { medResp = []; medPaso = 0; irA('screen-medidor-q0'); }
+
+  // ---- ROMPECABEZAS ----
+  var rompeFoto = null; var rompeTablero = []; var rompeBandeja = [];
+  var rompeSeleccion = null; var rompeMovs = 0;
+  var FILAS = 3; var COLS = 3; var TOTAL = 9;
+
+  function getRecorteRompe(id) {
+    var col = id % COLS; var row = Math.floor(id / COLS);
+    return 'background-size:' + (COLS*100) + '% ' + (FILAS*100) + '%;background-position:' + (col/(COLS-1)*100) + '% ' + (row/(FILAS-1)*100) + '%;';
+  }
+
+  function iniciarRompe(e) {
+    var file = e.target.files[0]; if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      rompeFoto = ev.target.result;
+      var piezas = Array.from({length:TOTAL},function(_,i){return {id:i};});
+      for (var i=piezas.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=piezas[i];piezas[i]=piezas[j];piezas[j]=t;}
+      rompeBandeja = piezas; rompeTablero = Array(TOTAL).fill(null); rompeMovs = 0;
+      renderRompe(); irA('screen-rompe-juego');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function renderRompe() {
+    document.getElementById('rompe-movs').textContent = rompeMovs;
+    var tableroEl = document.getElementById('rompe-tablero'); tableroEl.innerHTML = '';
+    rompeTablero.forEach(function(pieza, idx) {
+      var celda = document.createElement('div'); celda.className = 'celda';
+      celda.onclick = function() { tocarCeldaRompe(idx); };
+      if (pieza) {
+        var div = document.createElement('div'); div.className = 'pieza';
+        if (rompeSeleccion && rompeSeleccion.origen.tipo === 'tablero' && rompeSeleccion.origen.idx === idx) div.className += ' seleccionada';
+        div.style.cssText = 'background-image:url(' + rompeFoto + ');' + getRecorteRompe(pieza.id);
+        div.onclick = function(e) { e.stopPropagation(); tocarPiezaRompe(pieza, {tipo:'tablero',idx:idx}); };
+        celda.appendChild(div);
+      }
+      tableroEl.appendChild(celda);
+    });
+    var bandejaEl = document.getElementById('rompe-bandeja'); bandejaEl.innerHTML = '';
+    rompeBandeja.forEach(function(pieza) {
+      var div = document.createElement('div'); div.className = 'pieza';
+      if (rompeSeleccion && rompeSeleccion.pieza.id === pieza.id && rompeSeleccion.origen.tipo === 'bandeja') div.className += ' seleccionada';
+      div.style.cssText = 'aspect-ratio:1;background-image:url(' + rompeFoto + ');' + getRecorteRompe(pieza.id);
+      div.onclick = function() { tocarPiezaRompe(pieza, {tipo:'bandeja'}); };
+      bandejaEl.appendChild(div);
+    });
+    var instruccion = document.getElementById('rompe-instruccion');
+    instruccion.textContent = rompeSeleccion ? 'Tocá una celda del tablero para ubicarla' : 'Tocá una pieza para seleccionarla';
+    if (rompeTablero.every(function(p,i){return p && p.id===i;})) {
+      document.getElementById('rompe-foto-ganada').src = rompeFoto;
+      document.getElementById('rompe-movs-final').textContent = 'Completaron el rompecabezas en ' + rompeMovs + ' movimientos.';
+      setTimeout(function(){irA('screen-rompe-ganado');},400);
+    }
+  }
+
+  function tocarPiezaRompe(pieza, origen) {
+    if (rompeSeleccion && rompeSeleccion.pieza.id === pieza.id) { rompeSeleccion = null; renderRompe(); return; }
+    rompeSeleccion = {pieza:pieza, origen:origen}; renderRompe();
+  }
+
+  function tocarCeldaRompe(idx) {
+    if (!rompeSeleccion) return;
+    var pieza = rompeSeleccion.pieza; var origen = rompeSeleccion.origen;
+    var piezaDestino = rompeTablero[idx];
+    rompeTablero[idx] = pieza;
+    if (origen.tipo === 'tablero') { rompeTablero[origen.idx] = piezaDestino || null; }
+    if (origen.tipo === 'bandeja') {
+      rompeBandeja = rompeBandeja.filter(function(p){return p.id!==pieza.id;});
+      if (piezaDestino) rompeBandeja.push(piezaDestino);
+    }
+    rompeMovs++; rompeSeleccion = null; renderRompe();
+  }
+
+  function reiniciarRompe() {
+    var piezas = Array.from({length:TOTAL},function(_,i){return {id:i};});
+    for (var i=piezas.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=piezas[i];piezas[i]=piezas[j];piezas[j]=t;}
+    rompeBandeja = piezas; rompeTablero = Array(TOTAL).fill(null); rompeMovs = 0; rompeSeleccion = null; renderRompe();
+  }
+
+  // ---- MEMOTEST ----
+  var memoFoto = null; var memoCartas = []; var memoSeleccionadas = []; var memoMovs = 0; var memoBloqueado = false;
+  var PARES = 6;
+
+  function getMemoRecorte(id) {
+    var cols = 4; var rows = Math.ceil(PARES/cols)||2;
+    var col = id%cols; var row = Math.floor(id/cols);
+    return 'background-image:url('+memoFoto+');background-size:'+(cols*100)+'% '+(rows*100)+'%;background-position:'+(col/(cols-1||1)*100)+'% '+(row/(rows-1||1)*100)+'%;';
+  }
+
+  function iniciarMemo(e) {
+    var file = e.target.files[0]; if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      memoFoto = ev.target.result;
+      var ids = Array.from({length:PARES},function(_,i){return i;});
+      memoCartas = ids.concat(ids).map(function(id,idx){return {id:id,key:idx,vuelta:false,resuelta:false};});
+      for (var i=memoCartas.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=memoCartas[i];memoCartas[i]=memoCartas[j];memoCartas[j]=t;}
+      memoSeleccionadas=[]; memoMovs=0; memoBloqueado=false;
+      renderMemo(); irA('screen-memo-juego');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function renderMemo() {
+    document.getElementById('memo-movs').textContent = memoMovs;
+    var grid = document.getElementById('memo-grid'); grid.innerHTML = '';
+    memoCartas.forEach(function(carta) {
+      var div = document.createElement('div'); div.className = 'memo-carta' + (carta.vuelta||carta.resuelta?' vuelta':'') + (carta.resuelta?' resuelta':'');
+      div.onclick = function() { tocarMemo(carta.key); };
+      var dorso = document.createElement('div'); dorso.className = 'memo-dorso'; dorso.textContent = '✨';
+      var frente = document.createElement('div'); frente.className = 'memo-frente'; frente.style.cssText = getMemoRecorte(carta.id);
+      div.appendChild(dorso); div.appendChild(frente); grid.appendChild(div);
+    });
+  }
+
+  function tocarMemo(key) {
+    if (memoBloqueado) return;
+    var carta = memoCartas.find(function(c){return c.key===key;});
+    if (carta.vuelta||carta.resuelta) return;
+    if (memoSeleccionadas.length===2) return;
+    carta.vuelta=true; memoSeleccionadas.push(key); renderMemo();
+    if (memoSeleccionadas.length===2) {
+      memoBloqueado=true; memoMovs++;
+      var k1=memoSeleccionadas[0]; var k2=memoSeleccionadas[1];
+      var c1=memoCartas.find(function(c){return c.key===k1;}); var c2=memoCartas.find(function(c){return c.key===k2;});
+      setTimeout(function(){
+        if (c1.id===c2.id){c1.resuelta=true;c2.resuelta=true;}
+        else{c1.vuelta=false;c2.vuelta=false;}
+        memoSeleccionadas=[]; memoBloqueado=false; renderMemo();
+        if (memoCartas.every(function(c){return c.resuelta;})){
+          document.getElementById('memo-foto-ganada').src=memoFoto;
+          document.getElementById('memo-movs-final').textContent='Completaron el memotest en '+memoMovs+' movimientos.';
+          setTimeout(function(){irA('screen-memo-ganado');},400);
+        }
+      },700);
+    }
+  }
+
+  function reiniciarMemo() {
+    var ids=Array.from({length:PARES},function(_,i){return i;});
+    memoCartas=ids.concat(ids).map(function(id,idx){return {id:id,key:idx,vuelta:false,resuelta:false};});
+    for(var i=memoCartas.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=memoCartas[i];memoCartas[i]=memoCartas[j];memoCartas[j]=t;}
+    memoSeleccionadas=[]; memoMovs=0; memoBloqueado=false; renderMemo();
+  }
+</script>
+</body>
+</html>

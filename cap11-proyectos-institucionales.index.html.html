@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proyectos institucionales con tecnología</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #FBE4EC 0%, #FDF1DD 35%, #E3F1F7 70%, #EFE4F5 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 32px 20px; position: relative; overflow: hidden;
+    font-family: 'Source Sans 3', sans-serif;
+  }
+  .display { font-family: 'Fraunces', serif; }
+  .fondo {
+    position: fixed; inset: 0; pointer-events: none; opacity: 0.45; filter: blur(0.3px);
+    background-image:
+      radial-gradient(ellipse 180px 140px at 6% 10%, #F4A6C6 0%, transparent 70%),
+      radial-gradient(ellipse 160px 130px at 92% 8%, #A8D8E8 0%, transparent 70%),
+      radial-gradient(ellipse 170px 140px at 8% 92%, #F7CB7B 0%, transparent 70%),
+      radial-gradient(ellipse 180px 140px at 94% 90%, #CBA8E0 0%, transparent 70%);
+  }
+  .deco { position: fixed; pointer-events: none; }
+  .container { max-width: 430px; width: 100%; position: relative; z-index: 1; }
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadein 0.35s ease; }
+  @keyframes fadein { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  .label { color: #D9678C; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; margin-bottom: 8px; display: block; text-align: center; }
+  h1 { color: #5B4B6E; font-size: 24px; font-weight: 600; margin-bottom: 14px; line-height: 1.25; text-align: center; }
+  .subtitle { color: #7C7191; font-size: 14.5px; line-height: 1.6; margin-bottom: 24px; text-align: center; }
+  .icon-wrap { text-align: center; font-size: 36px; margin-bottom: 14px; }
+
+  /* Filtros de alcance */
+  .filtros { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
+  .filtro-btn {
+    padding: 8px 14px; border-radius: 20px; border: 2px solid #E8D9E8;
+    background: #FFFCFA; color: #7C7191; font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: 'Source Sans 3', sans-serif;
+    transition: all 0.15s;
+  }
+  .filtro-btn.activo { background: #5B4B6E; color: #FFFCFA; border-color: #5B4B6E; }
+  .filtro-btn:active { transform: scale(0.97); }
+
+  /* Tarjeta proyecto */
+  .proyecto-card {
+    background: #FFFCFA; border-radius: 18px; padding: 26px 24px;
+    margin-bottom: 20px; box-shadow: 0 2px 16px rgba(91,75,110,0.1);
+    display: none; animation: fadein 0.4s ease;
+    border-top: 5px solid #F4A6C6;
+  }
+  .proyecto-card.visible { display: block; }
+  .proyecto-alcance { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; display: block; }
+  .proyecto-titulo { color: #5B4B6E; font-size: 20px; font-weight: 600; line-height: 1.3; margin-bottom: 10px; font-family: 'Fraunces', serif; }
+  .proyecto-desc { color: #7C7191; font-size: 14.5px; line-height: 1.65; margin-bottom: 12px; }
+  .proyecto-detalle { display: flex; flex-direction: column; gap: 6px; }
+  .detalle-item { display: flex; gap: 8px; align-items: flex-start; }
+  .detalle-emoji { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+  .detalle-texto { color: #6B5D7D; font-size: 13px; line-height: 1.5; }
+
+  /* Botones */
+  .btn-primary { padding: 15px; border-radius: 13px; border: none; background: #5B4B6E; color: #FFFCFA; font-size: 15.5px; font-weight: 600; cursor: pointer; font-family: 'Source Sans 3', sans-serif; width: 100%; transition: transform 0.15s; margin-bottom: 10px; }
+  .btn-primary:active { transform: scale(0.97); }
+  .btn-secondary { width: 100%; padding: 13px; border-radius: 12px; border: 2px solid #E8D9E8; background: transparent; color: #5B4B6E; font-size: 14.5px; font-weight: 600; cursor: pointer; font-family: 'Source Sans 3', sans-serif; transition: transform 0.15s; margin-bottom: 10px; }
+  .btn-secondary:active { transform: scale(0.97); }
+</style>
+</head>
+<body>
+
+<div class="fondo"></div>
+
+<!-- Decorativos acuarela -->
+<svg class="deco" style="top:-20px;left:-16px;width:54px;height:54px;transform:rotate(-12deg);opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rf1"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="6"/></filter></defs>
+  <g filter="url(#rf1)">
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(6 50 50)"/>
+    <ellipse cx="50" cy="30" rx="14" ry="22" fill="#F4A6C6" opacity="0.55" transform="rotate(78 50 50)"/>
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(150 50 50)"/>
+    <ellipse cx="50" cy="30" rx="14" ry="22" fill="#F4A6C6" opacity="0.55" transform="rotate(222 50 50)"/>
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(294 50 50)"/>
+    <circle cx="50" cy="50" r="9" fill="#F7D88A" opacity="0.8"/>
+  </g>
+</svg>
+<svg class="deco" style="top:8px;right:-22px;width:64px;height:42px;opacity:0.85" viewBox="0 0 100 65">
+  <defs><filter id="rn1"><feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="7"/></filter></defs>
+  <g filter="url(#rn1)">
+    <ellipse cx="28" cy="42" rx="24" ry="19" fill="#A8D8E8" opacity="0.45"/>
+    <ellipse cx="55" cy="28" rx="28" ry="24" fill="#A8D8E8" opacity="0.5"/>
+    <ellipse cx="78" cy="44" rx="20" ry="16" fill="#A8D8E8" opacity="0.4"/>
+  </g>
+</svg>
+<svg class="deco" style="bottom:60px;left:6px;width:34px;height:34px;opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rs1"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="11"/><feDisplacementMap in="SourceGraphic" scale="8"/></filter></defs>
+  <path filter="url(#rs1)" d="M50 6 L60 38 L94 38 L66 58 L78 92 L50 70 L22 92 L34 58 L6 38 L40 38 Z" fill="#F7CB7B" opacity="0.6"/>
+</svg>
+<svg class="deco" style="bottom:16px;right:4px;width:40px;height:40px;opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rc1"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="9"/><feDisplacementMap in="SourceGraphic" scale="7"/></filter></defs>
+  <path filter="url(#rc1)" d="M50 88 C-4 52 6 8 30 8 C42 8 50 16 50 26 C50 16 58 8 70 8 C94 8 104 52 50 88 Z" fill="#CBA8E0" opacity="0.55"/>
+</svg>
+
+<div class="container">
+  <div id="screen-main" class="screen active">
+    <div class="icon-wrap">🏫</div>
+    <span class="label display">Capítulo 11 · Regalo</span>
+    <h1 class="display">Proyectos institucionales con tecnología</h1>
+    <p class="subtitle">Elegí el alcance que más te interesa y generá una propuesta concreta para llevar a tu jardín.</p>
+
+    <!-- Filtros -->
+    <div class="filtros">
+      <button class="filtro-btn activo" id="filtro-todos" onclick="setFiltro('todos')">Todos</button>
+      <button class="filtro-btn" id="filtro-sala" onclick="setFiltro('sala')">🏫 De sala</button>
+      <button class="filtro-btn" id="filtro-salas" onclick="setFiltro('salas')">🔄 Entre salas</button>
+      <button class="filtro-btn" id="filtro-comunidad" onclick="setFiltro('comunidad')">🌍 Comunidad</button>
+    </div>
+
+    <!-- Tarjeta proyecto -->
+    <div class="proyecto-card" id="proyecto-card">
+      <span class="proyecto-alcance" id="proyecto-alcance"></span>
+      <p class="proyecto-titulo display" id="proyecto-titulo"></p>
+      <p class="proyecto-desc" id="proyecto-desc"></p>
+      <div class="proyecto-detalle" id="proyecto-detalle"></div>
+    </div>
+
+    <button class="btn-primary" id="btn-generar" onclick="generarProyecto()">✨ Generar proyecto</button>
+    <button class="btn-secondary" id="btn-otro" onclick="generarProyecto()" style="display:none">↺ Otro proyecto</button>
+  </div>
+</div>
+
+<script>
+  var proyectos = [
+    {
+      alcance: "sala",
+      alcanceLabel: "🏫 Proyecto de sala",
+      color: "#F4A6C6",
+      colorTexto: "#C0567A",
+      titulo: "Robótica con Bee-Bot",
+      desc: "Los niños y niñas programan recorridos simples en el piso usando un robot Bee-Bot. Sin pantalla, con pensamiento computacional real.",
+      detalles: [
+        { emoji: "🎯", texto: "Área: pensamiento computacional, lateralidad, secuenciación" },
+        { emoji: "👶", texto: "Edad sugerida: 2 a 5 años" },
+        { emoji: "🛠️", texto: "Material: Bee-Bot o similar, tapete de recorrido o cinta en el piso" }
+      ]
+    },
+    {
+      alcance: "sala",
+      alcanceLabel: "🏫 Proyecto de sala",
+      color: "#A8D8E8",
+      colorTexto: "#3A8FA8",
+      titulo: "Archivo visual del año",
+      desc: "Documentar el año con fotos tomadas por los propios niños y niñas. Al final se construye una muestra colectiva que cuenta la historia de la sala.",
+      detalles: [
+        { emoji: "🎯", texto: "Área: identidad, memoria, expresión visual" },
+        { emoji: "👶", texto: "Edad sugerida: 3 a 5 años" },
+        { emoji: "🛠️", texto: "Material: celular o tablet, impresora o pantalla para la muestra" }
+      ]
+    },
+    {
+      alcance: "sala",
+      alcanceLabel: "🏫 Proyecto de sala",
+      color: "#F7CB7B",
+      colorTexto: "#A87820",
+      titulo: "Libro digital de sala",
+      desc: "Los niños y niñas producen un libro propio: eligen el tema, dictan el texto, crean las ilustraciones y sacan las fotos. La docente lo edita y queda como producción colectiva.",
+      detalles: [
+        { emoji: "🎯", texto: "Área: lenguaje, escritura emergente, expresión artística" },
+        { emoji: "👶", texto: "Edad sugerida: 3 a 5 años" },
+        { emoji: "🛠️", texto: "Material: celular, app de fotos o Canva, impresora opcional" }
+      ]
+    },
+    {
+      alcance: "sala",
+      alcanceLabel: "🏫 Proyecto de sala",
+      color: "#6BCB77",
+      colorTexto: "#2E7A38",
+      titulo: "Mapa sonoro del barrio",
+      desc: "Salida al entorno para grabar sonidos: la panadería, el tráfico, los pájaros, el mercado. De vuelta en sala, escuchan, reconocen y construyen un mapa sonoro colectivo.",
+      detalles: [
+        { emoji: "🎯", texto: "Área: exploración del entorno, lenguaje, orientación espacial" },
+        { emoji: "👶", texto: "Edad sugerida: 3 a 5 años" },
+        { emoji: "🛠️", texto: "Material: celular para grabar, papel grande para el mapa" }
+      ]
+    },
+    {
+      alcance: "salas",
+      alcanceLabel: "🔄 Proyecto entre salas",
+      color: "#CBA8E0",
+      colorTexto: "#7A3FAA",
+      titulo: "Intercambio de cartas de voz",
+      desc: "Una sala graba mensajes de audio para otra sala del jardín. La sala receptora escucha, responde y devuelve sus propios mensajes. Comunicación real entre grupos.",
+      detalles: [
+        { emoji: "🎯", texto: "Área: lenguaje oral, escucha, comunicación" },
+        { emoji: "👶", texto: "Edad sugerida: 2 a 5 años" },
+        { emoji: "🛠️", texto: "Material: celular o grabadora, WhatsApp o audio compartido" }
+      ]
+    },
+    {
+      alcance: "salas",
+      alcanceLabel: "🔄 Proyecto entre salas",
+      color: "#FF9F43",
+      colorTexto: "#A85A00",
+      titulo: "El libro del jardín",
+      desc: "Cada sala produce una página sobre un tema común: el otoño, los animales, los sueños. Al final se une todo en un libro digital institucional que queda como patrimonio del jardín.",
+      detalles: [
+        { emoji: "🎯", texto: "Área: identidad institucional, lenguaje, expresión artística" },
+        { emoji: "👶", texto: "Edad sugerida: 3 a 5 años" },
+        { emoji: "🛠️", texto: "Material: fotos, dibujos escaneados, Canva o similar" }
+      ]
+    },
+    {
+      alcance: "salas",
+      alcanceLabel: "🔄 Proyecto entre salas",
+      color: "#4ECDC4",
+      colorTexto: "#1A7A74",
+      titulo: "Festival de stop motion",
+      desc: "Cada sala crea su propio cortometraje de stop motion durante el año. Al final, se proyecta todo junto para las familias como cierre institucional.",
+      detalles: [
+        { emoji: "🎯", texto: "Área: narrativa, secuenciación, trabajo colaborativo" },
+        { emoji: "👶", texto: "Edad sugerida: 3 a 5 años" },
+        { emoji: "🛠️", texto: "Material: celular, app Stop Motion Studio (gratuita)" }
+      ]
+    },
+    {
+      alcance: "salas",
+      alcanceLabel: "🔄 Proyecto entre salas",
+      color: "#E84393",
+      colorTexto: "#8A0050",
+      titulo: "Radio del jardín",
+      desc: "Cada sala participa en un programa de audio semanal: noticias de sala, canciones, cuentos, entrevistas a docentes. Se comparte con toda la institución.",
+      detalles: [
+        { emoji: "🎯", texto: "Área: lenguaje oral, escucha, identidad comunitaria" },
+        { emoji: "👶", texto: "Edad sugerida: 3 a 5 años" },
+        { emoji: "🛠️", texto: "Material: celular o micrófono simple, WhatsApp para distribuir" }
+      ]
+    },
+    {
+      alcance: "comunidad",
+      alcanceLabel: "🌍 Proyecto hacia la comunidad",
+      color: "#FF6B6B",
+      colorTexto: "#A82020",
+      titulo: "Noticiero del jardín",
+      desc: "Los niños y niñas graban un video corto contando algo que pasó en el jardín esa semana. Se comparte con las familias como comunicación institucional real.",
+      detalles: [
+        { emoji: "🎯", texto: "Área: lenguaje, expresión oral, vínculo escuela-familia" },
+        { emoji: "👶", texto: "Edad sugerida: 3 a 5 años" },
+        { emoji: "🛠️", texto: "Material: celular, distribución por WhatsApp o plataforma institucional" }
+      ]
+    },
+    {
+      alcance: "comunidad",
+      alcanceLabel: "🌍 Proyecto hacia la comunidad",
+      color: "#45B7D1",
+      colorTexto: "#1A6A8A",
+      titulo: "Diario digital institucional",
+      desc: "Documentación fotográfica y en audio de proyectos de sala, publicada periódicamente para las familias. Construye transparencia pedagógica y comunidad educativa.",
+      detalles: [
+        { emoji: "🎯", texto: "Área: documentación pedagógica, vínculo escuela-familia" },
+        { emoji: "👶", texto: "Edad sugerida: todas las salas" },
+        { emoji: "🛠️", texto: "Material: celular, blog institucional, Canva o newsletter" }
+      ]
+    },
+    {
+      alcance: "comunidad",
+      alcanceLabel: "🌍 Proyecto hacia la comunidad",
+      color: "#A8E6CF",
+      colorTexto: "#2A7A5A",
+      titulo: "Video de bienvenida para familias nuevas",
+      desc: "Los niños y niñas graban un video mostrando el jardín: los rincones, las rutinas, los juegos. Se usa en la inscripción para recibir a las familias que llegan por primera vez.",
+      detalles: [
+        { emoji: "🎯", texto: "Área: identidad institucional, vínculo con la comunidad" },
+        { emoji: "👶", texto: "Edad sugerida: 3 a 5 años" },
+        { emoji: "🛠️", texto: "Material: celular, edición simple en CapCut o similar" }
+      ]
+    },
+    {
+      alcance: "comunidad",
+      alcanceLabel: "🌍 Proyecto hacia la comunidad",
+      color: "#9B59B6",
+      colorTexto: "#5A1A8A",
+      titulo: "Muestra digital de fin de año",
+      desc: "En vez de muestra presencial tradicional, arman una muestra audiovisual con producciones de todo el año: fotos, videos, audios, dibujos escaneados. Se comparte con las familias y queda como archivo institucional.",
+      detalles: [
+        { emoji: "🎯", texto: "Área: identidad, cierre del año, vínculo con las familias" },
+        { emoji: "👶", texto: "Edad sugerida: todas las salas" },
+        { emoji: "🛠️", texto: "Material: producciones del año, Canva, video o presentación digital" }
+      ]
+    }
+  ];
+
+  var filtroActual = 'todos';
+  var ultimoIdx = -1;
+
+  function setFiltro(filtro) {
+    filtroActual = filtro;
+    document.querySelectorAll('.filtro-btn').forEach(function(b) { b.classList.remove('activo'); });
+    document.getElementById('filtro-' + filtro).classList.add('activo');
+    document.getElementById('proyecto-card').classList.remove('visible');
+    document.getElementById('btn-generar').style.display = 'block';
+    document.getElementById('btn-generar').textContent = '✨ Generar proyecto';
+    document.getElementById('btn-otro').style.display = 'none';
+    ultimoIdx = -1;
+  }
+
+  function generarProyecto() {
+    var lista = filtroActual === 'todos' ? proyectos : proyectos.filter(function(p) { return p.alcance === filtroActual; });
+    if (lista.length === 0) return;
+
+    var idx;
+    var intentos = 0;
+    do {
+      idx = Math.floor(Math.random() * lista.length);
+      intentos++;
+    } while (idx === ultimoIdx && lista.length > 1 && intentos < 10);
+    ultimoIdx = idx;
+
+    var p = lista[idx];
+    var card = document.getElementById('proyecto-card');
+    card.classList.remove('visible');
+    card.style.borderTopColor = p.color;
+
+    document.getElementById('proyecto-alcance').textContent = p.alcanceLabel;
+    document.getElementById('proyecto-alcance').style.color = p.colorTexto;
+    document.getElementById('proyecto-titulo').textContent = p.titulo;
+    document.getElementById('proyecto-desc').textContent = p.desc;
+
+    var detalleEl = document.getElementById('proyecto-detalle');
+    detalleEl.innerHTML = '';
+    p.detalles.forEach(function(d) {
+      var item = document.createElement('div');
+      item.className = 'detalle-item';
+      item.innerHTML = '<span class="detalle-emoji">' + d.emoji + '</span><span class="detalle-texto">' + d.texto + '</span>';
+      detalleEl.appendChild(item);
+    });
+
+    void card.offsetWidth;
+    card.classList.add('visible');
+    document.getElementById('btn-generar').style.display = 'none';
+    document.getElementById('btn-otro').style.display = 'block';
+  }
+</script>
+</body>
+</html>

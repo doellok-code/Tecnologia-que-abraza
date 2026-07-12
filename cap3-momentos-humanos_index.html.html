@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Momento humano de hoy</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #FBE4EC 0%, #FDF1DD 35%, #E3F1F7 70%, #EFE4F5 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 32px 20px; position: relative; overflow: hidden;
+    font-family: 'Source Sans 3', sans-serif;
+  }
+  .display { font-family: 'Fraunces', serif; }
+  .fondo {
+    position: fixed; inset: 0; pointer-events: none; opacity: 0.45; filter: blur(0.3px);
+    background-image:
+      radial-gradient(ellipse 180px 140px at 6% 10%, #F4A6C6 0%, transparent 70%),
+      radial-gradient(ellipse 160px 130px at 92% 8%, #A8D8E8 0%, transparent 70%),
+      radial-gradient(ellipse 170px 140px at 8% 92%, #F7CB7B 0%, transparent 70%),
+      radial-gradient(ellipse 180px 140px at 94% 90%, #CBA8E0 0%, transparent 70%);
+  }
+  .deco { position: fixed; pointer-events: none; }
+  .container { max-width: 430px; width: 100%; position: relative; z-index: 1; text-align: center; }
+  .label { color: #D9678C; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; margin-bottom: 8px; display: block; }
+  h1 { color: #5B4B6E; font-size: 26px; font-weight: 600; margin-bottom: 14px; line-height: 1.25; }
+  .subtitle { color: #7C7191; font-size: 15px; line-height: 1.6; margin-bottom: 28px; }
+  .card {
+    background: #FFFCFA; border-radius: 20px; padding: 32px 26px;
+    box-shadow: 0 2px 20px rgba(91,75,110,0.1); margin-bottom: 24px;
+    display: none; animation: fadein 0.4s ease;
+  }
+  .card.visible { display: block; }
+  @keyframes fadein { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  .card-num { color: #D9678C; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+  .card-texto { color: #5B4B6E; font-size: 18px; font-weight: 600; line-height: 1.5; font-family: 'Fraunces', serif; margin-bottom: 0; }
+  .btn-primary {
+    padding: 16px 32px; border-radius: 14px; border: none;
+    background: #5B4B6E; color: #FFFCFA; font-size: 16px; font-weight: 600;
+    cursor: pointer; font-family: 'Source Sans 3', sans-serif;
+    width: 100%; transition: transform 0.15s; margin-bottom: 12px;
+  }
+  .btn-primary:active { transform: scale(0.97); }
+  .btn-secondary {
+    padding: 14px 32px; border-radius: 14px; border: 2px solid #E8D9E8;
+    background: transparent; color: #5B4B6E; font-size: 15px; font-weight: 600;
+    cursor: pointer; font-family: 'Source Sans 3', sans-serif;
+    width: 100%; transition: transform 0.15s;
+  }
+  .btn-secondary:active { transform: scale(0.97); }
+  .icon-wrap { font-size: 38px; margin-bottom: 14px; }
+</style>
+</head>
+<body>
+
+<div class="fondo"></div>
+
+<!-- Decorativos acuarela -->
+<svg class="deco" style="top:-20px;left:-16px;width:54px;height:54px;transform:rotate(-12deg);opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rf1"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="6"/></filter></defs>
+  <g filter="url(#rf1)">
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(6 50 50)"/>
+    <ellipse cx="50" cy="30" rx="14" ry="22" fill="#F4A6C6" opacity="0.55" transform="rotate(78 50 50)"/>
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(150 50 50)"/>
+    <ellipse cx="50" cy="30" rx="14" ry="22" fill="#F4A6C6" opacity="0.55" transform="rotate(222 50 50)"/>
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(294 50 50)"/>
+    <circle cx="50" cy="50" r="9" fill="#F7D88A" opacity="0.8"/>
+  </g>
+</svg>
+<svg class="deco" style="top:8px;right:-22px;width:64px;height:42px;opacity:0.85" viewBox="0 0 100 65">
+  <defs><filter id="rn1"><feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="7"/></filter></defs>
+  <g filter="url(#rn1)">
+    <ellipse cx="28" cy="42" rx="24" ry="19" fill="#A8D8E8" opacity="0.45"/>
+    <ellipse cx="55" cy="28" rx="28" ry="24" fill="#A8D8E8" opacity="0.5"/>
+    <ellipse cx="78" cy="44" rx="20" ry="16" fill="#A8D8E8" opacity="0.4"/>
+  </g>
+</svg>
+<svg class="deco" style="bottom:60px;left:6px;width:34px;height:34px;opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rs1"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="11"/><feDisplacementMap in="SourceGraphic" scale="8"/></filter></defs>
+  <path filter="url(#rs1)" d="M50 6 L60 38 L94 38 L66 58 L78 92 L50 70 L22 92 L34 58 L6 38 L40 38 Z" fill="#F7CB7B" opacity="0.6"/>
+</svg>
+<svg class="deco" style="bottom:16px;right:4px;width:40px;height:40px;opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rc1"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="9"/><feDisplacementMap in="SourceGraphic" scale="7"/></filter></defs>
+  <path filter="url(#rc1)" d="M50 88 C-4 52 6 8 30 8 C42 8 50 16 50 26 C50 16 58 8 70 8 C94 8 104 52 50 88 Z" fill="#CBA8E0" opacity="0.55"/>
+</svg>
+
+<div class="container">
+  <div class="icon-wrap">🌿</div>
+  <span class="label display">Capítulo 3 · Regalo</span>
+  <h1 class="display">El momento humano de hoy</h1>
+  <p class="subtitle">Tocá el botón y aparece una propuesta simple para conectar hoy con tu hijo/a. Sin tecnología, sin apuro.</p>
+
+  <div class="card" id="momento-card">
+    <p class="card-num" id="momento-num"></p>
+    <p class="card-texto" id="momento-texto"></p>
+  </div>
+
+  <button class="btn-primary" id="btn-generar" onclick="generarMomento()">Quiero mi momento de hoy</button>
+  <button class="btn-secondary" id="btn-otro" onclick="generarMomento()" style="display:none">Mostrame otro momento</button>
+</div>
+
+<script>
+  const momentos = [
+    "Sentate en el piso con tu hijo/a y dejá que él/ella elija a qué jugar. Sin proponer nada.",
+    "Dedicá cinco minutos a conversar con tu hijo/a sin el celular cerca.",
+    "Canten una canción juntos, aunque no recuerden bien la letra. El proceso importa más que el resultado.",
+    "Salgan a caminar despacio y nombren todo lo que ven: árboles, pájaros, colores, sombras.",
+    "Dejá que amase, mezcle o toque algo en la cocina. Sin apurarlo/a ni corregirlo/a.",
+    "Leele un cuento en voz alta, poniendo voces distintas para cada personaje.",
+    "Abrazalo/a sin motivo, solo porque sí, y quedense así un momento largo.",
+    "Jueguen a las cosquillas, a perseguirse o a rodar por la cama. Juego de cuerpo puro.",
+    "Dibujen juntos sin modelo ni objetivo. Solo papel, lápices y tiempo.",
+    "Antes de dormir, contale algo lindo que hizo hoy. Que sepa que lo/la miraste.",
+    "Jueguen a cerrar los ojos y escuchar los sonidos del ambiente. ¿Cuántos ruidos distintos encuentran?"
+  ];
+
+  let ultimo = -1;
+
+  function generarMomento() {
+    let idx;
+    do { idx = Math.floor(Math.random() * momentos.length); } while (idx === ultimo && momentos.length > 1);
+    ultimo = idx;
+
+    const card = document.getElementById('momento-card');
+    card.classList.remove('visible');
+    void card.offsetWidth; // reflow para reiniciar animación
+    document.getElementById('momento-num').textContent = '💛 Para hoy';
+    document.getElementById('momento-texto').textContent = momentos[idx];
+    card.classList.add('visible');
+
+    document.getElementById('btn-generar').style.display = 'none';
+    document.getElementById('btn-otro').style.display = 'block';
+  }
+</script>
+</body>
+</html>

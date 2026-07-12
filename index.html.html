@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¿Qué tan cansada/o llegaste hoy?</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #FBE4EC 0%, #FDF1DD 35%, #E3F1F7 70%, #EFE4F5 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 32px 20px; position: relative; overflow: hidden;
+    font-family: 'Source Sans 3', sans-serif;
+  }
+  .display { font-family: 'Fraunces', serif; }
+  .fondo {
+    position: fixed; inset: 0; pointer-events: none; opacity: 0.45; filter: blur(0.3px);
+    background-image:
+      radial-gradient(ellipse 180px 140px at 6% 10%, #F4A6C6 0%, transparent 70%),
+      radial-gradient(ellipse 160px 130px at 92% 8%, #A8D8E8 0%, transparent 70%),
+      radial-gradient(ellipse 170px 140px at 8% 92%, #F7CB7B 0%, transparent 70%),
+      radial-gradient(ellipse 180px 140px at 94% 90%, #CBA8E0 0%, transparent 70%);
+  }
+  .deco { position: fixed; pointer-events: none; }
+  .container { max-width: 430px; width: 100%; position: relative; z-index: 1; }
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadein 0.35s ease; }
+  @keyframes fadein { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  .label { color: #D9678C; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; margin-bottom: 8px; display: block; text-align: center; }
+  h1 { color: #5B4B6E; font-size: 26px; font-weight: 600; margin-bottom: 14px; line-height: 1.25; text-align: center; }
+  h2 { color: #5B4B6E; font-size: 22px; font-weight: 600; line-height: 1.35; margin-bottom: 24px; }
+  .subtitle { color: #7C7191; font-size: 15px; line-height: 1.6; margin-bottom: 28px; text-align: center; }
+  .btn-primary { padding: 16px 32px; border-radius: 14px; border: none; background: #5B4B6E; color: #FFFCFA; font-size: 16px; font-weight: 600; cursor: pointer; font-family: 'Source Sans 3', sans-serif; width: 100%; transition: transform 0.15s; }
+  .btn-primary:active { transform: scale(0.97); }
+  .btn-secondary { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #E8D9E8; background: transparent; color: #5B4B6E; font-size: 14.5px; font-weight: 600; cursor: pointer; font-family: 'Source Sans 3', sans-serif; transition: transform 0.15s; }
+  .btn-secondary:active { transform: scale(0.97); }
+  .progress-wrap { height: 4px; background: #F0E0EC; border-radius: 4px; margin-bottom: 24px; overflow: hidden; }
+  .progress-bar { height: 100%; background: #D9678C; border-radius: 4px; transition: width 0.3s ease; }
+  .q-num { color: #D9678C; font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt-btn { padding: 16px 20px; border-radius: 12px; border: 2px solid #E8D9E8; background: #FFFCFA; color: #5B4B6E; font-size: 15px; font-weight: 500; cursor: pointer; font-family: 'Source Sans 3', sans-serif; text-align: left; transition: border-color 0.15s, transform 0.1s; }
+  .opt-btn:hover { border-color: #D9678C; }
+  .opt-btn:active { transform: scale(0.98); }
+  .resultado-card { background: #FFFCFA; border-radius: 18px; padding: 26px 24px; margin-bottom: 20px; box-shadow: 0 2px 16px rgba(91,75,110,0.08); }
+  .resultado-titulo { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #D9678C; margin-bottom: 10px; }
+  .resultado-nombre { font-size: 24px; font-weight: 600; line-height: 1.25; margin-bottom: 14px; }
+  .resultado-texto { color: #6B5D7D; font-size: 15px; line-height: 1.65; }
+  .icon-wrap { text-align: center; margin-bottom: 14px; font-size: 36px; }
+</style>
+</head>
+<body>
+
+<div class="fondo"></div>
+
+<!-- Decorativos acuarela -->
+<svg class="deco" style="top:-20px;left:-16px;width:54px;height:54px;transform:rotate(-12deg);opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rf1"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="6"/></filter></defs>
+  <g filter="url(#rf1)">
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(6 50 50)"/>
+    <ellipse cx="50" cy="30" rx="14" ry="22" fill="#F4A6C6" opacity="0.55" transform="rotate(78 50 50)"/>
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(150 50 50)"/>
+    <ellipse cx="50" cy="30" rx="14" ry="22" fill="#F4A6C6" opacity="0.55" transform="rotate(222 50 50)"/>
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(294 50 50)"/>
+    <circle cx="50" cy="50" r="9" fill="#F7D88A" opacity="0.8"/>
+  </g>
+</svg>
+<svg class="deco" style="top:8px;right:-22px;width:64px;height:42px;opacity:0.85" viewBox="0 0 100 65">
+  <defs><filter id="rn1"><feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="7"/></filter></defs>
+  <g filter="url(#rn1)">
+    <ellipse cx="28" cy="42" rx="24" ry="19" fill="#A8D8E8" opacity="0.45"/>
+    <ellipse cx="55" cy="28" rx="28" ry="24" fill="#A8D8E8" opacity="0.5"/>
+    <ellipse cx="78" cy="44" rx="20" ry="16" fill="#A8D8E8" opacity="0.4"/>
+  </g>
+</svg>
+<svg class="deco" style="bottom:60px;left:6px;width:34px;height:34px;opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rs1"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="11"/><feDisplacementMap in="SourceGraphic" scale="8"/></filter></defs>
+  <path filter="url(#rs1)" d="M50 6 L60 38 L94 38 L66 58 L78 92 L50 70 L22 92 L34 58 L6 38 L40 38 Z" fill="#F7CB7B" opacity="0.6"/>
+</svg>
+<svg class="deco" style="bottom:16px;right:4px;width:40px;height:40px;opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rc1"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="9"/><feDisplacementMap in="SourceGraphic" scale="7"/></filter></defs>
+  <path filter="url(#rc1)" d="M50 88 C-4 52 6 8 30 8 C42 8 50 16 50 26 C50 16 58 8 70 8 C94 8 104 52 50 88 Z" fill="#CBA8E0" opacity="0.55"/>
+</svg>
+
+<div class="container">
+
+  <!-- PORTADA -->
+  <div id="screen-portada" class="screen active">
+    <div class="icon-wrap">🌙</div>
+    <span class="label display">Capítulo 2 · Regalo</span>
+    <h1 class="display">¿Qué tan cansada/o llegaste hoy?</h1>
+    <p class="subtitle">5 preguntas sobre tu día, no sobre el de tu hijo/a. Sin culpa, solo para nombrar cómo llegaste.</p>
+    <button class="btn-primary" onclick="irA('screen-q0')">Empezar</button>
+  </div>
+
+  <!-- PREGUNTAS -->
+  <div id="screen-q0" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:0%"></div></div>
+    <p class="q-num">1 de 5</p>
+    <h2 class="display">¿Pudiste sentarte cinco minutos hoy sin hacer nada?</h2>
+    <div class="options">
+      <button class="opt-btn" onclick="responder(1)">No</button>
+      <button class="opt-btn" onclick="responder(2)">Un poco</button>
+      <button class="opt-btn" onclick="responder(3)">Bastante</button>
+      <button class="opt-btn" onclick="responder(4)">Todo el día</button>
+    </div>
+  </div>
+
+  <div id="screen-q1" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:20%"></div></div>
+    <p class="q-num">2 de 5</p>
+    <h2 class="display">¿Comiste algo hoy parado/a o corriendo, sin pausa real?</h2>
+    <div class="options">
+      <button class="opt-btn" onclick="responder(1)">No</button>
+      <button class="opt-btn" onclick="responder(2)">Un poco</button>
+      <button class="opt-btn" onclick="responder(3)">Bastante</button>
+      <button class="opt-btn" onclick="responder(4)">Todo el día</button>
+    </div>
+  </div>
+
+  <div id="screen-q2" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:40%"></div></div>
+    <p class="q-num">3 de 5</p>
+    <h2 class="display">¿El celular te dio un respiro en algún momento del día?</h2>
+    <div class="options">
+      <button class="opt-btn" onclick="responder(1)">No</button>
+      <button class="opt-btn" onclick="responder(2)">Un poco</button>
+      <button class="opt-btn" onclick="responder(3)">Bastante</button>
+      <button class="opt-btn" onclick="responder(4)">Todo el día</button>
+    </div>
+  </div>
+
+  <div id="screen-q3" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:60%"></div></div>
+    <p class="q-num">4 de 5</p>
+    <h2 class="display">¿Te costó estar presente aunque querías estarlo?</h2>
+    <div class="options">
+      <button class="opt-btn" onclick="responder(1)">No</button>
+      <button class="opt-btn" onclick="responder(2)">Un poco</button>
+      <button class="opt-btn" onclick="responder(3)">Bastante</button>
+      <button class="opt-btn" onclick="responder(4)">Todo el día</button>
+    </div>
+  </div>
+
+  <div id="screen-q4" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:80%"></div></div>
+    <p class="q-num">5 de 5</p>
+    <h2 class="display">¿Sentiste que el día te alcanzó, más que vos a él?</h2>
+    <div class="options">
+      <button class="opt-btn" onclick="responder(1)">No</button>
+      <button class="opt-btn" onclick="responder(2)">Un poco</button>
+      <button class="opt-btn" onclick="responder(3)">Bastante</button>
+      <button class="opt-btn" onclick="responder(4)">Todo el día</button>
+    </div>
+  </div>
+
+  <!-- RESULTADO -->
+  <div id="screen-resultado" class="screen">
+    <span class="label display">Hoy, en una frase</span>
+    <div class="resultado-card">
+      <p class="resultado-titulo">Tu resultado</p>
+      <h2 class="display resultado-nombre" id="resultado-nombre"></h2>
+      <p class="resultado-texto" id="resultado-texto"></p>
+    </div>
+    <button class="btn-secondary" onclick="reiniciar()">↺ Volver a hacerlo</button>
+  </div>
+
+</div>
+
+<script>
+  const respuestas = [];
+
+  function irA(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function responder(valor) {
+    respuestas.push(valor);
+    const idx = respuestas.length - 1;
+    if (idx < 4) {
+      irA('screen-q' + (idx + 1));
+    } else {
+      mostrarResultado();
+    }
+  }
+
+  function mostrarResultado() {
+    const puntaje = respuestas.reduce((a, b) => a + b, 0);
+    const max = 20;
+    const pct = puntaje / max;
+    let nombre, texto;
+
+    if (pct < 0.4) {
+      nombre = 'Hoy hubo equilibrio real';
+      texto = 'No todos los días son así, y está bien notarlo cuando pasa. Disfrutalo sin culpa — no necesitás justificar un buen día.';
+    } else if (pct < 0.75) {
+      nombre = 'Hoy corriste, pero hubo margen';
+      texto = 'Hubo cansancio real, y también algún respiro. No es un día perfecto ni uno fallado. Es uno de los más comunes — y está bien que así sea.';
+    } else {
+      nombre = 'Hoy corriste en modo supervivencia';
+      texto = 'Si hoy el celular te dio un respiro, no fue una falla tuya como madre o padre. Fue un cuerpo cansado buscando un segundo de pausa. Eso no se cura con culpa, se cura con descanso real cuando puedas conseguirlo.';
+    }
+
+    document.getElementById('resultado-nombre').textContent = nombre;
+    document.getElementById('resultado-nombre').style.color = pct < 0.4 ? '#7A8B6F' : pct < 0.75 ? '#A8763E' : '#6B5D4F';
+    document.getElementById('resultado-texto').textContent = texto;
+    irA('screen-resultado');
+  }
+
+  function reiniciar() {
+    respuestas.length = 0;
+    irA('screen-portada');
+  }
+</script>
+</body>
+</html>

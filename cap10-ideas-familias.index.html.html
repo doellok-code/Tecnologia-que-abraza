@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ideas concretas para familias</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #FBE4EC 0%, #FDF1DD 35%, #E3F1F7 70%, #EFE4F5 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 32px 20px; position: relative; overflow: hidden;
+    font-family: 'Source Sans 3', sans-serif;
+  }
+  .display { font-family: 'Fraunces', serif; }
+  .fondo {
+    position: fixed; inset: 0; pointer-events: none; opacity: 0.45; filter: blur(0.3px);
+    background-image:
+      radial-gradient(ellipse 180px 140px at 6% 10%, #F4A6C6 0%, transparent 70%),
+      radial-gradient(ellipse 160px 130px at 92% 8%, #A8D8E8 0%, transparent 70%),
+      radial-gradient(ellipse 170px 140px at 8% 92%, #F7CB7B 0%, transparent 70%),
+      radial-gradient(ellipse 180px 140px at 94% 90%, #CBA8E0 0%, transparent 70%);
+  }
+  .deco { position: fixed; pointer-events: none; }
+  .container { max-width: 430px; width: 100%; position: relative; z-index: 1; }
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadein 0.35s ease; }
+  @keyframes fadein { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  .label { color: #D9678C; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; margin-bottom: 8px; display: block; text-align: center; }
+  h1 { color: #5B4B6E; font-size: 25px; font-weight: 600; margin-bottom: 16px; line-height: 1.25; text-align: center; }
+  h2 { color: #5B4B6E; font-size: 20px; font-weight: 600; line-height: 1.4; margin-bottom: 24px; }
+  .subtitle { color: #7C7191; font-size: 14.5px; line-height: 1.6; margin-bottom: 24px; text-align: center; }
+  .icon-wrap { text-align: center; font-size: 36px; margin-bottom: 14px; }
+
+  /* Menú */
+  .menu-card {
+    background: #FFFCFA; border-radius: 16px; padding: 20px;
+    margin-bottom: 12px; cursor: pointer; border: 2px solid transparent;
+    display: flex; align-items: center; gap: 16px;
+    transition: border-color 0.15s, transform 0.1s;
+    box-shadow: 0 1px 8px rgba(91,75,110,0.08);
+  }
+  .menu-card:hover { border-color: #D9678C; }
+  .menu-card:active { transform: scale(0.98); }
+  .menu-icon { font-size: 30px; flex-shrink: 0; }
+  .menu-titulo { color: #5B4B6E; font-size: 16px; font-weight: 600; font-family: 'Fraunces', serif; margin-bottom: 3px; }
+  .menu-desc { color: #7C7191; font-size: 13px; line-height: 1.4; }
+
+  /* Botones */
+  .btn-primary { padding: 15px; border-radius: 13px; border: none; background: #5B4B6E; color: #FFFCFA; font-size: 15.5px; font-weight: 600; cursor: pointer; font-family: 'Source Sans 3', sans-serif; width: 100%; transition: transform 0.15s; margin-bottom: 10px; }
+  .btn-primary:active { transform: scale(0.97); }
+  .btn-secondary { width: 100%; padding: 13px; border-radius: 12px; border: 2px solid #E8D9E8; background: transparent; color: #5B4B6E; font-size: 14.5px; font-weight: 600; cursor: pointer; font-family: 'Source Sans 3', sans-serif; transition: transform 0.15s; margin-bottom: 10px; }
+  .btn-secondary:active { transform: scale(0.97); }
+  .btn-volver { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 13px; border-radius: 12px; border: 1px solid #E8D9E8; background: transparent; color: #7C7191; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Source Sans 3', sans-serif; margin-top: 4px; transition: transform 0.15s; }
+  .btn-volver:active { transform: scale(0.97); }
+
+  /* Reflexión semanal */
+  .progress-wrap { height: 4px; background: #F0E0EC; border-radius: 4px; margin-bottom: 22px; overflow: hidden; }
+  .progress-bar { height: 100%; background: #D9678C; border-radius: 4px; transition: width 0.3s ease; }
+  .q-num { color: #D9678C; font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+  .opciones { display: flex; flex-direction: column; gap: 10px; }
+  .opt-btn { padding: 15px 18px; border-radius: 12px; border: 2px solid #E8D9E8; background: #FFFCFA; color: #5B4B6E; font-size: 15px; font-weight: 500; cursor: pointer; font-family: 'Source Sans 3', sans-serif; text-align: left; transition: border-color 0.15s, transform 0.1s; }
+  .opt-btn:hover { border-color: #D9678C; }
+  .opt-btn:active { transform: scale(0.98); }
+
+  /* Resultado reflexión */
+  .resultado-card { background: #FFFCFA; border-radius: 18px; padding: 24px; margin-bottom: 18px; box-shadow: 0 1px 10px rgba(91,75,110,0.09); }
+  .resultado-label { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: #D9678C; margin-bottom: 10px; }
+  .resultado-texto { font-size: 15px; line-height: 1.65; color: #6B5D7D; }
+
+  /* Constructor momentos */
+  .selector-grupo { margin-bottom: 20px; }
+  .selector-label { color: #D9678C; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; display: block; }
+  select { width: 100%; padding: 13px 16px; border-radius: 12px; border: 2px solid #E8D9E8; background: #FFFCFA; color: #5B4B6E; font-size: 15px; font-family: 'Source Sans 3', sans-serif; outline: none; appearance: none; cursor: pointer; }
+  select:focus { border-color: #D9678C; }
+
+  /* Tarjeta momento */
+  .momento-card { background: #FFFCFA; border-radius: 18px; padding: 26px 24px; margin-bottom: 18px; box-shadow: 0 2px 16px rgba(91,75,110,0.1); text-align: center; border-top: 5px solid #F4A6C6; display: none; }
+  .momento-tag { color: #D9678C; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; display: block; }
+  .momento-texto { color: #5B4B6E; font-size: 20px; font-weight: 600; line-height: 1.45; font-family: 'Fraunces', serif; margin-bottom: 10px; }
+  .momento-nota { color: #7C7191; font-size: 13px; font-style: italic; }
+
+  /* Sobre sorpresa */
+  .sobre-wrap { text-align: center; margin-bottom: 24px; }
+  .sobre {
+    width: 180px; height: 130px; margin: 0 auto 20px;
+    position: relative; cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .sobre:active { transform: scale(0.96); }
+  .sobre-body {
+    width: 100%; height: 100%; border-radius: 12px;
+    background: linear-gradient(135deg, #F4A6C6, #CBA8E0);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 16px rgba(91,75,110,0.2);
+    font-size: 48px;
+    transition: transform 0.4s ease;
+  }
+  .sobre.abierto .sobre-body { transform: rotateX(30deg) scale(0.9); opacity: 0.7; }
+  .sorpresa-card { background: #FFFCFA; border-radius: 18px; padding: 28px 24px; margin-bottom: 20px; box-shadow: 0 2px 20px rgba(91,75,110,0.12); text-align: center; display: none; animation: popout 0.4s ease; }
+  @keyframes popout { from { opacity:0; transform:scale(0.85) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
+  .sorpresa-emoji { font-size: 36px; margin-bottom: 12px; display: block; }
+  .sorpresa-texto { color: #5B4B6E; font-size: 18px; font-weight: 600; line-height: 1.5; font-family: 'Fraunces', serif; }
+  .sobre-instruccion { color: #7C7191; font-size: 14px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<div class="fondo"></div>
+
+<!-- Decorativos acuarela -->
+<svg class="deco" style="top:-20px;left:-16px;width:54px;height:54px;transform:rotate(-12deg);opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rf1"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="6"/></filter></defs>
+  <g filter="url(#rf1)">
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(6 50 50)"/>
+    <ellipse cx="50" cy="30" rx="14" ry="22" fill="#F4A6C6" opacity="0.55" transform="rotate(78 50 50)"/>
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(150 50 50)"/>
+    <ellipse cx="50" cy="30" rx="14" ry="22" fill="#F4A6C6" opacity="0.55" transform="rotate(222 50 50)"/>
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(294 50 50)"/>
+    <circle cx="50" cy="50" r="9" fill="#F7D88A" opacity="0.8"/>
+  </g>
+</svg>
+<svg class="deco" style="top:8px;right:-22px;width:64px;height:42px;opacity:0.85" viewBox="0 0 100 65">
+  <defs><filter id="rn1"><feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="7"/></filter></defs>
+  <g filter="url(#rn1)">
+    <ellipse cx="28" cy="42" rx="24" ry="19" fill="#A8D8E8" opacity="0.45"/>
+    <ellipse cx="55" cy="28" rx="28" ry="24" fill="#A8D8E8" opacity="0.5"/>
+    <ellipse cx="78" cy="44" rx="20" ry="16" fill="#A8D8E8" opacity="0.4"/>
+  </g>
+</svg>
+<svg class="deco" style="bottom:60px;left:6px;width:34px;height:34px;opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rs1"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="11"/><feDisplacementMap in="SourceGraphic" scale="8"/></filter></defs>
+  <path filter="url(#rs1)" d="M50 6 L60 38 L94 38 L66 58 L78 92 L50 70 L22 92 L34 58 L6 38 L40 38 Z" fill="#F7CB7B" opacity="0.6"/>
+</svg>
+<svg class="deco" style="bottom:16px;right:4px;width:40px;height:40px;opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rc1"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="9"/><feDisplacementMap in="SourceGraphic" scale="7"/></filter></defs>
+  <path filter="url(#rc1)" d="M50 88 C-4 52 6 8 30 8 C42 8 50 16 50 26 C50 16 58 8 70 8 C94 8 104 52 50 88 Z" fill="#CBA8E0" opacity="0.55"/>
+</svg>
+
+<div class="container">
+
+  <!-- MENÚ PRINCIPAL -->
+  <div id="screen-menu" class="screen active">
+    <div class="icon-wrap">👨‍👩‍👧</div>
+    <span class="label display">Capítulo 10 · Regalo</span>
+    <h1 class="display">Ideas concretas para familias</h1>
+    <p class="subtitle">Tres herramientas para la vida cotidiana. Sin perfección, con presencia.</p>
+    <div class="menu-card" onclick="irA('screen-ref-q0')">
+      <span class="menu-icon">📅</span>
+      <div>
+        <p class="menu-titulo">Reflexión semanal</p>
+        <p class="menu-desc">¿Cómo estuvo esta semana con las pantallas? Sin culpa, solo para mirar.</p>
+      </div>
+    </div>
+    <div class="menu-card" onclick="irA('screen-constructor')">
+      <span class="menu-icon">⏰</span>
+      <div>
+        <p class="menu-titulo">Constructor de momentos sin pantalla</p>
+        <p class="menu-desc">Armá tu propio momento para esta semana en tres pasos.</p>
+      </div>
+    </div>
+    <div class="menu-card" onclick="irA('screen-sobre')">
+      <span class="menu-icon">✉️</span>
+      <div>
+        <p class="menu-titulo">Sobre sorpresa del aburrimiento</p>
+        <p class="menu-desc">Abrí el sobre y encontrá una idea para cuando pide pantalla.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== REFLEXIÓN SEMANAL ==================== -->
+  <div id="screen-ref-q0" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:0%"></div></div>
+    <p class="q-num">1 de 5 · Reflexión semanal</p>
+    <h2 class="display">¿Hubo algún momento del día donde la pantalla apareció casi siempre esta semana?</h2>
+    <div class="opciones">
+      <button class="opt-btn" onclick="refResponder('momento_fijo','si')">Sí</button>
+      <button class="opt-btn" onclick="refResponder('momento_fijo','no')">No</button>
+      <button class="opt-btn" onclick="refResponder('momento_fijo','duda')">No estoy seguro/a</button>
+    </div>
+    <button class="btn-volver" onclick="irA('screen-menu')">← Volver al menú</button>
+  </div>
+
+  <div id="screen-ref-q1" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:20%"></div></div>
+    <p class="q-num">2 de 5 · Reflexión semanal</p>
+    <h2 class="display">¿Alguna vez la pantalla reemplazó una charla o un juego que ibas a tener?</h2>
+    <div class="opciones">
+      <button class="opt-btn" onclick="refResponder('reemplazo','si')">Sí</button>
+      <button class="opt-btn" onclick="refResponder('reemplazo','no')">No</button>
+      <button class="opt-btn" onclick="refResponder('reemplazo','duda')">No estoy seguro/a</button>
+    </div>
+    <button class="btn-volver" onclick="irA('screen-ref-q0')">← Volver</button>
+  </div>
+
+  <div id="screen-ref-q2" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:40%"></div></div>
+    <p class="q-num">3 de 5 · Reflexión semanal</p>
+    <h2 class="display">¿Hubo un momento libre de pantallas que recordás con cariño esta semana?</h2>
+    <div class="opciones">
+      <button class="opt-btn" onclick="refResponder('momento_lindo','si')">Sí</button>
+      <button class="opt-btn" onclick="refResponder('momento_lindo','no')">No</button>
+      <button class="opt-btn" onclick="refResponder('momento_lindo','duda')">No estoy seguro/a</button>
+    </div>
+    <button class="btn-volver" onclick="irA('screen-ref-q1')">← Volver</button>
+  </div>
+
+  <div id="screen-ref-q3" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:60%"></div></div>
+    <p class="q-num">4 de 5 · Reflexión semanal</p>
+    <h2 class="display">¿Casi siempre había un adulto cerca cuando usaba pantallas?</h2>
+    <div class="opciones">
+      <button class="opt-btn" onclick="refResponder('adulto_cerca','si')">Sí</button>
+      <button class="opt-btn" onclick="refResponder('adulto_cerca','no')">No</button>
+      <button class="opt-btn" onclick="refResponder('adulto_cerca','duda')">No estoy seguro/a</button>
+    </div>
+    <button class="btn-volver" onclick="irA('screen-ref-q2')">← Volver</button>
+  </div>
+
+  <div id="screen-ref-q4" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:80%"></div></div>
+    <p class="q-num">5 de 5 · Reflexión semanal</p>
+    <h2 class="display">¿Te gustaría cambiar algo de esto la semana que viene?</h2>
+    <div class="opciones">
+      <button class="opt-btn" onclick="refResponder('quiere_cambiar','si')">Sí</button>
+      <button class="opt-btn" onclick="refResponder('quiere_cambiar','no')">No</button>
+      <button class="opt-btn" onclick="refResponder('quiere_cambiar','duda')">No estoy seguro/a</button>
+    </div>
+    <button class="btn-volver" onclick="irA('screen-ref-q3')">← Volver</button>
+  </div>
+
+  <div id="screen-ref-resultado" class="screen">
+    <span class="label display">Una idea para esta semana</span>
+    <div class="resultado-card">
+      <p class="resultado-label">💡 Para la semana que viene</p>
+      <p class="resultado-texto" id="ref-sugerencia"></p>
+    </div>
+    <button class="btn-primary" onclick="irA('screen-menu')">Volver al menú</button>
+    <button class="btn-volver" onclick="reiniciarRef()">↺ Volver a hacerlo</button>
+  </div>
+
+  <!-- ==================== CONSTRUCTOR DE MOMENTOS ==================== -->
+  <div id="screen-constructor" class="screen">
+    <span class="label display">Constructor de momentos</span>
+    <h2 class="display" style="text-align:center;">Armá tu momento sin pantalla para esta semana</h2>
+
+    <div class="selector-grupo">
+      <span class="selector-label">¿Cuándo?</span>
+      <select id="sel-cuando">
+        <option value="">Elegí un momento del día</option>
+        <option>A la mañana antes del jardín</option>
+        <option>A la hora del almuerzo</option>
+        <option>A la tarde cuando llegan a casa</option>
+        <option>Antes de dormir</option>
+      </select>
+    </div>
+
+    <div class="selector-grupo">
+      <span class="selector-label">¿Cuánto tiempo?</span>
+      <select id="sel-cuanto">
+        <option value="">Elegí una duración</option>
+        <option>10 minutos</option>
+        <option>20 minutos</option>
+        <option>Media hora</option>
+      </select>
+    </div>
+
+    <div class="selector-grupo">
+      <span class="selector-label">¿Qué hacemos?</span>
+      <select id="sel-que">
+        <option value="">Elegí una actividad</option>
+        <option>Canciones y música juntos</option>
+        <option>Cuento en voz alta</option>
+        <option>Juego libre en el piso</option>
+        <option>Juego de construcción</option>
+        <option>Salir a caminar o al patio</option>
+        <option>Dibujar o pintar juntos</option>
+        <option>Buscar bichos, hojas o piedras y armar una colección</option>
+        <option>Regar las plantas y observar cómo crecen</option>
+        <option>Mirar el cielo y nombrar las nubes</option>
+        <option>Juntar elementos naturales y hacer un collage</option>
+        <option>Preparar algo simple juntos: amasar, mezclar, exprimir</option>
+        <option>Decorar galletitas o frutas con lo que haya disponible</option>
+        <option>Hacer jugo exprimiendo frutas y probarlo juntos</option>
+        <option>Armar un teatro de sombras con las manos y una linterna</option>
+        <option>Construir algo con cajas, rollos o materiales descartables</option>
+        <option>Inventar un cuento entre todos, cada uno agrega una parte</option>
+        <option>Hacer música con objetos: golpear, sacudir, soplar</option>
+      </select>
+    </div>
+
+    <div class="momento-card" id="momento-card">
+      <span class="momento-tag">📌 Nuestro momento de esta semana</span>
+      <p class="momento-texto display" id="momento-texto"></p>
+      <p class="momento-nota">Podés capturar esta pantalla y pegarla en la heladera.</p>
+    </div>
+
+    <button class="btn-primary" onclick="construirMomento()">Crear mi momento</button>
+    <button class="btn-volver" onclick="irA('screen-menu')">← Volver al menú</button>
+  </div>
+
+  <!-- ==================== SOBRE SORPRESA ==================== -->
+  <div id="screen-sobre" class="screen">
+    <span class="label display">Sobre sorpresa</span>
+    <h2 class="display" style="text-align:center;">¿Pide pantalla y no sabés qué ofrecer?</h2>
+    <p class="subtitle">Tocá el sobre y aparece una idea con lo que tenés a mano.</p>
+
+    <div class="sobre-wrap">
+      <div class="sobre" id="sobre" onclick="abrirSobre()">
+        <div class="sobre-body">✉️</div>
+      </div>
+      <p class="sobre-instruccion" id="sobre-instruccion">Tocá el sobre para abrirlo</p>
+    </div>
+
+    <div class="sorpresa-card" id="sorpresa-card">
+      <span class="sorpresa-emoji" id="sorpresa-emoji"></span>
+      <p class="sorpresa-texto display" id="sorpresa-texto"></p>
+    </div>
+
+    <button class="btn-primary" id="btn-otro-sobre" onclick="abrirSobre()" style="display:none">✉️ Abrir otro sobre</button>
+    <button class="btn-volver" onclick="irA('screen-menu')">← Volver al menú</button>
+  </div>
+
+</div>
+
+<script>
+  function irA(id) {
+    document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  // ---- REFLEXIÓN SEMANAL ----
+  var refResp = {};
+  var refPaso = 0;
+  var refClaves = ['momento_fijo','reemplazo','momento_lindo','adulto_cerca','quiere_cambiar'];
+
+  function refResponder(clave, valor) {
+    refResp[clave] = valor;
+    refPaso++;
+    if (refPaso < 5) { irA('screen-ref-q' + refPaso); }
+    else { mostrarRefResultado(); }
+  }
+
+  function mostrarRefResultado() {
+    var texto;
+    if (refResp.reemplazo === 'si') {
+      texto = 'La próxima vez que pida la pantalla, proponé algo concreto como alternativa antes de decir que no. No se trata de prohibir, sino de tener algo a mano para ofrecer en ese momento.';
+    } else if (refResp.momento_fijo === 'si') {
+      texto = 'Elegí un momento del día para apagar todas las pantallas durante 30 minutos y observá qué pasa. No hace falta que sea siempre el mismo momento, alcanza con probarlo una vez.';
+    } else if (refResp.adulto_cerca === 'no') {
+      texto = 'Intentá compartir al menos un momento digital por semana: mirar algo juntos, sacar fotos, escuchar música. La pantalla acompañada cambia de sentido.';
+    } else {
+      texto = 'No hace falta cambiar algo solo porque sí. Si esta semana sintieron equilibrio, vale la pena sostenerlo, no necesariamente sumar algo nuevo.';
+    }
+    document.getElementById('ref-sugerencia').textContent = texto;
+    irA('screen-ref-resultado');
+  }
+
+  function reiniciarRef() { refResp = {}; refPaso = 0; irA('screen-ref-q0'); }
+
+  // ---- CONSTRUCTOR DE MOMENTOS ----
+  function construirMomento() {
+    var cuando = document.getElementById('sel-cuando').value;
+    var cuanto = document.getElementById('sel-cuanto').value;
+    var que = document.getElementById('sel-que').value;
+    if (!cuando || !cuanto || !que) {
+      alert('Completá las tres opciones para armar tu momento.');
+      return;
+    }
+    var texto = cuando + ', ' + cuanto + ' de: ' + que.toLowerCase() + '.';
+    document.getElementById('momento-texto').textContent = texto;
+    document.getElementById('momento-card').style.display = 'block';
+    window.scrollTo(0, 999);
+  }
+
+  // ---- SOBRE SORPRESA ----
+  var sorpresas = [
+    { emoji: "📜", texto: "Un rollo de papel y cinta. ¿Qué inventan?" },
+    { emoji: "🥄", texto: "Tres tapitas de botella y una cuchara. ¿A qué juegan?" },
+    { emoji: "🛖", texto: "Una sábana y dos sillas. ¿Qué construyen?" },
+    { emoji: "🔦", texto: "Una linterna y un ambiente oscuro. ¿Qué descubren?" },
+    { emoji: "🎯", texto: "Papel arrugado y una canasta. ¿A qué distancia pueden encestar?" },
+    { emoji: "📦", texto: "Una caja grande vacía. ¿En qué la convierten?" },
+    { emoji: "🫙", texto: "Harina, agua y sal. ¿Qué modelan?" },
+    { emoji: "🪨", texto: "Piedritas y pintura. ¿Qué crean?" },
+    { emoji: "🛏️", texto: "Una manta y almohadones. ¿Qué arman?" },
+    { emoji: "🍂", texto: "Hojas secas y pegamento. ¿Qué construyen?" }
+  ];
+  var ultimaSorpresa = -1;
+  var sobreAbierto = false;
+
+  function abrirSobre() {
+    var idx;
+    do { idx = Math.floor(Math.random() * sorpresas.length); } while (idx === ultimaSorpresa && sorpresas.length > 1);
+    ultimaSorpresa = idx;
+
+    var sobre = document.getElementById('sobre');
+    sobre.classList.add('abierto');
+
+    setTimeout(function() {
+      var s = sorpresas[idx];
+      document.getElementById('sorpresa-emoji').textContent = s.emoji;
+      document.getElementById('sorpresa-texto').textContent = s.texto;
+      document.getElementById('sorpresa-card').style.display = 'block';
+      document.getElementById('btn-otro-sobre').style.display = 'block';
+      document.getElementById('sobre-instruccion').textContent = 'Tocá "Abrir otro sobre" para una nueva idea';
+      sobre.classList.remove('abierto');
+    }, 400);
+  }
+</script>
+</body>
+</html>

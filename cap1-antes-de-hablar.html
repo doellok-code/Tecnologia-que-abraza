@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¿Qué llegó primero: la pantalla o las palabras?</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #FBE4EC 0%, #FDF1DD 35%, #E3F1F7 70%, #EFE4F5 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 32px 20px; position: relative; overflow: hidden;
+    font-family: 'Source Sans 3', sans-serif;
+  }
+  .display { font-family: 'Fraunces', serif; }
+  .fondo {
+    position: fixed; inset: 0; pointer-events: none; opacity: 0.45; filter: blur(0.3px);
+    background-image:
+      radial-gradient(ellipse 180px 140px at 6% 10%, #F4A6C6 0%, transparent 70%),
+      radial-gradient(ellipse 160px 130px at 92% 8%, #A8D8E8 0%, transparent 70%),
+      radial-gradient(ellipse 170px 140px at 8% 92%, #F7CB7B 0%, transparent 70%),
+      radial-gradient(ellipse 180px 140px at 94% 90%, #CBA8E0 0%, transparent 70%);
+  }
+  .deco { position: fixed; pointer-events: none; }
+  .container { max-width: 430px; width: 100%; position: relative; z-index: 1; }
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadein 0.35s ease; }
+  @keyframes fadein { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  .label { color: #D9678C; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; margin-bottom: 8px; display: block; }
+  h1 { color: #5B4B6E; font-size: 26px; font-weight: 600; margin-bottom: 14px; line-height: 1.25; }
+  h2 { color: #5B4B6E; font-size: 22px; font-weight: 600; line-height: 1.35; margin-bottom: 24px; }
+  .subtitle { color: #7C7191; font-size: 15px; line-height: 1.6; margin-bottom: 28px; }
+  .btn-primary {
+    padding: 16px 32px; border-radius: 14px; border: none;
+    background: #5B4B6E; color: #FFFCFA; font-size: 16px; font-weight: 600;
+    cursor: pointer; font-family: 'Source Sans 3', sans-serif; width: 100%;
+  }
+  .btn-secondary {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #E8D9E8;
+    background: transparent; color: #5B4B6E; font-size: 14.5px; font-weight: 600;
+    cursor: pointer; font-family: 'Source Sans 3', sans-serif; margin-top: 0;
+  }
+  .progress-wrap { height: 4px; background: #F0E0EC; border-radius: 4px; margin-bottom: 24px; overflow: hidden; }
+  .progress-bar { height: 100%; background: #D9678C; border-radius: 4px; transition: width 0.3s ease; }
+  .q-num { color: #D9678C; font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt-btn {
+    padding: 15px 20px; border-radius: 12px; border: 2px solid #E8D9E8;
+    background: #FFFCFA; color: #5B4B6E; font-size: 15px; font-weight: 500;
+    cursor: pointer; font-family: 'Source Sans 3', sans-serif; text-align: left;
+    transition: border-color 0.15s, transform 0.1s;
+  }
+  .opt-btn:hover { border-color: #D9678C; transform: scale(1.01); }
+  .timeline { position: relative; padding-left: 32px; margin-bottom: 20px; }
+  .timeline-line {
+    position: absolute; left: 10px; top: 8px; bottom: 8px; width: 3px;
+    background: linear-gradient(to bottom, #F4A6C6, #A8D8E8, #F7CB7B, #CBA8E0);
+    border-radius: 4px;
+  }
+  .timeline-item { position: relative; margin-bottom: 14px; }
+  .timeline-dot {
+    position: absolute; left: -26px; top: 6px; width: 16px; height: 16px;
+    border-radius: 50%; border: 3px solid #FFFCFA; box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+  .timeline-card { background: #FFFCFA; border-radius: 12px; padding: 12px 16px; box-shadow: 0 1px 6px rgba(91,75,110,0.07); }
+  .timeline-sublabel { color: #7C7191; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+  .timeline-main { color: #5B4B6E; font-size: 14.5px; font-weight: 600; }
+  .reflexion-card { background: #FFFCFA; border-radius: 16px; padding: 20px; margin-bottom: 22px; box-shadow: 0 1px 8px rgba(91,75,110,0.08); }
+  .reflexion-titulo { color: #D9678C; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .reflexion-texto { color: #6B5D7D; font-size: 15px; line-height: 1.65; }
+  .relative { position: relative; }
+  .text-center { text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="fondo"></div>
+
+<!-- Decorativos SVG acuarela fijos -->
+<svg class="deco" style="top:-20px;left:-16px;width:52px;height:52px;transform:rotate(-12deg);opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rf1"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="6"/></filter></defs>
+  <g filter="url(#rf1)">
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(6 50 50)"/>
+    <ellipse cx="50" cy="30" rx="14" ry="22" fill="#F4A6C6" opacity="0.55" transform="rotate(78 50 50)"/>
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(150 50 50)"/>
+    <ellipse cx="50" cy="30" rx="14" ry="22" fill="#F4A6C6" opacity="0.55" transform="rotate(222 50 50)"/>
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(294 50 50)"/>
+    <circle cx="50" cy="50" r="9" fill="#F7D88A" opacity="0.8"/>
+  </g>
+</svg>
+<svg class="deco" style="top:8px;right:-22px;width:62px;height:40px;opacity:0.85" viewBox="0 0 100 65">
+  <defs><filter id="rn1"><feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="7"/></filter></defs>
+  <g filter="url(#rn1)">
+    <ellipse cx="28" cy="42" rx="24" ry="19" fill="#A8D8E8" opacity="0.45"/>
+    <ellipse cx="55" cy="28" rx="28" ry="24" fill="#A8D8E8" opacity="0.5"/>
+    <ellipse cx="78" cy="44" rx="20" ry="16" fill="#A8D8E8" opacity="0.4"/>
+  </g>
+</svg>
+<svg class="deco" style="bottom:56px;left:6px;width:32px;height:32px;opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rs1"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="11"/><feDisplacementMap in="SourceGraphic" scale="8"/></filter></defs>
+  <path filter="url(#rs1)" d="M50 6 L60 38 L94 38 L66 58 L78 92 L50 70 L22 92 L34 58 L6 38 L40 38 Z" fill="#F7CB7B" opacity="0.6"/>
+</svg>
+<svg class="deco" style="bottom:16px;right:4px;width:38px;height:38px;opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rc1"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="9"/><feDisplacementMap in="SourceGraphic" scale="7"/></filter></defs>
+  <path filter="url(#rc1)" d="M50 88 C-4 52 6 8 30 8 C42 8 50 16 50 26 C50 16 58 8 70 8 C94 8 104 52 50 88 Z" fill="#CBA8E0" opacity="0.55"/>
+</svg>
+
+<div class="container">
+
+  <!-- PORTADA -->
+  <div id="screen-portada" class="screen active text-center">
+    <span class="label display">Capítulo 1 · Regalo</span>
+    <h1 class="display">¿Qué llegó primero: la pantalla o las palabras?</h1>
+    <p class="subtitle">4 preguntas sobre los primeros hitos de tu hijo/a. El resultado muestra su cronología en el orden en que realmente ocurrió.</p>
+    <button class="btn-primary" onclick="irA('screen-q0')">Empezar</button>
+  </div>
+
+  <!-- PREGUNTAS -->
+  <div id="screen-q0" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:0%"></div></div>
+    <p class="q-num">1 de 4</p>
+    <h2 class="display">💬 ¿Cuándo dijo su primera palabra clara?</h2>
+    <div class="options">
+      <button class="opt-btn" onclick="responder('palabra',9)">Antes de los 10 meses</button>
+      <button class="opt-btn" onclick="responder('palabra',11)">Entre los 10 y los 12 meses</button>
+      <button class="opt-btn" onclick="responder('palabra',15)">Entre los 12 y los 18 meses</button>
+      <button class="opt-btn" onclick="responder('palabra',20)">Después de los 18 meses</button>
+    </div>
+  </div>
+
+  <div id="screen-q1" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:25%"></div></div>
+    <p class="q-num">2 de 4</p>
+    <h2 class="display">📱 ¿Cuándo vio una pantalla por primera vez?</h2>
+    <div class="options">
+      <button class="opt-btn" onclick="responder('pantalla',2)">En los primeros 3 meses</button>
+      <button class="opt-btn" onclick="responder('pantalla',4)">Entre los 3 y los 6 meses</button>
+      <button class="opt-btn" onclick="responder('pantalla',9)">Entre los 6 y los 12 meses</button>
+      <button class="opt-btn" onclick="responder('pantalla',14)">Después del año</button>
+    </div>
+  </div>
+
+  <div id="screen-q2" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:50%"></div></div>
+    <p class="q-num">3 de 4</p>
+    <h2 class="display">🤲 ¿Cuándo sostuvo un objeto por primera vez?</h2>
+    <div class="options">
+      <button class="opt-btn" onclick="responder('sostuvo',2)">Antes de los 3 meses</button>
+      <button class="opt-btn" onclick="responder('sostuvo',4)">Entre los 3 y los 5 meses</button>
+      <button class="opt-btn" onclick="responder('sostuvo',6)">Entre los 5 y los 7 meses</button>
+      <button class="opt-btn" onclick="responder('sostuvo',8)">Después de los 7 meses</button>
+    </div>
+  </div>
+
+  <div id="screen-q3" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:75%"></div></div>
+    <p class="q-num">4 de 4</p>
+    <h2 class="display">☝️ ¿Cuándo deslizó el dedo en una pantalla por primera vez?</h2>
+    <div class="options">
+      <button class="opt-btn" onclick="responder('deslizo',4)">Antes de los 6 meses</button>
+      <button class="opt-btn" onclick="responder('deslizo',9)">Entre los 6 y los 12 meses</button>
+      <button class="opt-btn" onclick="responder('deslizo',15)">Entre los 12 y los 18 meses</button>
+      <button class="opt-btn" onclick="responder('deslizo',20)">Después de los 18 meses</button>
+    </div>
+  </div>
+
+  <!-- RESULTADO -->
+  <div id="screen-resultado" class="screen">
+    <span class="label display text-center" style="display:block;text-align:center;">La cronología de tu hijo/a</span>
+    <div class="timeline" id="timeline-container">
+      <div class="timeline-line"></div>
+    </div>
+    <div class="reflexion-card">
+      <p class="reflexion-titulo" id="reflexion-titulo"></p>
+      <p class="reflexion-texto" id="reflexion-texto"></p>
+    </div>
+    <button class="btn-secondary" onclick="reiniciar()">↺ Volver a empezar</button>
+  </div>
+
+</div>
+
+<script>
+  const respuestas = {};
+  const orden = ['q0','q1','q2','q3'];
+
+  function irA(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  function responder(clave, meses) {
+    respuestas[clave] = meses;
+    const idx = orden.indexOf('screen-' + Object.keys(respuestas).length.toString().replace(/\d/, m => {
+      const map = {palabra:'q0', pantalla:'q1', sostuvo:'q2', deslizo:'q3'};
+      return '';
+    }));
+
+    const claves = ['palabra','pantalla','sostuvo','deslizo'];
+    const actual = claves.indexOf(clave);
+    if (actual < 3) {
+      irA('screen-q' + (actual + 1));
+    } else {
+      mostrarResultado();
+    }
+  }
+
+  function labelMeses(m) {
+    if (m <= 2) return 'antes de los 3 meses';
+    if (m <= 4) return 'entre los 3 y 6 meses';
+    if (m <= 9) return 'entre los 6 y 12 meses';
+    if (m <= 14) return 'después del año';
+    if (m <= 15) return 'entre los 12 y 18 meses';
+    return 'después de los 18 meses';
+  }
+
+  function mostrarResultado() {
+    const hitos = [
+      { emoji:'🤲', label:'Sostuvo un objeto', meses: respuestas.sostuvo, color:'#F7CB7B' },
+      { emoji:'📱', label:'Vio una pantalla', meses: respuestas.pantalla, color:'#A8D8E8' },
+      { emoji:'☝️', label:'Deslizó el dedo', meses: respuestas.deslizo, color:'#CBA8E0' },
+      { emoji:'💬', label:'Primera palabra', meses: respuestas.palabra, color:'#F4A6C6' },
+    ].sort((a,b) => a.meses - b.meses);
+
+    const container = document.getElementById('timeline-container');
+    // limpiar items anteriores (mantener la línea)
+    Array.from(container.children).forEach(c => { if (!c.classList.contains('timeline-line')) c.remove(); });
+
+    hitos.forEach(h => {
+      const item = document.createElement('div');
+      item.className = 'timeline-item';
+      item.innerHTML = `
+        <div class="timeline-dot" style="background:${h.color}"></div>
+        <div class="timeline-card">
+          <p class="timeline-sublabel">${h.emoji} ${labelMeses(h.meses)}</p>
+          <p class="timeline-main">${h.label}</p>
+        </div>`;
+      container.appendChild(item);
+    });
+
+    // reflexión
+    let titulo, texto;
+    if (respuestas.pantalla < respuestas.palabra && respuestas.deslizo < respuestas.palabra) {
+      titulo = 'La pantalla llegó antes que las palabras';
+      texto = 'Tu hijo/a aprendió a deslizar un dedo antes de poder nombrarlo. No es un juicio — es exactamente lo que el capítulo 1 describe: las nuevas infancias habitan otro mundo antes de poder contarlo.';
+    } else if (respuestas.pantalla < respuestas.sostuvo) {
+      titulo = 'Vio una pantalla antes de sostener un objeto';
+      texto = 'La pantalla apareció antes de que pudiera agarrar un juguete. Los dos son gestos de exploración del mundo — pero no son lo mismo. El capítulo 1 invita a observar esa diferencia sin culpa.';
+    } else if (respuestas.palabra < respuestas.pantalla) {
+      titulo = 'Las palabras llegaron antes que la pantalla';
+      texto = 'El lenguaje apareció primero. Eso también dice algo sobre cómo fue construyendo su mundo. El capítulo 1 muestra que no todos los niños de esta generación recorren el mismo camino digital.';
+    } else {
+      titulo = 'Un recorrido singular';
+      texto = 'Cada niño tiene su propia cronología. Lo que el capítulo 1 propone es mirar esa historia con atención — no para evaluarla, sino para entenderla.';
+    }
+
+    document.getElementById('reflexion-titulo').textContent = titulo;
+    document.getElementById('reflexion-texto').textContent = texto;
+    irA('screen-resultado');
+  }
+
+  function reiniciar() {
+    Object.keys(respuestas).forEach(k => delete respuestas[k]);
+    irA('screen-portada');
+  }
+</script>
+</body>
+</html>

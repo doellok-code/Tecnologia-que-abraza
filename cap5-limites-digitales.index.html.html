@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Límites digitales sin violencia</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #FBE4EC 0%, #FDF1DD 35%, #E3F1F7 70%, #EFE4F5 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 32px 20px; position: relative; overflow: hidden;
+    font-family: 'Source Sans 3', sans-serif;
+  }
+  .display { font-family: 'Fraunces', serif; }
+  .fondo {
+    position: fixed; inset: 0; pointer-events: none; opacity: 0.45; filter: blur(0.3px);
+    background-image:
+      radial-gradient(ellipse 180px 140px at 6% 10%, #F4A6C6 0%, transparent 70%),
+      radial-gradient(ellipse 160px 130px at 92% 8%, #A8D8E8 0%, transparent 70%),
+      radial-gradient(ellipse 170px 140px at 8% 92%, #F7CB7B 0%, transparent 70%),
+      radial-gradient(ellipse 180px 140px at 94% 90%, #CBA8E0 0%, transparent 70%);
+  }
+  .deco { position: fixed; pointer-events: none; }
+  .container { max-width: 430px; width: 100%; position: relative; z-index: 1; }
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadein 0.35s ease; }
+  @keyframes fadein { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  .label { color: #D9678C; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; margin-bottom: 8px; display: block; text-align: center; }
+  h1 { color: #5B4B6E; font-size: 25px; font-weight: 600; margin-bottom: 20px; line-height: 1.25; text-align: center; }
+  h2 { color: #5B4B6E; font-size: 20px; font-weight: 600; line-height: 1.4; margin-bottom: 24px; }
+  .subtitle { color: #7C7191; font-size: 14.5px; line-height: 1.6; margin-bottom: 24px; text-align: center; }
+  .icon-wrap { text-align: center; font-size: 36px; margin-bottom: 14px; }
+
+  /* Menú principal */
+  .menu-card {
+    background: #FFFCFA; border-radius: 16px; padding: 20px;
+    margin-bottom: 12px; cursor: pointer; border: 2px solid transparent;
+    display: flex; align-items: center; gap: 16px;
+    transition: border-color 0.15s, transform 0.1s;
+    box-shadow: 0 1px 8px rgba(91,75,110,0.08);
+  }
+  .menu-card:hover { border-color: #D9678C; }
+  .menu-card:active { transform: scale(0.98); }
+  .menu-icon { font-size: 28px; flex-shrink: 0; }
+  .menu-titulo { color: #5B4B6E; font-size: 16px; font-weight: 600; font-family: 'Fraunces', serif; margin-bottom: 3px; }
+  .menu-desc { color: #7C7191; font-size: 13px; line-height: 1.4; }
+
+  /* Botones */
+  .btn-primary { padding: 15px; border-radius: 13px; border: none; background: #5B4B6E; color: #FFFCFA; font-size: 15.5px; font-weight: 600; cursor: pointer; font-family: 'Source Sans 3', sans-serif; width: 100%; transition: transform 0.15s; margin-bottom: 10px; }
+  .btn-primary:active { transform: scale(0.97); }
+  .btn-volver { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 13px; border-radius: 12px; border: 1px solid #E8D9E8; background: transparent; color: #7C7191; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Source Sans 3', sans-serif; margin-top: 10px; transition: transform 0.15s; }
+  .btn-volver:active { transform: scale(0.97); }
+  .opt-btn { width: 100%; padding: 15px 18px; border-radius: 12px; border: 2px solid #E8D9E8; background: #FFFCFA; color: #5B4B6E; font-size: 15px; font-weight: 500; cursor: pointer; font-family: 'Source Sans 3', sans-serif; text-align: left; transition: border-color 0.15s, transform 0.1s; margin-bottom: 10px; }
+  .opt-btn:hover { border-color: #D9678C; }
+  .opt-btn:active { transform: scale(0.98); }
+  .opciones-si-no { display: flex; gap: 10px; margin-bottom: 0; }
+  .opciones-si-no .opt-btn { margin-bottom: 0; }
+
+  /* Progreso */
+  .progress-wrap { height: 4px; background: #F0E0EC; border-radius: 4px; margin-bottom: 22px; overflow: hidden; }
+  .progress-bar { height: 100%; background: #D9678C; border-radius: 4px; transition: width 0.3s ease; }
+  .q-num { color: #D9678C; font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+
+  /* Tarjetas resultado */
+  .resultado-card { background: #FFFCFA; border-radius: 18px; padding: 24px; margin-bottom: 18px; box-shadow: 0 1px 10px rgba(91,75,110,0.09); }
+  .resultado-label { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: #D9678C; margin-bottom: 10px; }
+  .resultado-nombre { font-size: 21px; font-weight: 600; line-height: 1.3; margin-bottom: 12px; font-family: 'Fraunces', serif; color: #5B4B6E; }
+  .resultado-texto { font-size: 14.5px; line-height: 1.65; color: #6B5D7D; }
+
+  /* Frase */
+  .frase-card { background: #FFFCFA; border-radius: 18px; padding: 28px 24px; margin-bottom: 20px; box-shadow: 0 2px 16px rgba(91,75,110,0.1); text-align: center; }
+  .frase-tag { color: #CBA8E0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; display: block; }
+  .frase-texto { color: #5B4B6E; font-size: 19px; font-weight: 600; line-height: 1.5; font-family: 'Fraunces', serif; }
+
+  /* Acuerdo */
+  .acuerdo-box { background: #FFFCFA; border-radius: 18px; padding: 24px; margin-bottom: 18px; box-shadow: 0 1px 10px rgba(91,75,110,0.09); }
+  .acuerdo-titulo { color: #D9678C; font-size: 14px; font-weight: 600; margin-bottom: 16px; text-align: center; font-family: 'Fraunces', serif; }
+  .acuerdo-item { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+  .acuerdo-emoji { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .acuerdo-texto { color: #5B4B6E; font-size: 14.5px; line-height: 1.55; }
+  select { width: 100%; padding: 13px 16px; border-radius: 12px; border: 1px solid #E8D9E8; background: #FFFCFA; color: #5B4B6E; font-size: 15px; font-family: 'Source Sans 3', sans-serif; margin-bottom: 14px; outline: none; }
+  select:focus { border-color: #D9678C; }
+</style>
+</head>
+<body>
+
+<div class="fondo"></div>
+
+<!-- Decorativos acuarela -->
+<svg class="deco" style="top:-20px;left:-16px;width:54px;height:54px;transform:rotate(-12deg);opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rf1"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="6"/></filter></defs>
+  <g filter="url(#rf1)">
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(6 50 50)"/>
+    <ellipse cx="50" cy="30" rx="14" ry="22" fill="#F4A6C6" opacity="0.55" transform="rotate(78 50 50)"/>
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(150 50 50)"/>
+    <ellipse cx="50" cy="30" rx="14" ry="22" fill="#F4A6C6" opacity="0.55" transform="rotate(222 50 50)"/>
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(294 50 50)"/>
+    <circle cx="50" cy="50" r="9" fill="#F7D88A" opacity="0.8"/>
+  </g>
+</svg>
+<svg class="deco" style="top:8px;right:-22px;width:64px;height:42px;opacity:0.85" viewBox="0 0 100 65">
+  <defs><filter id="rn1"><feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="7"/></filter></defs>
+  <g filter="url(#rn1)">
+    <ellipse cx="28" cy="42" rx="24" ry="19" fill="#A8D8E8" opacity="0.45"/>
+    <ellipse cx="55" cy="28" rx="28" ry="24" fill="#A8D8E8" opacity="0.5"/>
+    <ellipse cx="78" cy="44" rx="20" ry="16" fill="#A8D8E8" opacity="0.4"/>
+  </g>
+</svg>
+<svg class="deco" style="bottom:60px;left:6px;width:34px;height:34px;opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rs1"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="11"/><feDisplacementMap in="SourceGraphic" scale="8"/></filter></defs>
+  <path filter="url(#rs1)" d="M50 6 L60 38 L94 38 L66 58 L78 92 L50 70 L22 92 L34 58 L6 38 L40 38 Z" fill="#F7CB7B" opacity="0.6"/>
+</svg>
+<svg class="deco" style="bottom:16px;right:4px;width:40px;height:40px;opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rc1"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="9"/><feDisplacementMap in="SourceGraphic" scale="7"/></filter></defs>
+  <path filter="url(#rc1)" d="M50 88 C-4 52 6 8 30 8 C42 8 50 16 50 26 C50 16 58 8 70 8 C94 8 104 52 50 88 Z" fill="#CBA8E0" opacity="0.55"/>
+</svg>
+
+<div class="container">
+
+  <!-- MENÚ PRINCIPAL -->
+  <div id="screen-menu" class="screen active">
+    <div class="icon-wrap">🤝</div>
+    <span class="label display">Capítulo 5 · Regalo</span>
+    <h1 class="display">Límites digitales sin violencia</h1>
+    <p class="subtitle">Tres herramientas para acompañar los límites con presencia y sin culpa. Elegí por dónde empezar.</p>
+    <div class="menu-card" onclick="irA('screen-acuerdo-q1')">
+      <span class="menu-icon">📋</span>
+      <div>
+        <p class="menu-titulo">Armá tu acuerdo familiar</p>
+        <p class="menu-desc">Construí un acuerdo simple y posible para usar en casa</p>
+      </div>
+    </div>
+    <div class="menu-card" onclick="generarFrase()">
+      <span class="menu-icon">💬</span>
+      <div>
+        <p class="menu-titulo">Frase para acompañar el límite</p>
+        <p class="menu-desc">Una frase para decir en el momento de apagar la pantalla</p>
+      </div>
+    </div>
+    <div class="menu-card" onclick="irA('screen-term-q0')">
+      <span class="menu-icon">🌡️</span>
+      <div>
+        <p class="menu-titulo">¿Cómo estamos con los límites?</p>
+        <p class="menu-desc">5 preguntas rápidas y una sugerencia concreta</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== ACUERDO FAMILIAR ==================== -->
+  <div id="screen-acuerdo-q1" class="screen">
+    <span class="label display">Armá tu acuerdo familiar</span>
+    <h2 class="display">¿En qué momentos del día van a usar pantallas?</h2>
+    <button class="opt-btn" onclick="setAcuerdo('cuando','Después del almuerzo, como momento de pausa.')">🍽️ Después del almuerzo</button>
+    <button class="opt-btn" onclick="setAcuerdo('cuando','A la tarde, cuando ya terminaron las actividades del día.')">🌤️ A la tarde, después de las actividades</button>
+    <button class="opt-btn" onclick="setAcuerdo('cuando','Solo los fines de semana, como momento especial.')">📅 Solo los fines de semana</button>
+    <button class="opt-btn" onclick="setAcuerdo('cuando','En momentos puntuales que los adultos decidimos según el día.')">🔄 Según el día, a criterio adulto</button>
+    <button class="btn-volver" onclick="irA('screen-menu')">← Volver al menú</button>
+  </div>
+
+  <div id="screen-acuerdo-q2" class="screen">
+    <span class="label display">Armá tu acuerdo familiar</span>
+    <h2 class="display">¿Cuánto tiempo aproximado por día?</h2>
+    <button class="opt-btn" onclick="setAcuerdo('cuanto','hasta 15 minutos por día')">⏱️ Hasta 15 minutos</button>
+    <button class="opt-btn" onclick="setAcuerdo('cuanto','hasta 30 minutos por día')">⏱️ Hasta 30 minutos</button>
+    <button class="opt-btn" onclick="setAcuerdo('cuanto','hasta una hora por día')">⏱️ Hasta una hora</button>
+    <button class="opt-btn" onclick="setAcuerdo('cuanto','el tiempo que los adultos decidamos según el contexto')">🔄 Según el contexto familiar</button>
+    <button class="btn-volver" onclick="irA('screen-acuerdo-q1')">← Volver</button>
+  </div>
+
+  <div id="screen-acuerdo-q3" class="screen">
+    <span class="label display">Armá tu acuerdo familiar</span>
+    <h2 class="display">¿Cómo van a acompañar ese momento?</h2>
+    <button class="opt-btn" onclick="setAcuerdo('como','Siempre con un adulto cerca, compartiendo el contenido.')">👨‍👩‍👧 Con un adulto cerca compartiendo</button>
+    <button class="opt-btn" onclick="setAcuerdo('como','El niño/a elige qué ver dentro de las opciones que los adultos habilitan.')">✅ El niño/a elige entre opciones habilitadas</button>
+    <button class="opt-btn" onclick="setAcuerdo('como','Avisamos antes de terminar para que pueda prepararse.')">🔔 Avisamos antes de apagar</button>
+    <button class="opt-btn" onclick="setAcuerdo('como','Combinamos: aviso previo + presencia adulta + elección dentro de límites.')">🤝 Todo junto: aviso + presencia + elección</button>
+    <button class="btn-volver" onclick="irA('screen-acuerdo-q2')">← Volver</button>
+  </div>
+
+  <div id="screen-acuerdo-resultado" class="screen">
+    <span class="label display">Tu acuerdo familiar</span>
+    <div class="acuerdo-box">
+      <p class="acuerdo-titulo">📋 Nuestro acuerdo de pantallas</p>
+      <div class="acuerdo-item">
+        <span class="acuerdo-emoji">📅</span>
+        <p class="acuerdo-texto" id="acuerdo-cuando"></p>
+      </div>
+      <div class="acuerdo-item">
+        <span class="acuerdo-emoji">⏱️</span>
+        <p class="acuerdo-texto" id="acuerdo-cuanto"></p>
+      </div>
+      <div class="acuerdo-item">
+        <span class="acuerdo-emoji">🤝</span>
+        <p class="acuerdo-texto" id="acuerdo-como"></p>
+      </div>
+    </div>
+    <p class="resultado-texto" style="margin-bottom:18px;font-size:13.5px;color:#7C7191;text-align:center;">Podés capturar esta pantalla para guardarlo. No hace falta que sea perfecto: hace falta que sea posible.</p>
+    <button class="btn-primary" onclick="irA('screen-menu')">Volver al menú</button>
+    <button class="btn-volver" onclick="reiniciarAcuerdo()">↺ Armar otro acuerdo</button>
+  </div>
+
+  <!-- ==================== FRASE ==================== -->
+  <div id="screen-frase" class="screen">
+    <span class="label display">Frase para acompañar el límite</span>
+    <div class="frase-card">
+      <span class="frase-tag">💬 Para decir ahora</span>
+      <p class="frase-texto display" id="frase-texto"></p>
+    </div>
+    <button class="btn-primary" onclick="generarFrase()">Otra frase</button>
+    <button class="btn-volver" onclick="irA('screen-menu')">← Volver al menú</button>
+  </div>
+
+  <!-- ==================== TERMÓMETRO ==================== -->
+  <div id="screen-term-q0" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:0%"></div></div>
+    <p class="q-num">1 de 5</p>
+    <h2 class="display">¿Hay acuerdos claros en casa sobre cuándo y cuánto se usan las pantallas?</h2>
+    <div class="opciones-si-no">
+      <button class="opt-btn" onclick="termResponder(4)">Sí</button>
+      <button class="opt-btn" onclick="termResponder(2)">A veces</button>
+      <button class="opt-btn" onclick="termResponder(1)">No</button>
+    </div>
+    <button class="btn-volver" onclick="irA('screen-menu')">← Volver al menú</button>
+  </div>
+
+  <div id="screen-term-q1" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:20%"></div></div>
+    <p class="q-num">2 de 5</p>
+    <h2 class="display">¿Podés sostener el "no" cuando el niño/a se enoja al apagar la pantalla?</h2>
+    <div class="opciones-si-no">
+      <button class="opt-btn" onclick="termResponder(4)">Sí</button>
+      <button class="opt-btn" onclick="termResponder(2)">A veces</button>
+      <button class="opt-btn" onclick="termResponder(1)">No</button>
+    </div>
+    <button class="btn-volver" onclick="irA('screen-term-q0')">← Volver</button>
+  </div>
+
+  <div id="screen-term-q2" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:40%"></div></div>
+    <p class="q-num">3 de 5</p>
+    <h2 class="display">¿Anticipás el final del tiempo de pantalla antes de apagarlo?</h2>
+    <div class="opciones-si-no">
+      <button class="opt-btn" onclick="termResponder(4)">Sí</button>
+      <button class="opt-btn" onclick="termResponder(2)">A veces</button>
+      <button class="opt-btn" onclick="termResponder(1)">No</button>
+    </div>
+    <button class="btn-volver" onclick="irA('screen-term-q1')">← Volver</button>
+  </div>
+
+  <div id="screen-term-q3" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:60%"></div></div>
+    <p class="q-num">4 de 5</p>
+    <h2 class="display">¿Los adultos también respetan los momentos sin dispositivos?</h2>
+    <div class="opciones-si-no">
+      <button class="opt-btn" onclick="termResponder(4)">Sí</button>
+      <button class="opt-btn" onclick="termResponder(2)">A veces</button>
+      <button class="opt-btn" onclick="termResponder(1)">No</button>
+    </div>
+    <button class="btn-volver" onclick="irA('screen-term-q2')">← Volver</button>
+  </div>
+
+  <div id="screen-term-q4" class="screen">
+    <div class="progress-wrap"><div class="progress-bar" style="width:80%"></div></div>
+    <p class="q-num">5 de 5</p>
+    <h2 class="display">¿Acompañás la frustración del niño/a cuando se corta la pantalla, en vez de ceder o alejarte?</h2>
+    <div class="opciones-si-no">
+      <button class="opt-btn" onclick="termResponder(4)">Sí</button>
+      <button class="opt-btn" onclick="termResponder(2)">A veces</button>
+      <button class="opt-btn" onclick="termResponder(1)">No</button>
+    </div>
+    <button class="btn-volver" onclick="irA('screen-term-q3')">← Volver</button>
+  </div>
+
+  <div id="screen-term-resultado" class="screen">
+    <span class="label display">¿Cómo estamos con los límites?</span>
+    <div class="resultado-card">
+      <p class="resultado-label" id="term-label"></p>
+      <h2 class="resultado-nombre display" id="term-nombre"></h2>
+      <p class="resultado-texto" id="term-texto"></p>
+    </div>
+    <button class="btn-primary" onclick="irA('screen-menu')">Volver al menú</button>
+    <button class="btn-volver" onclick="reiniciarTerm()">↺ Volver a hacerlo</button>
+  </div>
+
+</div>
+
+<script>
+  // ---- NAVEGACIÓN ----
+  function irA(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  // ---- ACUERDO FAMILIAR ----
+  const acuerdo = { cuando: '', cuanto: '', como: '' };
+  let acuerdoPaso = 0;
+
+  function setAcuerdo(campo, valor) {
+    acuerdo[campo] = valor;
+    if (campo === 'cuando') irA('screen-acuerdo-q2');
+    else if (campo === 'cuanto') irA('screen-acuerdo-q3');
+    else {
+      document.getElementById('acuerdo-cuando').textContent = 'Vamos a usar pantallas ' + acuerdo.cuando;
+      document.getElementById('acuerdo-cuanto').textContent = 'El tiempo acordado es ' + acuerdo.cuanto + '.';
+      document.getElementById('acuerdo-como').textContent = acuerdo.como;
+      irA('screen-acuerdo-resultado');
+    }
+  }
+
+  function reiniciarAcuerdo() {
+    acuerdo.cuando = ''; acuerdo.cuanto = ''; acuerdo.como = '';
+    irA('screen-acuerdo-q1');
+  }
+
+  // ---- FRASES ----
+  const frases = [
+    "Ya terminamos por hoy. ¿Jugamos a otra cosa juntos?",
+    "Falta poquito. Te aviso cuando sea el momento de apagar.",
+    "La pantalla descansa ahora. ¿Qué querés hacer vos?",
+    "Entiendo que te da pena. Es normal. Estoy acá con vos.",
+    "Apagamos juntos. ¿Me ayudás a buscar qué hacer después?",
+    "Sé que es difícil parar. Igual lo hacemos. Te acompaño.",
+    "Es hora de cerrarla. Mañana volvemos si queremos.",
+    "¿Cómo te sentiste mientras la usabas? Contame.",
+    "Paramos aquí. ¿Querés que te cuente un cuento?",
+    "Ahora toca tiempo sin pantalla. ¿Salimos a buscar algo afuera?"
+  ];
+  let ultimaFrase = -1;
+
+  function generarFrase() {
+    let idx;
+    do { idx = Math.floor(Math.random() * frases.length); } while (idx === ultimaFrase && frases.length > 1);
+    ultimaFrase = idx;
+    document.getElementById('frase-texto').textContent = frases[idx];
+    irA('screen-frase');
+  }
+
+  // ---- TERMÓMETRO ----
+  const termResp = [];
+  let termPaso = 0;
+
+  function termResponder(valor) {
+    termResp.push(valor);
+    termPaso++;
+    if (termPaso < 5) {
+      irA('screen-term-q' + termPaso);
+    } else {
+      mostrarTermResultado();
+    }
+  }
+
+  function mostrarTermResultado() {
+    const puntaje = termResp.reduce((a, b) => a + b, 0);
+    const max = 20;
+    const pct = puntaje / max;
+    let label, nombre, texto;
+
+    if (pct < 0.45) {
+      label = 'Hay espacio para construir';
+      nombre = 'Los límites están en proceso';
+      texto = 'No hace falta tenerlo todo resuelto. Empezá por un solo acuerdo simple y sostenible. El capítulo 5 tiene propuestas concretas para arrancar de a poco.';
+    } else if (pct < 0.75) {
+      label = 'Hay base, con margen para crecer';
+      nombre = 'Los límites están tomando forma';
+      texto = 'Ya hay presencia y criterio. El próximo paso puede ser fortalecer la anticipación o trabajar en acompañar la frustración sin ceder ni alejarte.';
+    } else {
+      label = 'Límites con presencia real';
+      nombre = 'Los límites están bien acompañados';
+      texto = 'Hay acuerdos, anticipación y presencia emocional. Eso es exactamente lo que el capítulo 5 propone. Sostenerlo en el tiempo es el verdadero logro.';
+    }
+
+    document.getElementById('term-label').textContent = label;
+    document.getElementById('term-nombre').textContent = nombre;
+    document.getElementById('term-texto').textContent = texto;
+    irA('screen-term-resultado');
+  }
+
+  function reiniciarTerm() {
+    termResp.length = 0;
+    termPaso = 0;
+    irA('screen-term-q0');
+  }
+</script>
+</body>
+</html>

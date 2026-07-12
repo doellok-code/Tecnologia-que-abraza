@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El jardín y la cultura digital</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #FBE4EC 0%, #FDF1DD 35%, #E3F1F7 70%, #EFE4F5 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 32px 20px; position: relative; overflow: hidden;
+    font-family: 'Source Sans 3', sans-serif;
+  }
+  .display { font-family: 'Fraunces', serif; }
+  .fondo {
+    position: fixed; inset: 0; pointer-events: none; opacity: 0.45; filter: blur(0.3px);
+    background-image:
+      radial-gradient(ellipse 180px 140px at 6% 10%, #F4A6C6 0%, transparent 70%),
+      radial-gradient(ellipse 160px 130px at 92% 8%, #A8D8E8 0%, transparent 70%),
+      radial-gradient(ellipse 170px 140px at 8% 92%, #F7CB7B 0%, transparent 70%),
+      radial-gradient(ellipse 180px 140px at 94% 90%, #CBA8E0 0%, transparent 70%);
+  }
+  .deco { position: fixed; pointer-events: none; }
+  .container { max-width: 430px; width: 100%; position: relative; z-index: 1; }
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadein 0.35s ease; }
+  @keyframes fadein { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  .label { color: #D9678C; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; margin-bottom: 8px; display: block; text-align: center; }
+  h1 { color: #5B4B6E; font-size: 25px; font-weight: 600; margin-bottom: 16px; line-height: 1.25; text-align: center; }
+  .subtitle { color: #7C7191; font-size: 14.5px; line-height: 1.6; margin-bottom: 24px; text-align: center; }
+  .icon-wrap { text-align: center; font-size: 36px; margin-bottom: 14px; }
+
+  /* Menú */
+  .menu-card {
+    background: #FFFCFA; border-radius: 16px; padding: 20px;
+    margin-bottom: 12px; cursor: pointer; border: 2px solid transparent;
+    display: flex; align-items: center; gap: 16px;
+    transition: border-color 0.15s, transform 0.1s;
+    box-shadow: 0 1px 8px rgba(91,75,110,0.08);
+  }
+  .menu-card:hover { border-color: #D9678C; }
+  .menu-card:active { transform: scale(0.98); }
+  .menu-icon { font-size: 30px; flex-shrink: 0; }
+  .menu-titulo { color: #5B4B6E; font-size: 16px; font-weight: 600; font-family: 'Fraunces', serif; margin-bottom: 3px; }
+  .menu-desc { color: #7C7191; font-size: 13px; line-height: 1.4; }
+
+  /* Botones */
+  .btn-primary { padding: 15px; border-radius: 13px; border: none; background: #5B4B6E; color: #FFFCFA; font-size: 15.5px; font-weight: 600; cursor: pointer; font-family: 'Source Sans 3', sans-serif; width: 100%; transition: transform 0.15s; margin-bottom: 10px; }
+  .btn-primary:active { transform: scale(0.97); }
+  .btn-secondary { width: 100%; padding: 13px; border-radius: 12px; border: 2px solid #E8D9E8; background: transparent; color: #5B4B6E; font-size: 14.5px; font-weight: 600; cursor: pointer; font-family: 'Source Sans 3', sans-serif; transition: transform 0.15s; margin-bottom: 10px; }
+  .btn-secondary:active { transform: scale(0.97); }
+  .btn-volver { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 13px; border-radius: 12px; border: 1px solid #E8D9E8; background: transparent; color: #7C7191; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Source Sans 3', sans-serif; margin-top: 4px; transition: transform 0.15s; }
+  .btn-volver:active { transform: scale(0.97); }
+
+  /* Tarjetas generadoras */
+  .gen-card { background: #FFFCFA; border-radius: 18px; padding: 28px 24px; margin-bottom: 20px; box-shadow: 0 2px 16px rgba(91,75,110,0.1); display: none; animation: fadein 0.4s ease; }
+  .gen-card.visible { display: block; }
+  .gen-tag { color: #CBA8E0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; display: block; }
+  .gen-texto { color: #5B4B6E; font-size: 18px; font-weight: 600; line-height: 1.5; font-family: 'Fraunces', serif; }
+  .gen-subtexto { color: #7C7191; font-size: 14px; line-height: 1.6; margin-top: 10px; }
+
+  /* Intro pantallas */
+  .intro-box { background: #FFFCFA; border-radius: 16px; padding: 22px; margin-bottom: 20px; box-shadow: 0 1px 8px rgba(91,75,110,0.08); }
+  .intro-texto { color: #6B5D7D; font-size: 14.5px; line-height: 1.65; }
+</style>
+</head>
+<body>
+
+<div class="fondo"></div>
+
+<!-- Decorativos acuarela -->
+<svg class="deco" style="top:-20px;left:-16px;width:54px;height:54px;transform:rotate(-12deg);opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rf1"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="6"/></filter></defs>
+  <g filter="url(#rf1)">
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(6 50 50)"/>
+    <ellipse cx="50" cy="30" rx="14" ry="22" fill="#F4A6C6" opacity="0.55" transform="rotate(78 50 50)"/>
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(150 50 50)"/>
+    <ellipse cx="50" cy="30" rx="14" ry="22" fill="#F4A6C6" opacity="0.55" transform="rotate(222 50 50)"/>
+    <ellipse cx="50" cy="30" rx="13" ry="20" fill="#F4A6C6" opacity="0.55" transform="rotate(294 50 50)"/>
+    <circle cx="50" cy="50" r="9" fill="#F7D88A" opacity="0.8"/>
+  </g>
+</svg>
+<svg class="deco" style="top:8px;right:-22px;width:64px;height:42px;opacity:0.85" viewBox="0 0 100 65">
+  <defs><filter id="rn1"><feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="7"/></filter></defs>
+  <g filter="url(#rn1)">
+    <ellipse cx="28" cy="42" rx="24" ry="19" fill="#A8D8E8" opacity="0.45"/>
+    <ellipse cx="55" cy="28" rx="28" ry="24" fill="#A8D8E8" opacity="0.5"/>
+    <ellipse cx="78" cy="44" rx="20" ry="16" fill="#A8D8E8" opacity="0.4"/>
+  </g>
+</svg>
+<svg class="deco" style="bottom:60px;left:6px;width:34px;height:34px;opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rs1"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="11"/><feDisplacementMap in="SourceGraphic" scale="8"/></filter></defs>
+  <path filter="url(#rs1)" d="M50 6 L60 38 L94 38 L66 58 L78 92 L50 70 L22 92 L34 58 L6 38 L40 38 Z" fill="#F7CB7B" opacity="0.6"/>
+</svg>
+<svg class="deco" style="bottom:16px;right:4px;width:40px;height:40px;opacity:0.85" viewBox="0 0 100 100">
+  <defs><filter id="rc1"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="9"/><feDisplacementMap in="SourceGraphic" scale="7"/></filter></defs>
+  <path filter="url(#rc1)" d="M50 88 C-4 52 6 8 30 8 C42 8 50 16 50 26 C50 16 58 8 70 8 C94 8 104 52 50 88 Z" fill="#CBA8E0" opacity="0.55"/>
+</svg>
+
+<div class="container">
+
+  <!-- MENÚ PRINCIPAL -->
+  <div id="screen-menu" class="screen active">
+    <div class="icon-wrap">🏫</div>
+    <span class="label display">Capítulo 7 · Regalo</span>
+    <h1 class="display">El jardín y la cultura digital</h1>
+    <p class="subtitle">Dos herramientas para docentes y equipos. Elegí por dónde empezar.</p>
+    <div class="menu-card" onclick="irA('screen-preguntas')">
+      <span class="menu-icon">🔍</span>
+      <div>
+        <p class="menu-titulo">Preguntas antes de usar tecnología</p>
+        <p class="menu-desc">Una pregunta pedagógica para reflexionar antes de llevar tecnología a sala</p>
+      </div>
+    </div>
+    <div class="menu-card" onclick="irA('screen-actividades')">
+      <span class="menu-icon">🎨</span>
+      <div>
+        <p class="menu-titulo">Ideas de actividades para el aula</p>
+        <p class="menu-desc">Propuestas concretas con tecnología creativa para nivel inicial</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== GENERADOR DE PREGUNTAS ==================== -->
+  <div id="screen-preguntas" class="screen">
+    <span class="label display">Preguntas pedagógicas</span>
+
+    <div class="intro-box" style="margin-bottom:20px;">
+      <p class="intro-texto">Antes de incorporar tecnología en sala, vale la pena hacerse una pregunta real. Tocá el botón y aparece una para pensar hoy.</p>
+    </div>
+
+    <div class="gen-card" id="pregunta-card">
+      <span class="gen-tag">🔍 Para pensar antes de entrar a sala</span>
+      <p class="gen-texto display" id="pregunta-texto"></p>
+    </div>
+
+    <button class="btn-primary" id="btn-pregunta" onclick="generarPregunta()">Quiero mi pregunta de hoy</button>
+    <button class="btn-secondary" id="btn-otra-pregunta" onclick="generarPregunta()" style="display:none">Otra pregunta</button>
+    <button class="btn-volver" onclick="irA('screen-menu')">← Volver al menú</button>
+  </div>
+
+  <!-- ==================== GENERADOR DE ACTIVIDADES ==================== -->
+  <div id="screen-actividades" class="screen">
+    <span class="label display">Ideas para el aula</span>
+
+    <div class="intro-box" style="margin-bottom:20px;">
+      <p class="intro-texto">Propuestas concretas donde la tecnología es herramienta, no protagonista. Los niños/as crean, exploran y producen algo propio.</p>
+    </div>
+
+    <div class="gen-card" id="actividad-card">
+      <span class="gen-tag" id="actividad-tag">🎨 Actividad para sala</span>
+      <p class="gen-texto display" id="actividad-titulo"></p>
+      <p class="gen-subtexto" id="actividad-desc"></p>
+    </div>
+
+    <button class="btn-primary" id="btn-actividad" onclick="generarActividad()">Quiero una idea</button>
+    <button class="btn-secondary" id="btn-otra-actividad" onclick="generarActividad()" style="display:none">Otra idea</button>
+    <button class="btn-volver" onclick="irA('screen-menu')">← Volver al menú</button>
+  </div>
+
+</div>
+
+<script>
+  function irA(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  // ---- PREGUNTAS PEDAGÓGICAS ----
+  const preguntas = [
+    "¿Qué experiencia quiero ofrecerles a los niños/as con esta propuesta?",
+    "¿Este uso de tecnología favorece el juego, el vínculo o la creatividad?",
+    "¿Qué rol ocupa el niño/a: espectador o protagonista?",
+    "¿Podría lograr el mismo objetivo pedagógico sin tecnología?",
+    "¿Esta propuesta enriquece el juego o compite con él?",
+    "¿La elegí porque tiene sentido pedagógico o porque 'innova'?",
+    "¿Qué hace el niño/a mientras usa la tecnología: mira, toca, crea o decide?",
+    "¿Hay presencia adulta real durante toda la propuesta?",
+    "¿Esta tecnología amplía posibilidades expresivas o las empobrece?",
+    "¿Podría explicarle a una familia por qué elegí esta propuesta y no otra?"
+  ];
+  let ultimaPregunta = -1;
+
+  function generarPregunta() {
+    let idx;
+    do { idx = Math.floor(Math.random() * preguntas.length); } while (idx === ultimaPregunta && preguntas.length > 1);
+    ultimaPregunta = idx;
+    const card = document.getElementById('pregunta-card');
+    card.classList.remove('visible');
+    void card.offsetWidth;
+    document.getElementById('pregunta-texto').textContent = preguntas[idx];
+    card.classList.add('visible');
+    document.getElementById('btn-pregunta').style.display = 'none';
+    document.getElementById('btn-otra-pregunta').style.display = 'block';
+  }
+
+  // ---- ACTIVIDADES ----
+  const actividades = [
+    {
+      titulo: "Stop motion con muñecos",
+      desc: "Los niños/as acomodan personajes, sacan fotos entre cada movimiento y después ven su propia película. Planifican, secuencian y crean colectivamente.",
+      tag: "🎬 Narrativa digital"
+    },
+    {
+      titulo: "Grabamos los sonidos del jardín",
+      desc: "Salen a explorar con un celular grabando sonidos: pájaros, agua, pasos, viento. Después los escuchan, los nombran y los reconocen. Exploración sonora y lenguaje.",
+      tag: "🎙️ Exploración sonora"
+    },
+    {
+      titulo: "Fotógrafos por un día",
+      desc: "Cada niño/a elige y fotografía algo del jardín que le llame la atención. Se arma una muestra colectiva con las fotos. La mirada de cada uno queda visible.",
+      tag: "📷 Expresión visual"
+    },
+    {
+      titulo: "El cuento con voces",
+      desc: "Graban el cuento favorito del grupo poniendo voces distintas a cada personaje. Lo escuchan después juntos. Lenguaje, juego dramático y producción propia.",
+      tag: "🎭 Narrativa oral"
+    },
+    {
+      titulo: "Lupa digital",
+      desc: "Usan la cámara del celular en modo zoom para observar detalles pequeños: hojas, texturas, insectos, telas. Lo que el ojo no ve, la cámara lo acerca.",
+      tag: "🔬 Exploración científica"
+    },
+    {
+      titulo: "Video-carta a otra sala",
+      desc: "Graban un mensaje de video para otra sala del jardín o de otra institución. Comunicación real, audiencia real, propósito genuino.",
+      tag: "📨 Comunicación creativa"
+    },
+    {
+      titulo: "Registro del proyecto",
+      desc: "Documentan con fotos el proceso de un proyecto de sala: antes, durante y después. Los niños/as participan eligiendo qué registrar y por qué.",
+      tag: "📖 Documentación pedagógica"
+    },
+    {
+      titulo: "¿Cómo suena esto?",
+      desc: "Buscan en internet el sonido de animales o elementos que están trabajando en sala. El sonido real amplía la exploración y genera preguntas nuevas.",
+      tag: "🔊 Investigación sonora"
+    },
+    {
+      titulo: "Sombras y linterna",
+      desc: "Usan la linterna del celular para crear sombras en la pared e inventar historias con el cuerpo y los objetos. Juego, cuerpo y narrativa en un solo momento.",
+      tag: "✨ Juego con luz"
+    },
+    {
+      titulo: "Mapa visual del jardín",
+      desc: "Fotografían distintos rincones y arman colectivamente un mapa visual del espacio. Orientación espacial, trabajo colectivo y apropiación del ambiente.",
+      tag: "🗺️ Espacio y comunidad"
+    }
+  ];
+  let ultimaActividad = -1;
+
+  function generarActividad() {
+    let idx;
+    do { idx = Math.floor(Math.random() * actividades.length); } while (idx === ultimaActividad && actividades.length > 1);
+    ultimaActividad = idx;
+    const a = actividades[idx];
+    const card = document.getElementById('actividad-card');
+    card.classList.remove('visible');
+    void card.offsetWidth;
+    document.getElementById('actividad-tag').textContent = a.tag;
+    document.getElementById('actividad-titulo').textContent = a.titulo;
+    document.getElementById('actividad-desc').textContent = a.desc;
+    card.classList.add('visible');
+    document.getElementById('btn-actividad').style.display = 'none';
+    document.getElementById('btn-otra-actividad').style.display = 'block';
+  }
+</script>
+</body>
+</html>
