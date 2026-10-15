@@ -90,12 +90,12 @@ h1 span{color:var(--accent)}
 <body>
 <main>
   <header>
-    <h1>¿Mito o <span>realidad</span>?</h1>
+    <div><h1>¿Mito o <span>realidad</span>?</h1><p id="act" style="margin:.2rem 0 0;color:var(--soft);font-weight:600"></p></div>
     <div class="tally" aria-live="polite">
       <span class="pill live" id="state">En vivo</span>
-      <span class="pill"><b id="tTotal">0</b> respuestas</span>
-      <span class="pill">🍎 <b id="tDoc">0</b> docentes</span>
-      <span class="pill">🏡 <b id="tFam">0</b> familias</span>
+      <span class="pill"><b id="tTotal">0</b> <span id="tWord">respuestas</span></span>
+      <span class="pill">🍎 <b id="tDoc">0</b> <span id="dWord">docentes</span></span>
+      <span class="pill">🏡 <b id="tFam">0</b> <span id="fWord">familias</span></span>
     </div>
   </header>
 
@@ -131,40 +131,26 @@ h1 span{color:var(--accent)}
 <script>
 (function(){
   /* ===== CONEXIÓN CON LA PLANILLA (se completa una sola vez) ===== */
-  var DATA_URL='';   // dirección de la aplicación web de Apps Script (termina en /exec)
+  var ENDPOINT='https://script.google.com/macros/s/AKfycbxIc_PKyui1P2ZFVEmImwkPkdC1lPv189YfRkVQcdX2I_OrKu20d8-GBW02msRxa-vXGQ/exec';   // dirección de la aplicación web de Apps Script (termina en /exec)
   /* =============================================================== */
-
-  var Q=[
-    {t:'Los videos educativos ayudan a que los bebés aprendan a hablar.',a:'Mito',
-     w:'Bebés de 12 a 18 meses que miraron un DVD “educativo” durante un mes no aprendieron más palabras que quienes nunca lo vieron.',
-     s:'DeLoache y otros, Psychological Science, 2010.'},
-    {t:'Si la tele está prendida de fondo pero el nene juega, no le afecta.',a:'Mito',
-     w:'Con la tele de fondo, los adultos les hablan a los chicos alrededor de un 20 % menos, y la interacción es menos atenta.',
-     s:'Kirkorian y otros, Child Development, 2009.'},
-    {t:'Lo más importante es cuánto tiempo pasan frente a la pantalla.',a:'Mito',
-     w:'Las recomendaciones ponen límites de tiempo, pero insisten igual en qué se mira y en mirar acompañados, conversando sobre lo que ven.',
-     s:'Academia Americana de Pediatría, “Media and Young Minds”, 2016.'},
-    {t:'Como son nativos digitales, los chicos entienden la tecnología mejor que los adultos.',a:'Mito',
-     w:'Saber usar no es lo mismo que entender. No hay evidencia de que haber nacido con la tecnología dé un conocimiento más profundo de ella.',
-     s:'Kirschner y De Bruyckere, Teaching and Teacher Education, 2017.'},
-    {t:'Usar la pantalla para calmar un berrinche puede dificultar que aprenda a calmarse solo.',a:'Realidad',
-     w:'Usar seguido el celular o la tablet para calmar a chicos de 3 a 5 años se asoció con más dificultades para regular sus emociones meses después.',
-     s:'Radesky y otros, JAMA Pediatrics, 2022. Es una asociación, no prueba de causa.'},
-    {t:'Los algoritmos le muestran a cada chico lo que es mejor para él.',a:'Mito',
-     w:'Los sistemas de recomendación se diseñan para que sigamos mirando. El de YouTube, por ejemplo, se entrenó para predecir cuánto tiempo vamos a mirar.',
-     s:'Covington, Adams y Sargin, Google (RecSys), 2016.'},
-    {t:'Prohibir las pantallas en casa protege a los chicos del mundo digital.',a:'Mito',
-     w:'Restringir reduce algunos riesgos, pero también las oportunidades y las habilidades digitales. Acompañar es lo que las desarrolla.',
-     s:'Livingstone y Helsper, Journal of Communication, 2017.'}
-  ];
+  var DEFAULT={actividad:'Datos de ejemplo',preguntas:[
+    {t:'Los videos educativos ayudan a que los bebés aprendan a hablar.',a:'Mito',w:'Bebés de 12 a 18 meses que miraron un DVD “educativo” durante un mes no aprendieron más palabras que quienes nunca lo vieron.',s:'DeLoache y otros, Psychological Science, 2010.'},
+    {t:'Si la tele está prendida de fondo pero el nene juega, no le afecta.',a:'Mito',w:'Con la tele de fondo, los adultos les hablan a los chicos alrededor de un 20 % menos, y la interacción es menos atenta.',s:'Kirkorian y otros, Child Development, 2009.'},
+    {t:'Lo más importante es cuánto tiempo pasan frente a la pantalla.',a:'Mito',w:'Las recomendaciones ponen límites de tiempo, pero insisten igual en qué se mira y en mirar acompañados, conversando sobre lo que ven.',s:'Academia Americana de Pediatría, “Media and Young Minds”, 2016.'},
+    {t:'Como son nativos digitales, los chicos entienden la tecnología mejor que los adultos.',a:'Mito',w:'Saber usar no es lo mismo que entender. No hay evidencia de que haber nacido con la tecnología dé un conocimiento más profundo de ella.',s:'Kirschner y De Bruyckere, Teaching and Teacher Education, 2017.'},
+    {t:'Usar la pantalla para calmar un berrinche puede dificultar que aprenda a calmarse solo.',a:'Realidad',w:'Usar seguido el celular o la tablet para calmar a chicos de 3 a 5 años se asoció con más dificultades para regular sus emociones meses después.',s:'Radesky y otros, JAMA Pediatrics, 2022. Es una asociación, no prueba de causa.'},
+    {t:'Los algoritmos le muestran a cada chico lo que es mejor para él.',a:'Mito',w:'Los sistemas de recomendación se diseñan para que sigamos mirando. El de YouTube, por ejemplo, se entrenó para predecir cuánto tiempo vamos a mirar.',s:'Covington, Adams y Sargin, Google (RecSys), 2016.'},
+    {t:'Prohibir las pantallas en casa protege a los chicos del mundo digital.',a:'Mito',w:'Restringir reduce algunos riesgos, pero también las oportunidades y las habilidades digitales. Acompañar es lo que las desarrolla.',s:'Livingstone y Helsper, Journal of Communication, 2017.'}
+  ]};
+  var Q=DEFAULT.preguntas;
   var OPTS=['Mito','Realidad','No estoy segura/o'];
-  var cur=0,revealed={},rows=[],demo=!DATA_URL;
+  var cur=0,revealed={},rows=[],demo=!ENDPOINT,act='';
 
   function demoRows(){
-    var out=[],bias=[.62,.55,.45,.48,.35,.5,.42];
+    var out=[],bias=[.62,.55,.45,.48,.35,.5,.42,.5,.5,.5];
     for(var n=0;n<34;n++){
       var r=[n%3===0?'Familia':'Docente'];
-      for(var k=0;k<7;k++){var x=Math.random();r.push(x<bias[k]*.75?'Realidad':(x<.85?'Mito':'No estoy segura/o'))}
+      for(var k=0;k<Q.length;k++){var x=Math.random();r.push(x<bias[k]*.75?'Realidad':(x<.85?'Mito':'No estoy segura/o'))}
       out.push(r);
     }
     return out;
@@ -184,25 +170,29 @@ h1 span{color:var(--accent)}
     return html+'</div><span class="n">'+res.tot+'</span></div>';
   }
   function render(){
+    if(!Q.length){document.getElementById('stmt').textContent='Todavía no hay frases cargadas en la planilla.';document.getElementById('rows').innerHTML='';return}
+    if(cur>Q.length-1)cur=Q.length-1;
     var q=Q[cur];
+    document.getElementById('act').textContent=act;
     document.getElementById('num').textContent='Frase '+(cur+1)+' de '+Q.length;
     document.getElementById('stmt').textContent='“'+q.t+'”';
     document.getElementById('rows').innerHTML=bar('Todos','')+bar('🍎 Docentes','Docente')+bar('🏡 Familias','Familia');
     var rv=document.getElementById('reveal');
     if(revealed[cur]){
-      rv.hidden=false;rv.className='reveal '+(q.a==='Mito'?'isMito':'isReal');
-      document.getElementById('verdict').textContent=q.a.toUpperCase();
+      rv.hidden=false;var isReal=/^real/i.test(q.a);rv.className='reveal '+(isReal?'isReal':'isMito');
+      document.getElementById('verdict').textContent=(q.a||'Mito').toUpperCase();
       document.getElementById('why').textContent=q.w;
-      document.getElementById('src').textContent='Fuente: '+q.s;
+      document.getElementById('why').hidden=!q.w;var sr=document.getElementById('src');sr.hidden=!q.s;sr.textContent='Fuente: '+q.s;
     }else rv.hidden=true;
     var rb=document.getElementById('revealBtn');rb.textContent=revealed[cur]?'Ocultar respuesta':'Revelar';
     document.getElementById('prev').disabled=cur===0;document.getElementById('next').disabled=cur===Q.length-1;
     [].forEach.call(document.getElementById('dots').children,function(d,k){d.classList.toggle('on',k===cur);d.setAttribute('aria-current',k===cur?'true':'false')});
     var doc=rows.filter(function(r){return r[0]==='Docente'}).length,fam=rows.filter(function(r){return r[0]==='Familia'}).length;
-    document.getElementById('tTotal').textContent=rows.length;document.getElementById('tDoc').textContent=doc;document.getElementById('tFam').textContent=fam;
+    document.getElementById('tTotal').textContent=rows.length;document.getElementById('tDoc').textContent=doc;document.getElementById('tFam').textContent=fam;document.getElementById('tWord').textContent=rows.length===1?'respuesta':'respuestas';document.getElementById('dWord').textContent=doc===1?'docente':'docentes';document.getElementById('fWord').textContent=fam===1?'familia':'familias';
   }
   var dots=document.getElementById('dots');
-  Q.forEach(function(_,k){var d=document.createElement('button');d.className='dot';d.setAttribute('aria-label','Frase '+(k+1));d.addEventListener('click',function(){cur=k;render()});dots.appendChild(d)});
+  function buildDots(){dots.innerHTML='';Q.forEach(function(_,k){var d=document.createElement('button');d.className='dot';d.setAttribute('aria-label','Frase '+(k+1));d.addEventListener('click',function(){cur=k;render()});dots.appendChild(d)})}
+  buildDots();
   document.getElementById('prev').addEventListener('click',function(){if(cur>0){cur--;render()}});
   document.getElementById('next').addEventListener('click',function(){if(cur<Q.length-1){cur++;render()}});
   document.getElementById('revealBtn').addEventListener('click',function(){revealed[cur]=!revealed[cur];render()});
@@ -214,10 +204,13 @@ h1 span{color:var(--accent)}
 
   var state=document.getElementById('state');
   function load(){
-    if(demo){if(!rows.length)rows=demoRows();state.textContent='Datos de ejemplo';state.className='pill demo';render();return}
-    fetch(DATA_URL+(DATA_URL.indexOf('?')<0?'?':'&')+'t='+Date.now())
+    if(demo){act='Datos de ejemplo';if(!rows.length)rows=demoRows();state.textContent='Datos de ejemplo';state.className='pill demo';render();return}
+    fetch(ENDPOINT+'?t='+Date.now())
       .then(function(r){return r.json()})
-      .then(function(j){rows=(j.rows||[]).filter(function(r){return r&&r[0]});state.textContent='En vivo';state.className='pill live';render()})
+      .then(function(j){
+        var nq=j.preguntas||[];
+        if(JSON.stringify(nq)!==JSON.stringify(Q)||j.actividad!==act){Q=nq;act=j.actividad||'';revealed={};buildDots()}
+        rows=(j.rows||[]).filter(function(r){return r&&r[0]});state.textContent='En vivo';state.className='pill live';render()})
       .catch(function(){state.textContent='Sin conexión: reintentando…';state.className='pill demo'});
   }
   render();load();

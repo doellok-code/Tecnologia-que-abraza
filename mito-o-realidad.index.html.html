@@ -76,7 +76,7 @@ input[type=text]:focus{outline:none;border-color:var(--accent2)}
   <!-- Inicio -->
   <section id="s0">
     <h1 tabindex="-1">¿Mito o <span>realidad</span>?</h1>
-    <p class="soft">Siete frases sobre infancias y pantallas. Para cada una, elegí si te parece un mito, una realidad o si no estás segura o seguro. No hay respuestas buenas ni malas: queremos saber qué pensamos.</p>
+    <p class="soft"><span id="howmany">Algunas</span> frases sobre infancias y pantallas. Para cada una, elegí si te parece un mito, una realidad o si no estás segura o seguro. No hay respuestas buenas ni malas: queremos saber qué pensamos.</p>
     <label class="field" for="nombre">Tu nombre</label>
     <input type="text" id="nombre" autocomplete="given-name" maxlength="40" placeholder="Solo el nombre">
     <p class="field" id="rolLabel" style="font-weight:600;margin:1rem 0 .35rem">Respondo como</p>
@@ -85,7 +85,7 @@ input[type=text]:focus{outline:none;border-color:var(--accent2)}
       <button class="role" type="button" data-rol="Familia" aria-pressed="false"><span class="em" aria-hidden="true">🏡</span>Familia</button>
     </div>
     <p class="err" id="err0" aria-live="polite"></p>
-    <button class="btn" id="start" type="button">Empezar</button>
+    <button class="btn" id="start" type="button" disabled>Cargando…</button>
     <p class="note">Tu nombre solo lo ve quien organiza la actividad. En la pantalla se muestran únicamente los totales.</p>
   </section>
 
@@ -118,41 +118,46 @@ input[type=text]:focus{outline:none;border-color:var(--accent2)}
 </footer>
 <script>
 (function(){
-  /* ===== CONEXIÓN CON EL GOOGLE FORM (se completa una sola vez) ===== */
-  var FORM={
-    action:'',            // https://docs.google.com/forms/d/e/XXXX/formResponse
-    nombre:'',            // entry.123
-    rol:'',               // entry.456
-    p:['','','','','','','']  // entry.… de las 7 frases, en orden
-  };
-  /* ================================================================== */
-
-  var FRASES=[
-    'Los videos educativos ayudan a que los bebés aprendan a hablar.',
-    'Si la tele está prendida de fondo pero el nene juega, no le afecta.',
-    'Lo más importante es cuánto tiempo pasan frente a la pantalla.',
-    'Como son nativos digitales, los chicos entienden la tecnología mejor que los adultos.',
-    'Usar la pantalla para calmar un berrinche puede dificultar que aprenda a calmarse solo.',
-    'Los algoritmos le muestran a cada chico lo que es mejor para él.',
-    'Prohibir las pantallas en casa protege a los chicos del mundo digital.'
-  ];
-  var rol='',resp=[],i=0;
-  var nombre=document.getElementById('nombre'),err0=document.getElementById('err0');
+  /* ===== CONEXIÓN CON LA PLANILLA (se completa una sola vez) ===== */
+  var ENDPOINT='https://script.google.com/macros/s/AKfycbxIc_PKyui1P2ZFVEmImwkPkdC1lPv189YfRkVQcdX2I_OrKu20d8-GBW02msRxa-vXGQ/exec';   // dirección de la aplicación web de Apps Script (termina en /exec)
+  /* ================================================================ */
+  var DEFAULT={actividad:'Datos de ejemplo',preguntas:[
+    {t:'Los videos educativos ayudan a que los bebés aprendan a hablar.',a:'Mito',w:'Bebés de 12 a 18 meses que miraron un DVD “educativo” durante un mes no aprendieron más palabras que quienes nunca lo vieron.',s:'DeLoache y otros, Psychological Science, 2010.'},
+    {t:'Si la tele está prendida de fondo pero el nene juega, no le afecta.',a:'Mito',w:'Con la tele de fondo, los adultos les hablan a los chicos alrededor de un 20 % menos, y la interacción es menos atenta.',s:'Kirkorian y otros, Child Development, 2009.'},
+    {t:'Lo más importante es cuánto tiempo pasan frente a la pantalla.',a:'Mito',w:'Las recomendaciones ponen límites de tiempo, pero insisten igual en qué se mira y en mirar acompañados, conversando sobre lo que ven.',s:'Academia Americana de Pediatría, “Media and Young Minds”, 2016.'},
+    {t:'Como son nativos digitales, los chicos entienden la tecnología mejor que los adultos.',a:'Mito',w:'Saber usar no es lo mismo que entender. No hay evidencia de que haber nacido con la tecnología dé un conocimiento más profundo de ella.',s:'Kirschner y De Bruyckere, Teaching and Teacher Education, 2017.'},
+    {t:'Usar la pantalla para calmar un berrinche puede dificultar que aprenda a calmarse solo.',a:'Realidad',w:'Usar seguido el celular o la tablet para calmar a chicos de 3 a 5 años se asoció con más dificultades para regular sus emociones meses después.',s:'Radesky y otros, JAMA Pediatrics, 2022. Es una asociación, no prueba de causa.'},
+    {t:'Los algoritmos le muestran a cada chico lo que es mejor para él.',a:'Mito',w:'Los sistemas de recomendación se diseñan para que sigamos mirando. El de YouTube, por ejemplo, se entrenó para predecir cuánto tiempo vamos a mirar.',s:'Covington, Adams y Sargin, Google (RecSys), 2016.'},
+    {t:'Prohibir las pantallas en casa protege a los chicos del mundo digital.',a:'Mito',w:'Restringir reduce algunos riesgos, pero también las oportunidades y las habilidades digitales. Acompañar es lo que las desarrolla.',s:'Livingstone y Helsper, Journal of Communication, 2017.'}
+  ]};
+  var NUM=['Una','Dos','Tres','Cuatro','Cinco','Seis','Siete','Ocho','Nueve','Diez'];
+  var Q=[],ACT='',rol='',resp=[],i=0;
+  var nombre=document.getElementById('nombre'),err0=document.getElementById('err0'),startBtn=document.getElementById('start');
   var roles=[].slice.call(document.querySelectorAll('.role'));
   roles.forEach(function(b){b.addEventListener('click',function(){
     rol=b.dataset.rol;roles.forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});err0.textContent='';
   })});
   function show(n){[0,1,2].forEach(function(k){document.getElementById('s'+k).hidden=k!==n});window.scrollTo(0,0)}
   var prog=document.getElementById('progress');
-  FRASES.forEach(function(){prog.appendChild(document.createElement('i'))});
+  function ready(data){
+    Q=data.preguntas||[];ACT=data.actividad||'';
+    prog.innerHTML='';Q.forEach(function(){prog.appendChild(document.createElement('i'))});
+    document.getElementById('howmany').textContent=NUM[Q.length-1]||String(Q.length);
+    startBtn.disabled=!Q.length;startBtn.textContent=Q.length?'Empezar':'Todavía no hay frases cargadas';
+  }
+  if(!ENDPOINT){ready(DEFAULT)}
+  else{
+    fetch(ENDPOINT+'?t='+Date.now()).then(function(r){return r.json()}).then(ready)
+      .catch(function(){startBtn.textContent='No se pudo cargar. Recargá la página.'});
+  }
   function render(){
-    document.getElementById('count').textContent='Frase '+(i+1)+' de '+FRASES.length;
+    document.getElementById('count').textContent='Frase '+(i+1)+' de '+Q.length;
     [].forEach.call(prog.children,function(el,k){el.classList.toggle('on',k<=i)});
     var card=document.getElementById('card');card.style.animation='none';void card.offsetWidth;card.style.animation='';
-    var st=document.getElementById('stmt');st.textContent='“'+FRASES[i]+'”';st.focus({preventScroll:true});
+    var st=document.getElementById('stmt');st.textContent='“'+Q[i].t+'”';st.focus({preventScroll:true});
     [].forEach.call(document.querySelectorAll('.opt'),function(b){b.disabled=false;b.classList.remove('chosen')});
   }
-  document.getElementById('start').addEventListener('click',function(){
+  startBtn.addEventListener('click',function(){
     var n=nombre.value.trim();
     if(!n){err0.textContent='Escribí tu nombre para empezar.';nombre.focus();return}
     if(!rol){err0.textContent='Elegí si respondés como docente o como familia.';return}
@@ -161,18 +166,18 @@ input[type=text]:focus{outline:none;border-color:var(--accent2)}
   [].forEach.call(document.querySelectorAll('.opt'),function(b){b.addEventListener('click',function(){
     [].forEach.call(document.querySelectorAll('.opt'),function(x){x.disabled=true});
     b.classList.add('chosen');resp[i]=b.dataset.v;
-    setTimeout(function(){i++;if(i<FRASES.length)render();else finish()},320);
+    setTimeout(function(){i++;if(i<Q.length)render();else finish()},320);
   })});
   function finish(){
     show(2);document.getElementById('thanks').focus({preventScroll:true});
     var st=document.getElementById('status');
-    if(!FORM.action){st.textContent='Modo de prueba: todavía no está conectado al formulario.';return}
+    if(!ENDPOINT){st.textContent='Modo de prueba: todavía no está conectado a la planilla.';return}
     var data=new URLSearchParams();
-    data.append(FORM.nombre,nombre.value.trim());data.append(FORM.rol,rol);
-    FORM.p.forEach(function(id,k){data.append(id,resp[k])});
-    fetch(FORM.action,{method:'POST',mode:'no-cors',body:data})
+    data.append('nombre',nombre.value.trim());data.append('rol',rol);data.append('actividad',ACT);
+    resp.forEach(function(v,k){data.append('r'+(k+1),v)});
+    fetch(ENDPOINT,{method:'POST',mode:'no-cors',body:data})
       .then(function(){st.textContent='Listo, tus respuestas llegaron.'})
-      .catch(function(){st.textContent='No se pudieron enviar. Revisá la conexión y tocá de nuevo la última respuesta.';i=FRASES.length-1;show(1);render()});
+      .catch(function(){st.textContent='No se pudieron enviar. Revisá la conexión y tocá de nuevo la última respuesta.';i=Q.length-1;show(1);render()});
   }
 })();
 </script>
