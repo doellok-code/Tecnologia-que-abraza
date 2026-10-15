@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>La tortuga que llega al libro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Dancing+Script:wght@600&family=Outfit:wght@400;600;700&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#FFFFFF;--ink:#2A1A22;--soft:#6B5A62;--accent:#D62962;--accent-ink:#FFFFFF;
+  --line:#EADDE2;--board:#FFFFFF;--cell:#F6EEF1;
+  --shell:#5E8C4A;--skin:#A9CF8A;--stroke:#24361C;--book:#D62962;--bookline:#FFFFFF;--pot:#C06A3E;--leaf:#4E8A3E;
+  --radius:999px;
+  --font:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:1.0625rem;line-height:1.5;transition:background-color .5s ease,color .5s ease}
+
+/* Nivel 1: monitor de los 80 y 90 */
+body[data-level="1"]{
+  --bg:#0D1710;--ink:#8DF5A8;--soft:#5FAF77;--accent:#8DF5A8;--accent-ink:#0D1710;
+  --line:#2A5235;--board:#0B140E;--cell:transparent;
+  --shell:transparent;--skin:transparent;--stroke:#8DF5A8;--book:transparent;--bookline:#8DF5A8;--pot:transparent;--leaf:transparent;
+  --radius:0px;--font:"VT323",ui-monospace,"Courier New",monospace;
+  font-size:1.45rem;line-height:1.25;text-shadow:0 0 6px rgba(141,245,168,.35);
+}
+/* Nivel 2: escritorio de los 2000 y 2010 */
+body[data-level="2"]{
+  --bg:#2F5F98;--ink:#FFFFFF;--soft:#D3E0F0;--accent:#FFFFFF;--accent-ink:#2F5F98;
+  --line:#B9B9B9;--board:#FFFFFF;--cell:#FFFFFF;--radius:3px;
+  --font:Tahoma,Verdana,"Segoe UI",Geneva,sans-serif;font-size:1rem;
+}
+/* Nivel 3: hoy */
+body[data-level="3"]{
+  --bg:#F6F4FF;--ink:#1B1A33;--soft:#5D5B7A;--accent:#6D4AFF;--accent-ink:#FFFFFF;--radius:999px;
+  --font:"Outfit","Atkinson Hyperlegible",system-ui,-apple-system,sans-serif;
+}
+
+main{max-width:34rem;margin:0 auto;padding:2rem 1.25rem 1rem}
+.screen[hidden],[hidden]{display:none !important}
+h1,h2{margin:0 0 .75rem;line-height:1.12;font-weight:700}
+h1{font-size:clamp(2.1rem,8vw,2.9rem);letter-spacing:-.015em}
+h2{font-size:clamp(1.6rem,6vw,2.1rem)}
+body[data-level="1"] h2{font-weight:400;font-size:2.4rem;letter-spacing:.02em}
+body[data-level="3"] h2{font-weight:600;letter-spacing:-.02em}
+h1:focus,h2:focus{outline:none}
+p{margin:0 0 .9rem}
+.era{color:var(--soft);margin-bottom:.35rem}
+.lead{font-size:1.15em}
+.consigna{font-weight:700}
+body[data-level="1"] .consigna{font-weight:400}
+.aside{color:var(--soft)}
+
+.row{display:flex;flex-wrap:wrap;gap:.5rem;margin:.5rem 0}
+.btn{font:inherit;min-height:46px;padding:.6rem 1rem;cursor:pointer;border:2px solid var(--accent);border-radius:var(--radius);background:transparent;color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);font-weight:700}
+body[data-level="1"] .btn.primary{font-weight:400;text-shadow:none}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.btn.big{font-size:1.2em;padding:.85rem 1.6rem}
+.msg{min-height:1.5em;margin:.75rem 0;font-weight:700}
+body[data-level="1"] .msg{font-weight:400}
+
+/* Tableros con cuadrícula (niveles 1 y 2) */
+.board{position:relative;width:100%;max-width:21rem;aspect-ratio:1/1;margin:1.25rem auto;background:var(--board);border:2px solid var(--line);border-radius:var(--radius);overflow:hidden}
+body[data-level="1"] .board::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom,transparent 0 2px,rgba(0,0,0,.28) 2px 4px)}
+.cells{position:absolute;inset:0;display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(5,1fr)}
+.cells div{background:var(--cell);border:1px solid var(--line)}
+body[data-level="1"] .cells div{border-style:dotted}
+.piece{position:absolute;top:0;left:0;width:20%;height:20%;padding:3%;transition:transform .4s ease}
+.piece svg{display:block;width:100%;height:100%;transition:transform .3s ease}
+.piece.instant,.piece.instant svg{transition:none}
+.turtle{z-index:3}.book{z-index:2}
+.oops svg{animation:shake .45s ease}
+@keyframes shake{20%,60%{translate:-6% 0}40%,80%{translate:6% 0}}
+
+.program{display:flex;flex-wrap:wrap;gap:.4rem;min-height:3rem;padding:.55rem;margin:.75rem 0;border:1px dashed var(--line);align-items:center}
+.program .empty{color:var(--soft)}
+.chip{padding:.1rem .55rem;border:1px solid var(--accent)}
+.label{color:var(--soft);margin:1rem 0 0}
+
+/* Ventana estilo 2000 */
+.win{background:#ECE9D8;color:#000;border:1px solid #0A246A;border-radius:8px 8px 2px 2px;box-shadow:5px 5px 0 rgba(0,0,0,.25);margin:1.25rem 0;overflow:hidden;text-shadow:none}
+.win-title{display:flex;justify-content:space-between;align-items:center;background:linear-gradient(#3C81E8,#0B48B8 60%,#0A3FA0);color:#fff;font-weight:bold;padding:.35rem .5rem .35rem .7rem}
+.win-x{display:inline-flex;align-items:center;justify-content:center;width:1.4rem;height:1.4rem;background:linear-gradient(#E9846B,#C84A2C);border:1px solid #fff;border-radius:3px;font-size:.85rem}
+.win-body{padding:.75rem}
+.win .board{margin:.25rem auto .75rem;border:2px inset #D4D0C8}
+.win-status{display:flex;justify-content:space-between;border-top:1px solid #A0A0A0;padding:.3rem .7rem;font-size:.85rem;background:#E3E0CF}
+.pad{display:grid;grid-template-columns:repeat(3,3.4rem);grid-template-rows:repeat(2,3rem);gap:.3rem;justify-content:center;margin:.25rem 0}
+.xp{font:inherit;font-size:1.15rem;color:#000;cursor:pointer;background:linear-gradient(#FFFFFF,#E3E0D3);border:1px solid #003C74;border-radius:3px}
+.xp:active{background:#D6D2C2}
+.xp:focus-visible{outline:2px dotted #000;outline-offset:-5px}
+.xp:disabled{opacity:.45;cursor:not-allowed}
+.up{grid-column:2;grid-row:1}.left{grid-column:1;grid-row:2}.down{grid-column:2;grid-row:2}.right{grid-column:3;grid-row:2}
+.win .msg{color:#000;margin:.5rem 0 0;text-align:center}
+.xpnext{display:block;margin:1rem auto 0;font:inherit;font-weight:bold;color:#000;padding:.6rem 1.2rem;min-height:44px;cursor:pointer;background:linear-gradient(#FFFFFF,#E3E0D3);border:1px solid #003C74;border-radius:3px}
+.xpnext:focus-visible{outline:2px dotted #000;outline-offset:-5px}
+
+/* Escenario de hoy */
+.stage{position:relative;width:100%;max-width:22rem;aspect-ratio:1/1;margin:1.25rem auto;border-radius:34px;overflow:hidden;background:#FFFFFF;box-shadow:0 22px 50px rgba(109,74,255,.18)}
+.stage svg{display:block;width:100%;height:100%}
+#book3{cursor:pointer;outline:none}
+.ring{transform-box:fill-box;transform-origin:center;animation:ring 1.6s ease-out infinite}
+@keyframes ring{from{transform:scale(.7);opacity:.7}to{transform:scale(1.6);opacity:0}}
+.bubble{animation:float 2.2s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-1.5px)}}
+#book3:focus-visible .bookbody{stroke:#1B1A33;stroke-width:1}
+.answers .btn{min-width:6rem}
+
+.firma{text-align:center;color:var(--soft);padding:2rem 1rem 1.5rem;font-size:.95rem}
+body[data-level="1"] .firma{font-size:1.25rem}
+.firma p{margin:0}
+.firma .marca{font-family:"Dancing Script","Brush Script MT",cursive;text-transform:none;font-size:1.45rem;color:var(--accent);text-shadow:none;margin-top:.15rem}
+
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none !important;transition:none !important}}
+</style>
+</head>
+<body data-level="0">
+<main>
+
+  <section class="screen" id="s0">
+    <h1 tabindex="-1">La tortuga que llega al libro</h1>
+    <p class="lead">Tres niveles. El mismo camino. Lo que cambia es la forma de llegar.</p>
+    <p>Un juego sobre cómo fue cambiando la manera de aprender tecnología, desde los años 80 hasta hoy.</p>
+    <div class="row"><button class="btn primary big" id="start">Empezar</button></div>
+  </section>
+
+  <!-- Nivel 1 -->
+  <section class="screen" id="s1" hidden>
+    <p class="era">Nivel 1: los 80 y 90</p>
+    <h2 tabindex="-1">Primero pensás, después la máquina hace</h2>
+    <p>Para aprender computación había que ir a un instituto y darle a la tortuga las órdenes una por una. Si naciste después del 2000, así aprendieron muchos de tus profes.</p>
+    <p class="consigna">Armá la secuencia para que la tortuga llegue al libro. Ojo con las macetas: la tortuga mira hacia arriba.</p>
+    <div class="board" id="board1"></div>
+    <div class="row" role="group" aria-label="Órdenes">
+      <button class="btn cmd" data-cmd="F">Avanzar</button>
+      <button class="btn cmd" data-cmd="R">Girar a la derecha</button>
+      <button class="btn cmd" data-cmd="L">Girar a la izquierda</button>
+    </div>
+    <p class="label">Tu programa</p>
+    <div class="program" id="program" aria-live="polite"></div>
+    <div class="row">
+      <button class="btn" id="undo">Borrar la última</button>
+      <button class="btn primary" id="run">Ejecutar</button>
+    </div>
+    <p class="msg" id="msg1" aria-live="polite"></p>
+    <div class="row" id="next1" hidden><button class="btn primary big" id="go2">Pasar al nivel 2</button></div>
+  </section>
+
+  <!-- Nivel 2 -->
+  <section class="screen" id="s2" hidden>
+    <p class="era">Nivel 2: los 2000 y 2010</p>
+    <h2 tabindex="-1">Un clic, un paso</h2>
+    <p>La compu de casa, el ciber, la netbook de la escuela. Ya no había que programar: con el mouse o las flechas, la tortuga se movía al instante. Pero cada paso lo decidías vos.</p>
+    <div class="win">
+      <div class="win-title"><span>tortuga.exe</span><span class="win-x" aria-hidden="true">✕</span></div>
+      <div class="win-body">
+        <p style="margin:0 0 .5rem">Llevá la tortuga hasta el libro con las flechas.</p>
+        <div class="board" id="board2"></div>
+        <div class="pad" role="group" aria-label="Flechas">
+          <button class="xp up" data-dir="0" aria-label="Arriba">▲</button>
+          <button class="xp left" data-dir="3" aria-label="Izquierda">◀</button>
+          <button class="xp down" data-dir="2" aria-label="Abajo">▼</button>
+          <button class="xp right" data-dir="1" aria-label="Derecha">▶</button>
+        </div>
+        <p class="msg" id="msg2" aria-live="polite"></p>
+        <button class="xpnext" id="go3" hidden>Pasar al nivel 3</button>
+      </div>
+      <div class="win-status"><span id="steps">Pasos: 0</span><span>Listo</span></div>
+    </div>
+  </section>
+
+  <!-- Nivel 3 -->
+  <section class="screen" id="s3" hidden>
+    <p class="era">Nivel 3: hoy</p>
+    <h2 tabindex="-1">Se toca y responde</h2>
+    <p>Sin órdenes, sin flechas. La pantalla entiende el gesto y decide el camino.</p>
+    <p class="consigna" id="consigna3">Tocá el libro y la tortuga llega sola.</p>
+    <div class="stage">
+      <svg viewBox="0 0 100 100" aria-label="Pantalla con una tortuga y un libro">
+        <defs>
+          <filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9"/></filter>
+          <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="1.6" stdDeviation="1.6" flood-color="#2A1A55" flood-opacity=".22"/></filter>
+          <linearGradient id="shellG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4BE09A"/><stop offset="1" stop-color="#1A9D6A"/></linearGradient>
+          <linearGradient id="bookG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF6FA3"/><stop offset="1" stop-color="#D62962"/></linearGradient>
+        </defs>
+        <circle cx="12" cy="18" r="26" fill="#CDBEFF" opacity=".6" filter="url(#blur)"/>
+        <circle cx="92" cy="88" r="30" fill="#A6E9FF" opacity=".6" filter="url(#blur)"/>
+        <circle cx="94" cy="10" r="18" fill="#FFCCE0" opacity=".7" filter="url(#blur)"/>
+
+        <g transform="translate(26 40)" filter="url(#shadow)">
+          <path d="M0 5 C-9 -1 -8 -10 -2 -13 C0 -7 0 -1 0 5 Z" fill="#3FC07F"/>
+          <path d="M0 5 C9 -1 10 -9 4 -13 C1 -7 0 -1 0 5 Z" fill="#26A066"/>
+          <rect x="-5" y="4" width="10" height="7" rx="3" fill="#FFB38A"/>
+        </g>
+        <g transform="translate(73 70)" filter="url(#shadow)">
+          <path d="M0 5 C-9 -1 -8 -10 -2 -13 C0 -7 0 -1 0 5 Z" fill="#3FC07F"/>
+          <path d="M0 5 C9 -1 10 -9 4 -13 C1 -7 0 -1 0 5 Z" fill="#26A066"/>
+          <rect x="-5" y="4" width="10" height="7" rx="3" fill="#FFB38A"/>
+        </g>
+
+        <path id="trail" d="M16 84 C16 44 70 82 76 31" fill="none" stroke="#6D4AFF" stroke-width="1.4" stroke-linecap="round" opacity="0"/>
+
+        <g id="book3" role="button" tabindex="0" aria-label="Libro">
+          <circle class="ring" cx="83" cy="20" r="11" fill="#6D4AFF" opacity=".5"/>
+          <g filter="url(#shadow)">
+            <rect class="bookbody" x="76" y="11" width="14" height="18" rx="3" fill="url(#bookG)"/>
+            <rect x="76" y="11" width="3.4" height="18" rx="1.5" fill="#B81F52" opacity=".55"/>
+            <path d="M82 17 H87.5 M82 20.5 H86" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>
+          </g>
+          <circle cx="83" cy="20" r="14" fill="transparent"/>
+        </g>
+
+        <g class="bubble" id="bubble">
+          <rect x="36" y="13.5" width="32" height="9" rx="4.5" fill="#1B1A33"/>
+          <path d="M68 16.2 L71.5 18 L68 19.8 Z" fill="#1B1A33"/>
+          <text x="52" y="19.5" text-anchor="middle" font-size="4" font-family="Outfit, system-ui, sans-serif" font-weight="600" fill="#FFFFFF">Tocá el libro</text>
+        </g>
+
+        <g id="t3" transform="translate(16 84)">
+          <g filter="url(#shadow)">
+            <ellipse cx="-5.6" cy="-3.2" rx="2.3" ry="2.9" fill="#8BE3B4"/><ellipse cx="5.6" cy="-3.2" rx="2.3" ry="2.9" fill="#8BE3B4"/>
+            <ellipse cx="-5.6" cy="4.6" rx="2.3" ry="2.9" fill="#8BE3B4"/><ellipse cx="5.6" cy="4.6" rx="2.3" ry="2.9" fill="#8BE3B4"/>
+            <circle cx="0" cy="-8.4" r="3.4" fill="#8BE3B4"/>
+            <ellipse cx="0" cy="0.8" rx="6.4" ry="7.4" fill="url(#shellG)"/>
+            <ellipse cx="-1.6" cy="-1.6" rx="2.6" ry="2.2" fill="#FFFFFF" opacity=".28"/>
+          </g>
+          <circle cx="-1.3" cy="-9.2" r=".7" fill="#1B1A33"/><circle cx="1.3" cy="-9.2" r=".7" fill="#1B1A33"/>
+        </g>
+      </svg>
+    </div>
+    <div class="answers" id="answers" hidden>
+      <p class="consigna">¿Sabés por qué la tortuga fue por ese camino?</p>
+      <div class="row">
+        <button class="btn" data-ans="si">Sí</button>
+        <button class="btn" data-ans="no">No</button>
+      </div>
+    </div>
+    <p class="msg" id="msg3" aria-live="polite"></p>
+    <p id="explain3" hidden>Así aprenden hoy niñas y niños: en casa, mirando a los adultos, usando antes de entender.</p>
+    <p class="msg" id="end3" hidden>Terminaste esta parte. Esperá la próxima consigna.</p>
+  </section>
+
+</main>
+
+<footer class="firma">
+  <p>Karina Doello</p>
+  <p class="marca">Tecnología que abraza</p>
+</footer>
+
+<script>
+(function(){
+  var N=5,START={x:0,y:4},BOOK={x:3,y:1},OBST=[{x:0,y:2},{x:2,y:3}];
+  var DIRS=[[0,-1],[1,0],[0,1],[-1,0]];
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function sleep(ms){return new Promise(function(r){setTimeout(r,reduce?Math.min(ms,60):ms)})}
+
+  var TURTLE='<svg viewBox="0 0 100 100" aria-hidden="true"><g stroke="var(--stroke)" stroke-width="3" stroke-linejoin="round">'+
+    '<ellipse cx="27" cy="36" rx="9" ry="11" fill="var(--skin)"/><ellipse cx="73" cy="36" rx="9" ry="11" fill="var(--skin)"/>'+
+    '<ellipse cx="27" cy="72" rx="9" ry="11" fill="var(--skin)"/><ellipse cx="73" cy="72" rx="9" ry="11" fill="var(--skin)"/>'+
+    '<path d="M45 83 L50 95 L55 83 Z" fill="var(--skin)"/><circle cx="50" cy="17" r="11" fill="var(--skin)"/>'+
+    '<ellipse cx="50" cy="55" rx="27" ry="31" fill="var(--shell)"/>'+
+    '<path d="M50 30 V80 M28 45 H72 M28 66 H72" fill="none" stroke-width="2.5"/></g>'+
+    '<circle cx="45" cy="14" r="2.3" fill="var(--stroke)"/><circle cx="55" cy="14" r="2.3" fill="var(--stroke)"/></svg>';
+  var BOOKSVG='<svg viewBox="0 0 100 100" aria-hidden="true"><g stroke="var(--stroke)" stroke-width="3" stroke-linejoin="round">'+
+    '<rect x="22" y="18" width="56" height="66" rx="4" fill="var(--book)"/><path d="M32 18 V84" fill="none"/>'+
+    '<path d="M41 36 H68 M41 47 H62" fill="none" stroke="var(--bookline)"/></g></svg>';
+  var POT='<svg viewBox="0 0 100 100" aria-hidden="true"><g stroke="var(--stroke)" stroke-width="3" stroke-linejoin="round">'+
+    '<path d="M50 52 C38 42 33 29 39 17 C49 25 52 38 50 52 C51 38 57 27 67 22 C71 35 62 45 50 52 Z" fill="var(--leaf)"/>'+
+    '<path d="M28 52 H72 L66 86 H34 Z" fill="var(--pot)"/></g></svg>';
+
+  function place(el,x,y){el.style.transform='translate('+(x*100)+'%,'+(y*100)+'%)'}
+  function rot(el,deg){el.firstElementChild.style.transform='rotate('+deg+'deg)'}
+  function isObst(x,y){return OBST.some(function(o){return o.x===x&&o.y===y})}
+  function inside(x,y){return x>=0&&y>=0&&x<N&&y<N}
+  function buildBoard(root){
+    var c='<div class="cells">';for(var i=0;i<N*N;i++)c+='<div></div>';root.innerHTML=c+'</div>';
+    function mk(cls,svg,x,y){var d=document.createElement('div');d.className='piece '+cls;d.innerHTML=svg;place(d,x,y);root.appendChild(d);return d}
+    OBST.forEach(function(o){mk('pot',POT,o.x,o.y)});
+    mk('book',BOOKSVG,BOOK.x,BOOK.y);
+    return mk('turtle',TURTLE,START.x,START.y);
+  }
+  function snap(el,x,y,deg){el.classList.add('instant');place(el,x,y);rot(el,deg);void el.offsetWidth;el.classList.remove('instant')}
+  function nearest(cur,target){return cur+(((target-cur)%360+540)%360-180)}
+
+  var screens=[0,1,2,3].map(function(i){return document.getElementById('s'+i)});
+  function show(i){
+    screens.forEach(function(s,k){s.hidden=k!==i});
+    document.body.setAttribute('data-level',String(i));
+    window.scrollTo(0,0);
+    var h=screens[i].querySelector('h1,h2');if(h)h.focus({preventScroll:true});
+  }
+
+  /* Nivel 1 */
+  var t1=buildBoard(document.getElementById('board1'));
+  var s1={x:0,y:4,dir:0,angle:0,program:[],attempts:0,running:false,done:false};
+  var progEl=document.getElementById('program'),msg1=document.getElementById('msg1');
+  var cmdBtns=[].slice.call(document.querySelectorAll('.cmd')),undoBtn=document.getElementById('undo'),runBtn=document.getElementById('run');
+  function renderProgram(){
+    if(!s1.program.length){progEl.innerHTML='<span class="empty">Todavía no hay órdenes.</span>';return}
+    var out=[],i=0;
+    while(i<s1.program.length){var c=s1.program[i];
+      if(c==='F'){var n=0;while(s1.program[i]==='F'){n++;i++}out.push('Avanzar '+n)}
+      else{out.push(c==='R'?'Derecha':'Izquierda');i++}}
+    progEl.innerHTML=out.map(function(t){return '<span class="chip">'+t+'</span>'}).join('');
+  }
+  function lock1(v){cmdBtns.concat([undoBtn,runBtn]).forEach(function(b){b.disabled=v})}
+  function reset1(){s1.x=START.x;s1.y=START.y;s1.dir=0;s1.angle=0;snap(t1,s1.x,s1.y,0)}
+  cmdBtns.forEach(function(b){b.addEventListener('click',function(){
+    if(s1.running||s1.done)return;
+    if(s1.program.length>=24){msg1.textContent='El programa ya es muy largo. Borrá alguna orden.';return}
+    s1.program.push(b.getAttribute('data-cmd'));msg1.textContent='';renderProgram();
+  })});
+  undoBtn.addEventListener('click',function(){if(s1.running)return;s1.program.pop();msg1.textContent='';renderProgram()});
+  function fail1(text){
+    msg1.textContent=text;t1.classList.add('oops');
+    setTimeout(function(){t1.classList.remove('oops');reset1();s1.running=false;lock1(false)},reduce?100:900);
+  }
+  runBtn.addEventListener('click',async function(){
+    if(s1.running||s1.done)return;
+    if(!s1.program.length){msg1.textContent='Agregá al menos una orden.';return}
+    s1.attempts++;s1.running=true;lock1(true);msg1.textContent='Ejecutando…';reset1();await sleep(250);
+    for(var k=0;k<s1.program.length;k++){
+      var c=s1.program[k];
+      if(c==='F'){
+        var nx=s1.x+DIRS[s1.dir][0],ny=s1.y+DIRS[s1.dir][1];
+        if(!inside(nx,ny)){fail1('La tortuga se salió del cuadro. Revisá las órdenes y volvé a ejecutar.');return}
+        if(isObst(nx,ny)){fail1('La tortuga chocó con una maceta. Revisá las órdenes y volvé a ejecutar.');return}
+        s1.x=nx;s1.y=ny;place(t1,nx,ny);await sleep(430);
+      }else{
+        s1.dir=c==='R'?(s1.dir+1)%4:(s1.dir+3)%4;s1.angle+=c==='R'?90:-90;rot(t1,s1.angle);await sleep(380);
+      }
+    }
+    if(s1.x===BOOK.x&&s1.y===BOOK.y){
+      s1.done=true;s1.running=false;
+      msg1.textContent='¡Llegó! Te llevó '+(s1.attempts===1?'un intento':s1.attempts+' intentos')+'. Tuviste que entender el camino antes de usarlo.';
+      document.getElementById('next1').hidden=false;
+    }else fail1('La tortuga se quedó lejos del libro. Sumá o cambiá órdenes.');
+  });
+
+  /* Nivel 2 */
+  var t2=buildBoard(document.getElementById('board2'));
+  var s2={x:0,y:4,angle:0,steps:0,done:false};
+  var msg2=document.getElementById('msg2'),stepsEl=document.getElementById('steps');
+  var arrows=[].slice.call(document.querySelectorAll('.xp'));
+  t2.style.transition='transform .12s linear';
+  function move2(d){
+    if(s2.done)return;
+    s2.angle=nearest(s2.angle,d*90);rot(t2,s2.angle);
+    var nx=s2.x+DIRS[d][0],ny=s2.y+DIRS[d][1];
+    if(!inside(nx,ny)||isObst(nx,ny)){msg2.textContent='No se puede pasar por ahí.';t2.classList.remove('oops');void t2.offsetWidth;t2.classList.add('oops');return}
+    msg2.textContent='';s2.x=nx;s2.y=ny;s2.steps++;place(t2,nx,ny);stepsEl.textContent='Pasos: '+s2.steps;
+    if(nx===BOOK.x&&ny===BOOK.y){
+      s2.done=true;arrows.forEach(function(b){b.disabled=true});
+      msg2.textContent='¡Llegaste en '+s2.steps+' pasos! La máquina respondió al instante, pero el camino lo pensaste vos.';
+      document.getElementById('go3').hidden=false;
+    }
+  }
+  arrows.forEach(function(b){b.addEventListener('click',function(){move2(+b.getAttribute('data-dir'))})});
+  document.addEventListener('keydown',function(e){
+    if(document.body.getAttribute('data-level')!=='2')return;
+    var map={ArrowUp:0,ArrowRight:1,ArrowDown:2,ArrowLeft:3};
+    if(e.key in map){e.preventDefault();move2(map[e.key])}
+  });
+
+  /* Nivel 3 */
+  var t3=document.getElementById('t3'),trail=document.getElementById('trail'),book3=document.getElementById('book3');
+  var s3={moved:false};
+  function ease(p){return p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2}
+  function go3(){
+    if(s3.moved)return;s3.moved=true;
+    document.getElementById('bubble').style.display='none';
+    var ring=book3.querySelector('.ring');ring.style.animation='none';ring.style.opacity='0';
+    book3.removeAttribute('tabindex');book3.style.cursor='default';
+    document.getElementById('consigna3').textContent='Listo.';
+    var L=trail.getTotalLength(),dur=reduce?1:1500,t0=null,last=0;
+    trail.style.strokeDasharray=L;trail.style.strokeDashoffset=L;trail.setAttribute('opacity','.35');
+    function frame(ts){
+      if(t0===null)t0=ts;
+      var p=Math.min(1,(ts-t0)/dur),e=ease(p),d=L*e;
+      var pt=trail.getPointAtLength(d),ah=trail.getPointAtLength(Math.min(L,d+.6)),bh=trail.getPointAtLength(Math.max(0,d-.6));
+      var a=(Math.atan2(ah.y-bh.y,ah.x-bh.x)*180/Math.PI)+90;if(!isNaN(a))last=a;
+      t3.setAttribute('transform','translate('+pt.x.toFixed(2)+' '+pt.y.toFixed(2)+') rotate('+last.toFixed(1)+')');
+      trail.style.strokeDashoffset=(L-d);
+      if(p<1)requestAnimationFrame(frame);
+      else setTimeout(function(){document.getElementById('answers').hidden=false},reduce?0:400);
+    }
+    requestAnimationFrame(frame);
+  }
+  book3.addEventListener('click',go3);
+  book3.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();go3()}});
+  [].slice.call(document.querySelectorAll('[data-ans]')).forEach(function(b){b.addEventListener('click',function(){
+    var si=b.getAttribute('data-ans')==='si';
+    document.getElementById('msg3').textContent=si?'Bien: lo eligió la pantalla, siguiendo instrucciones. Alguien la programó para que calcule el camino más corto y esquive las macetas. Vos solo tocaste el libro.':'Te lo contamos: lo eligió la pantalla, siguiendo instrucciones. Alguien la programó para que calcule el camino más corto y esquive las macetas. La pantalla lo resolvió por vos.';
+    document.getElementById('answers').hidden=true;
+    document.getElementById('explain3').hidden=false;
+    document.getElementById('end3').hidden=false;
+  })});
+
+  document.getElementById('start').addEventListener('click',function(){show(1)});
+  document.getElementById('go2').addEventListener('click',function(){show(2)});
+  document.getElementById('go3').addEventListener('click',function(){show(3)});
+  renderProgram();
+})();
+</script>
+</body>
+</html>
