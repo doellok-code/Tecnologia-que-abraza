@@ -122,6 +122,7 @@ button:focus-visible{outline:4px solid var(--c-cuento);outline-offset:3px}
 
 footer{margin-top:auto;padding:14px 18px 16px;text-align:center;background:var(--surface);border:3px solid var(--ink);border-radius:24px;box-shadow:0 6px 0 var(--ink);display:flex;flex-direction:column;gap:2px}
 footer span{font-weight:700;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+footer em,.closing em{font-style:normal;font-family:var(--display);font-weight:800;font-size:clamp(1.15rem,5vw,1.4rem);line-height:1.1;color:var(--c-abrazo)}
 footer b{font-family:var(--display);font-weight:800;font-size:clamp(1.6rem,7vw,2rem);line-height:1.05;color:var(--fg);text-wrap:balance}
 @media (prefers-reduced-motion: reduce){
   .card.pop,.hint svg,.confetti,.spinning .bulb{animation:none}
@@ -334,12 +335,13 @@ footer b{font-family:var(--display);font-weight:800;font-size:clamp(1.6rem,7vw,2
       <div class="closing sticker">
         <span class="label">Cierre de juego</span>
         <b>Jardines 906, 920 y 926</b>
+        <em>Distrito Escobar</em>
       </div>
       <button class="btn btn-soft btn-wide" id="restart">Volver a empezar</button>
     </div>
   </section>
 
-  <footer><span>Cierre de juego</span><b>Jardines 906, 920 y 926</b></footer>
+  <footer><span>Cierre de juego</span><b>Jardines 906, 920 y 926</b><em>Distrito Escobar</em></footer>
 </div>
 
 <script>
