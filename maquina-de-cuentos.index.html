@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Máquina de cuentos</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="color-scheme" content="light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Atkinson+Hyperlegible:wght@400;700&family=Dancing+Script:wght@700&display=swap">
+<style>
+/* Layout: una columna; la máquina de cuentos (marco coral con ventanitas) es el héroe y la tarjeta del cuento aparece debajo. Estética Tecnología que abraza, siempre en modo claro */
+:root{
+  --bg:#FFF3EF;
+  --dots:#FBDDD5;
+  --surface:#FFFFFF;
+  --fg:#3E2445;
+  --muted:#7A5A80;
+  --ink:#4A2B4F;
+  --accent:#D62962;
+  --accent-soft:#F8C9D6;
+  --machine:#F9B9A7;
+  --display:"Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --script:"Dancing Script", "Brush Script MT", cursive;
+  --c-quien:#F8BFD0; --c-con:#D6CCF4; --c-donde:#BFE6CF; --c-que:#FCD9A8; --c-prob:#BCDDF1;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{background-color:var(--bg);background-image:radial-gradient(var(--dots) 3px, transparent 3.5px);background-size:28px 28px;
+  color:var(--fg);font-family:var(--body);font-size:1.0625rem;line-height:1.5;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:20px 24px;overflow-x:hidden}
+.app{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:20px;min-height:calc(100vh - 44px)}
+h1,h2{font-family:var(--display);line-height:1.02;margin:0;text-wrap:balance;color:var(--fg)}
+h1{font-size:clamp(2.5rem,10vw,3.2rem);font-weight:800}
+h2{font-size:clamp(1.8rem,7vw,2.2rem);font-weight:800}
+p{margin:0}
+.lead{font-size:1.12rem;color:var(--muted);max-width:34ch;font-weight:700}
+.screen{display:flex;flex-direction:column;gap:20px;flex:1}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible{outline:4px solid var(--accent);outline-offset:3px}
+.sticker{background:var(--surface);border:3px solid var(--ink);border-radius:24px;box-shadow:0 5px 0 var(--ink)}
+
+/* Portada */
+.hero{display:flex;flex-direction:column;gap:10px;padding-top:4px}
+.brand{font-family:var(--display);font-weight:800;color:var(--accent);font-size:1rem;letter-spacing:.02em}
+.dots-row{display:flex;gap:8px}
+.dots-row span{width:18px;height:18px;border-radius:50%;border:3px solid var(--ink)}
+.label{font-weight:700;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ages{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.age{padding:10px 8px 14px;display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform .15s, box-shadow .15s}
+.age:hover{transform:translateY(-3px);box-shadow:0 8px 0 var(--ink)}
+.age:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.age svg{width:100%;max-width:150px;height:auto}
+.age b{font-family:var(--display);font-size:1.9rem;line-height:1;color:var(--fg)}
+.age small{color:var(--muted);font-size:.95rem;font-weight:700}
+.age-a{background:#FDE4EB}
+.age-b{background:#E7E2FA}
+.how{display:flex;flex-direction:column;gap:10px;padding:16px 18px}
+.how ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px}
+.how li::marker{font-family:var(--display);font-weight:800;color:var(--accent)}
+
+/* Barra */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:3px solid var(--ink);border-radius:999px;padding:5px 14px;font-weight:700;font-size:.95rem;box-shadow:0 3px 0 var(--ink)}
+.count{font-variant-numeric:tabular-nums;font-weight:800;font-family:var(--display);font-size:1.25rem}
+
+/* Máquina */
+.stage{position:relative;display:flex;flex-direction:column;gap:12px}
+.machine-wrap{position:relative;margin-right:18px}
+.machine{position:relative;background:linear-gradient(165deg,#FFD2C6 0%,#F9A9B9 52%,#EC86A4 100%);border:3px solid var(--ink);border-radius:30px;
+  box-shadow:0 8px 0 var(--ink), inset 0 4px 0 rgba(255,255,255,.65), inset 0 -14px 22px rgba(140,40,80,.18);padding:14px 10px 16px;display:flex;flex-direction:column;gap:12px;overflow:hidden}
+.machine::before{content:"";position:absolute;left:10px;right:10px;top:6px;height:46%;border-radius:24px 24px 50% 50%/24px 24px 30px 30px;background:linear-gradient(rgba(255,255,255,.45),rgba(255,255,255,0));pointer-events:none}
+.marquee{position:relative;background:linear-gradient(#FFFFFF,#FFEFF3);border:3px solid var(--ink);border-radius:18px;padding:6px 10px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 3px 0 rgba(74,43,79,.35)}
+.marquee b{white-space:nowrap;font-family:var(--display);font-weight:800;font-size:clamp(1rem,4.6vw,1.3rem);letter-spacing:.05em;text-transform:uppercase;color:var(--accent);line-height:1.1}
+.bulbs{display:flex;gap:7px}
+.bulbs i{width:10px;height:10px;border-radius:50%;background:#FBE3EA;border:1.5px solid var(--ink);animation:chase 1.6s infinite;animation-delay:calc(var(--i) * .16s)}
+.spinning .bulbs i{animation-duration:.5s;animation-delay:calc(var(--i) * .05s)}
+@keyframes chase{0%,60%,100%{background:#FBE3EA;box-shadow:none}20%{background:#FFD86B;box-shadow:0 0 8px 2px rgba(255,216,107,.9)}}
+.reels{position:relative;display:grid;gap:5px;background:rgba(255,255,255,.35);border:2px solid rgba(74,43,79,.25);border-radius:20px;padding:8px 4px}
+.reels.n3{grid-template-columns:repeat(3,1fr)}
+.reels.n4{grid-template-columns:repeat(4,1fr)}
+.reel{display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:0}
+.reel-label{text-transform:uppercase;min-height:2.6em;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:clamp(.62rem,2.7vw,.76rem);text-align:center;line-height:1;background:var(--c);border:2px solid var(--ink);border-radius:999px;padding:4px 2px 3px}
+.window{--H:106px;height:calc(var(--H) + 6px);overflow:hidden;background:#fff;border:3px solid var(--ink);border-radius:16px;position:relative}
+.window::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:13px;
+  background:linear-gradient(180deg,rgba(255,255,255,.75) 0%,rgba(255,255,255,0) 22%,rgba(255,255,255,0) 72%,rgba(74,43,79,.16) 100%), linear-gradient(115deg,rgba(255,255,255,0) 55%,rgba(255,255,255,.45) 62%,rgba(255,255,255,0) 70%)}
+.strip{will-change:transform}
+.spinning .reel:not(.locked) .strip{filter:blur(.6px)}
+.item{height:var(--H);box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:3px 2px;text-align:center;background:linear-gradient(#fff, color-mix(in srgb, var(--c) 55%, #fff))}
+.ill{display:block;width:100%;max-width:84px;height:auto;flex:0 0 auto}
+.tx{text-transform:uppercase;letter-spacing:0;font-size:clamp(.5rem,2.25vw,.66rem);font-weight:700;line-height:1.1;color:var(--fg);overflow-wrap:normal;word-break:keep-all;hyphens:none}
+.reel.locked .window{border-color:var(--accent);box-shadow:0 0 0 3px #fff, 0 0 0 5px var(--accent)}
+.lock{align-self:center;display:inline-flex;align-items:center;gap:4px;border:2px solid var(--ink);border-radius:999px;background:#fff;padding:3px 9px;font-size:.76rem;font-weight:700}
+.lock svg{width:15px;height:15px}
+.lock:disabled{opacity:.5;cursor:default}
+.reel.locked .lock{background:var(--accent);color:#fff}
+.pull{display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(#E8457A,#C8205A);color:#fff;border:3px solid var(--ink);border-radius:18px;box-shadow:0 5px 0 var(--ink), inset 0 2px 0 rgba(255,255,255,.4);
+  min-height:62px;font-family:var(--display);font-weight:800;font-size:1.35rem;transition:transform .1s, box-shadow .1s}
+.pull:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.pull:disabled{cursor:default;filter:saturate(.8)}
+/* Palanca al costado */
+.lever{position:absolute;right:-20px;top:96px;width:34px;height:150px;z-index:2;-webkit-tap-highlight-color:transparent}
+.lever .slot{position:absolute;left:10px;top:18px;width:14px;bottom:18px;border-radius:8px;background:linear-gradient(90deg,#3E2445,#6E4D72);border:2px solid var(--ink)}
+.lever .base{position:absolute;left:2px;right:2px;top:62px;height:26px;border-radius:10px;background:linear-gradient(#E0D6E6,#B5A6C0);border:3px solid var(--ink)}
+.lever .knob{position:absolute;left:1px;top:0;width:32px;height:32px;border-radius:50%;border:3px solid var(--ink);
+  background:radial-gradient(circle at 35% 30%,#FFE4EC 0 18%,#F27A9A 45%,#C8205A 100%);box-shadow:0 3px 0 rgba(74,43,79,.4)}
+.lever.pulled .knob{animation:pullDown .7s cubic-bezier(.3,.7,.3,1)}
+@keyframes pullDown{0%{top:0}40%{top:118px}55%{top:112px}100%{top:0}}
+.note{font-weight:700;color:var(--muted);text-align:center;font-size:.98rem}
+.confetti{position:absolute;left:50%;top:40%;width:13px;height:13px;border-radius:3px;pointer-events:none;border:2px solid var(--ink);z-index:3;animation:burst 1s ease-out forwards}
+@keyframes burst{from{transform:translate(-50%,-50%) rotate(0) scale(1);opacity:1}to{transform:translate(calc(-50% + var(--x)), calc(-50% + var(--y))) rotate(var(--r)) scale(.6);opacity:0}}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap}
+.thumbs svg{width:58px;height:58px;border-radius:14px;border:2px solid var(--ink);background:var(--c)}
+
+/* Tarjeta del cuento */
+.card{background:#fff;color:var(--fg);border:3px solid var(--ink);border-radius:26px;box-shadow:0 6px 0 var(--ink);padding:20px 20px 18px;display:flex;flex-direction:column;gap:14px}
+.card.pop{animation:pop .45s cubic-bezier(.3,1.5,.5,1)}
+@keyframes pop{from{transform:translateY(16px) scale(.94);opacity:0}to{transform:none;opacity:1}}
+.story{font-family:var(--display);font-weight:600;font-size:clamp(1.3rem,5.4vw,1.6rem);line-height:1.25;text-wrap:pretty;text-transform:uppercase;letter-spacing:.02em}
+.story mark{background:none;color:inherit;font-weight:800;padding:0 .12em;border-radius:6px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.story .m-quien{background:var(--c-quien)} .story .m-con{background:var(--c-con)} .story .m-donde{background:var(--c-donde)} .story .m-que{background:var(--c-que)}
+.problem{text-transform:uppercase;letter-spacing:.02em;background:var(--c-prob);border:2px solid var(--ink);border-radius:16px;padding:10px 14px;font-family:var(--display);font-weight:800;font-size:1.25rem;line-height:1.2}
+.prompt{font-weight:700;color:var(--muted)}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:16px;padding:13px 18px;font-weight:700;font-size:1.05rem;min-height:54px;border:3px solid var(--ink);box-shadow:0 4px 0 var(--ink);transition:transform .1s, box-shadow .1s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn svg{width:22px;height:22px;flex:none}
+.btn-main{background:var(--accent);color:#fff;flex:1 1 100%;font-size:1.2rem}
+.btn-soft{background:#fff;color:var(--fg);flex:1 1 130px;white-space:nowrap;padding-inline:10px;gap:6px;font-size:1rem}
+.btn-prob{background:var(--c-prob);color:var(--fg);flex:1 1 100%}
+.btn-wide{width:100%;flex:none}
+
+/* Pausa y cierre */
+.center{display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;padding-top:20px}
+.big-ico{width:140px;height:140px}
+.tips{display:flex;flex-direction:column;gap:8px;text-align:left;padding:16px 18px;width:100%}
+.tips li{margin-left:1.1em}
+.tips li::marker{color:var(--accent)}
+.tips ul{margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.closing{padding:16px 18px;display:flex;flex-direction:column;gap:4px;width:100%}
+.closing p{color:var(--muted);font-weight:700}
+
+footer{margin-top:auto;padding:14px 18px 16px;text-align:center;background:var(--surface);border:3px solid var(--ink);border-radius:24px;box-shadow:0 5px 0 var(--ink);display:flex;flex-direction:column;gap:2px}
+footer .prep{font-weight:700;font-size:.95rem;color:var(--muted);padding-bottom:6px;margin-bottom:4px;border-bottom:2px dashed var(--accent-soft)}
+footer .sig{white-space:nowrap;font-family:var(--script);font-weight:700;font-size:clamp(1.3rem,5.6vw,1.6rem);line-height:1.1;color:var(--fg);text-transform:none}
+footer .sig small{font-family:var(--body);font-size:clamp(.78rem,3.4vw,.95rem);font-weight:700;color:var(--muted)}
+footer b{font-family:var(--display);font-weight:800;font-size:clamp(1.35rem,6vw,1.6rem);line-height:1.1;color:var(--accent)}
+@media (max-width:380px){ .window{--H:98px} }
+@media (prefers-reduced-motion: reduce){
+  .card.pop,.confetti,.spinning .lights i{animation:none}
+  .confetti{display:none}
+  .bulbs i,.lever.pulled .knob{animation:none}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><radialGradient id="g-pk" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFE4EC"/><stop offset=".55" stop-color="#F8B4C8"/><stop offset="1" stop-color="#E28BA6"/></radialGradient><radialGradient id="g-gr" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#E6F7DC"/><stop offset=".55" stop-color="#A9DC9A"/><stop offset="1" stop-color="#6DB068"/></radialGradient><radialGradient id="g-dg" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#C3E9B2"/><stop offset=".55" stop-color="#71B66C"/><stop offset="1" stop-color="#3E8549"/></radialGradient><radialGradient id="g-yl" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFF7D1"/><stop offset=".55" stop-color="#FFD86B"/><stop offset="1" stop-color="#EEAE38"/></radialGradient><radialGradient id="g-or" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFE4C8"/><stop offset=".55" stop-color="#FDB57A"/><stop offset="1" stop-color="#E4874A"/></radialGradient><radialGradient id="g-bl" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#E6F3FF"/><stop offset=".55" stop-color="#A9D3F5"/><stop offset="1" stop-color="#6BA6DB"/></radialGradient><radialGradient id="g-pu" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#F0E9FF"/><stop offset=".55" stop-color="#C9B8F2"/><stop offset="1" stop-color="#9982D6"/></radialGradient><radialGradient id="g-br" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#F2D6BA"/><stop offset=".55" stop-color="#C9925F"/><stop offset="1" stop-color="#8A5A34"/></radialGradient><radialGradient id="g-gy" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#F7F7FA"/><stop offset=".55" stop-color="#CFCFDC"/><stop offset="1" stop-color="#9898B0"/></radialGradient><radialGradient id="g-wh" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#F7F2EF"/><stop offset="1" stop-color="#D9CEC9"/></radialGradient><radialGradient id="g-rd" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFD3CE"/><stop offset=".55" stop-color="#F27A6D"/><stop offset="1" stop-color="#CC4740"/></radialGradient><radialGradient id="g-sk" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFE8D6"/><stop offset=".55" stop-color="#F5C6A2"/><stop offset="1" stop-color="#D99C74"/></radialGradient><radialGradient id="g-sk2" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#F1CDAE"/><stop offset=".55" stop-color="#C58E66"/><stop offset="1" stop-color="#93603D"/></radialGradient><radialGradient id="g-sand" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFF5DC"/><stop offset=".55" stop-color="#F5DCA3"/><stop offset="1" stop-color="#DDB871"/></radialGradient><radialGradient id="g-sea" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#D9F4FF"/><stop offset=".55" stop-color="#8ED2EE"/><stop offset="1" stop-color="#4AA2CC"/></radialGradient><radialGradient id="g-gold" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFF6BE"/><stop offset=".55" stop-color="#F7CF4D"/><stop offset="1" stop-color="#D59D1A"/></radialGradient><radialGradient id="g-nv" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#5B5FA8"/><stop offset=".55" stop-color="#34386F"/><stop offset="1" stop-color="#1E2148"/></radialGradient><radialGradient id="g-mint" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#E4FAF1"/><stop offset=".55" stop-color="#A6E3CB"/><stop offset="1" stop-color="#5FB89A"/></radialGradient><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BFE3FA"/><stop offset="1" stop-color="#FFF1E8"/></linearGradient><linearGradient id="sky-pk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD3E2"/><stop offset="1" stop-color="#FFF4E8"/></linearGradient><linearGradient id="sky-dawn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE0C7"/><stop offset="1" stop-color="#FFF6E9"/></linearGradient><linearGradient id="night" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2B2E66"/><stop offset="1" stop-color="#5A5EA6"/></linearGradient><linearGradient id="deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ED6F0"/><stop offset="1" stop-color="#2F7FB3"/></linearGradient><linearGradient id="jungle" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D9F3C9"/><stop offset="1" stop-color="#9ED48C"/></linearGradient><linearGradient id="sea-l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9FDDF2"/><stop offset="1" stop-color="#4EA6D0"/></linearGradient><linearGradient id="grass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B8E3A3"/><stop offset="1" stop-color="#78BC6E"/></linearGradient><linearGradient id="parch" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF3D6"/><stop offset="1" stop-color="#EBCB8E"/></linearGradient></defs></svg>
+<div class="app">
+
+  <!-- PORTADA -->
+  <section class="screen" id="s-start">
+    <div class="hero">
+      <p class="brand">Tecnología que abraza</p>
+      <div class="dots-row" aria-hidden="true">
+        <span style="background:var(--c-quien)"></span><span style="background:var(--c-con)"></span><span style="background:var(--c-donde)"></span><span style="background:var(--c-que)"></span><span style="background:var(--c-prob)"></span>
+      </div>
+      <h1>Máquina de cuentos</h1>
+      <p class="lead">La máquina reparte personajes, lugares y sorpresas. El cuento lo inventan ustedes, juntos.</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <p class="label">¿Cuántos años tiene quien juega?</p>
+      <div class="ages">
+        <button class="age age-a sticker" id="age-a">
+          <svg viewBox="0 0 140 150" aria-hidden="true">
+            <ellipse cx="72" cy="141" rx="40" ry="5.5" fill="rgba(74,43,79,.13)"/>
+            <path d="M104 131h-9M106 125h-6" stroke="#B79BBE" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="119" cy="128" r="11" fill="#fff" stroke="#4A2B4F" stroke-width="2.5"/>
+            <path d="M109 124q10 6 20 0M119 117q-5 11 0 22" fill="none" stroke="#8FD0AE" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M62 106Q58 121 53 131" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M62 106Q58 121 53 131" fill="none" stroke="#F2C3A0" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M80 106Q87 118 93 126" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M80 106Q87 118 93 126" fill="none" stroke="#F2C3A0" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <ellipse cx="51" cy="134" rx="9.5" ry="6" transform="rotate(-8 51 134)" fill="#9CCBEB" stroke="#4A2B4F" stroke-width="2.5"/>
+            <ellipse cx="96" cy="129" rx="9.5" ry="6" transform="rotate(28 96 129)" fill="#9CCBEB" stroke="#4A2B4F" stroke-width="2.5"/>
+            <path d="M57 82Q43 80 35 68" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M57 82Q43 80 35 68" fill="none" stroke="#F2C3A0" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M84 82Q98 79 106 65" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M84 82Q98 79 106 65" fill="none" stroke="#F2C3A0" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="34" cy="66" r="6.5" fill="#F2C3A0" stroke="#4A2B4F" stroke-width="2.5"/>
+            <circle cx="107" cy="63" r="6.5" fill="#F2C3A0" stroke="#4A2B4F" stroke-width="2.5"/>
+            <path d="M54 74C46 86 44 102 50 112C58 120 82 120 90 112C97 102 94 86 86 74C78 68 62 68 54 74Z" fill="#F7A9BE" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M59 73Q61 84 62 91M81 73Q79 84 78 91" fill="none" stroke="#FCE3A8" stroke-width="4" stroke-linecap="round"/>
+            <path d="M58 90Q70 86 82 90L80 104Q70 107 60 104Z" fill="#FCE3A8" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M70 101s-5.5-3.2-5.5-6.8a2.8 2.8 0 015.5-.9 2.8 2.8 0 015.5.9c0 3.6-5.5 6.8-5.5 6.8z" fill="#D62962"/>
+            <g transform="rotate(-7 70 50)">
+              <circle cx="42" cy="50" r="5" fill="#F2C3A0" stroke="#4A2B4F" stroke-width="2.5"/>
+              <circle cx="98" cy="50" r="5" fill="#F2C3A0" stroke="#4A2B4F" stroke-width="2.5"/>
+              <ellipse cx="70" cy="47" rx="29" ry="28" fill="#F2C3A0" stroke="#4A2B4F" stroke-width="2.5"/>
+              <path d="M41 46C38 24 52 13 70 13C88 13 102 24 99 46C97 40 95 36 92 35C89 38 85 38 82 35C79 38 74 38 71 35C68 38 63 38 60 35C57 38 52 38 49 35C46 37 43 41 41 46Z" fill="#8A5A3B" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="M61 18q-5 6-6 14M79 17q4 6 4 15" fill="none" stroke="#6B4129" stroke-width="2" stroke-linecap="round"/>
+              <ellipse cx="60" cy="49" rx="4" ry="5" fill="#4A2B4F"/><circle cx="61.4" cy="47.2" r="1.5" fill="#fff"/>
+              <ellipse cx="80" cy="49" rx="4" ry="5" fill="#4A2B4F"/><circle cx="81.4" cy="47.2" r="1.5" fill="#fff"/>
+              <circle cx="51" cy="58" r="5" fill="#F79AB5" opacity=".75"/><circle cx="89" cy="58" r="5" fill="#F79AB5" opacity=".75"/>
+              <path d="M62 59Q70 68 78 59Q70 62 62 59Z" fill="#C2456A" stroke="#4A2B4F" stroke-width="2" stroke-linejoin="round"/>
+            </g>
+          </svg>
+          <b>2 y 3</b><small>años</small>
+        </button>
+        <button class="age age-b sticker" id="age-b">
+          <svg viewBox="0 0 140 150" aria-hidden="true">
+            <ellipse cx="66" cy="143" rx="26" ry="4.5" fill="rgba(74,43,79,.12)"/>
+            <path d="M18 92l2.5 5.5 5.5 2.5-5.5 2.5-2.5 5.5-2.5-5.5-5.5-2.5 5.5-2.5z" fill="#FCD9A8" stroke="#4A2B4F" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M118 84l2 4.5 4.5 2-4.5 2-2 4.5-2-4.5-4.5-2 4.5-2z" fill="#BCDDF1" stroke="#4A2B4F" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M58 132q8 4 16 0" fill="none" stroke="#B79BBE" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M58 102Q50 116 40 120" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M58 102Q50 116 40 120" fill="none" stroke="#C58E66" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M72 102Q82 116 92 118" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M72 102Q82 116 92 118" fill="none" stroke="#C58E66" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <ellipse cx="37" cy="121" rx="8.5" ry="5.5" transform="rotate(-22 37 121)" fill="#F7A9BE" stroke="#4A2B4F" stroke-width="2.5"/>
+            <ellipse cx="96" cy="118" rx="8.5" ry="5.5" transform="rotate(20 96 118)" fill="#F7A9BE" stroke="#4A2B4F" stroke-width="2.5"/>
+            <path d="M51 65Q39 55 31 39" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M51 65Q39 55 31 39" fill="none" stroke="#C58E66" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M77 65Q89 55 97 39" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M77 65Q89 55 97 39" fill="none" stroke="#C58E66" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="30" cy="36" r="6.5" fill="#C58E66" stroke="#4A2B4F" stroke-width="2.5"/>
+            <circle cx="98" cy="36" r="6.5" fill="#C58E66" stroke="#4A2B4F" stroke-width="2.5"/>
+            <path d="M50 60C47 70 47 80 46 88L82 88C81 80 81 70 78 60C70 55 58 55 50 60Z" fill="#A9DDC2" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M46 86L82 86Q92 96 99 108Q66 117 29 108Q36 96 46 86Z" fill="#C9BDF2" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M50 92Q44 101 40 109M64 90V112M78 92Q84 101 88 109" fill="none" stroke="#E7E2FA" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M64 77s-5.5-3.2-5.5-6.8a2.8 2.8 0 015.5-.9 2.8 2.8 0 015.5.9c0 3.6-5.5 6.8-5.5 6.8z" fill="#D62962"/>
+            <g transform="rotate(6 64 36)">
+              <path d="M45 27C31 17 21 22 18 33C24 29 33 30 43 35Z" fill="#3B2418" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="M83 27C97 17 107 22 110 33C104 29 95 30 85 35Z" fill="#3B2418" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+              <circle cx="44" cy="28" r="4.2" fill="#F7A9BE" stroke="#4A2B4F" stroke-width="2"/>
+              <circle cx="84" cy="28" r="4.2" fill="#F7A9BE" stroke="#4A2B4F" stroke-width="2"/>
+              <circle cx="42" cy="38" r="4.8" fill="#C58E66" stroke="#4A2B4F" stroke-width="2.5"/>
+              <circle cx="86" cy="38" r="4.8" fill="#C58E66" stroke="#4A2B4F" stroke-width="2.5"/>
+              <ellipse cx="64" cy="36" rx="22" ry="21.5" fill="#C58E66" stroke="#4A2B4F" stroke-width="2.5"/>
+              <path d="M42 36C40 18 52 12 64 12C76 12 88 18 86 36C82 28 74 24 66 26C60 22 50 26 42 36Z" fill="#3B2418" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="M52 38q3.5-4.5 7 0M69 38q3.5-4.5 7 0" fill="none" stroke="#4A2B4F" stroke-width="2.6" stroke-linecap="round"/>
+              <circle cx="49" cy="44" r="4" fill="#F08FA8" opacity=".65"/><circle cx="79" cy="44" r="4" fill="#F08FA8" opacity=".65"/>
+              <path d="M56 44Q64 54 72 44Z" fill="#C2456A" stroke="#4A2B4F" stroke-width="2" stroke-linejoin="round"/>
+            </g>
+          </svg>
+          <b>4 y 5</b><small>años</small>
+        </button>
+      </div>
+    </div>
+
+    <div class="how sticker">
+      <p class="label">Cómo se juega</p>
+      <ol>
+        <li>Tiren de la palanca: las ruedas giran y se frenan de a una.</li>
+        <li>Lean el comienzo del cuento y sigan inventándolo juntos, sin el celular.</li>
+        <li>¿Les gustó algo? Pónganle el candado y vuelvan a tirar solo las otras ruedas.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- JUEGO -->
+  <section class="screen" id="s-play" hidden>
+    <div class="bar">
+      <button class="chip" id="change-age" aria-label="Volver atrás para cambiar la edad">← <span id="age-label">2 y 3 años</span></button>
+      <button class="chip" id="sound" aria-pressed="true">Sonido: sí</button>
+      <span class="count" id="count">Cuento 1</span>
+    </div>
+
+    <div class="stage" id="stage">
+      <div class="machine-wrap">
+        <div class="machine" id="machine">
+          <div class="marquee">
+            <span class="bulbs" aria-hidden="true"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i><i style="--i:5"></i><i style="--i:6"></i><i style="--i:7"></i><i style="--i:8"></i><i style="--i:9"></i></span>
+            <b>Máquina de cuentos</b>
+          </div>
+          <div class="reels" id="reels"></div>
+          <button class="pull" id="pull"><span id="pull-text">¡Tirar de la palanca!</span></button>
+        </div>
+        <button class="lever" id="lever" aria-label="Tirar de la palanca"><span class="slot"></span><span class="base"></span><span class="knob"></span></button>
+      </div>
+      <p class="note" id="note" hidden></p>
+    </div>
+
+    <article class="card" id="card" hidden aria-live="polite">
+      <div class="thumbs" id="thumbs" aria-hidden="true"></div>
+      <p class="label">Así empieza el cuento</p>
+      <p class="story" id="story"></p>
+      <p class="problem" id="problem" hidden></p>
+      <p class="prompt" id="prompt">¿Qué pasa después? ¿Cómo termina?</p>
+      <div class="actions">
+        <button class="btn btn-main" id="go">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
+          ¡A contar!
+        </button>
+        <button class="btn btn-prob" id="add-prob" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 3L5 13h6l-1 8 8-10h-6z"/></svg>
+          ¿Y si pasa algo?
+        </button>
+        <button class="btn btn-soft" id="back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 5l-7 7 7 7M3.5 12H20"/></svg>
+          Volver atrás
+        </button>
+        <button class="btn btn-soft" id="again">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 0113.7-5.6L20 8.7M20 4v4.7h-4.7"/><path d="M20 12a8 8 0 01-13.7 5.6L4 15.3M4 20v-4.7h4.7"/></svg>
+          Otro cuento
+        </button>
+      </div>
+    </article>
+  </section>
+
+  <!-- PAUSA -->
+  <section class="screen" id="s-pause" hidden>
+    <div class="center">
+      <svg class="big-ico" viewBox="0 0 140 140" aria-hidden="true">
+        <path d="M18 40c18-8 34-8 52 4 18-12 34-12 52-4v66c-18-8-34-8-52 4-18-12-34-12-52-4z" fill="#fff" stroke="#4A2B4F" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M70 44v66" stroke="#4A2B4F" stroke-width="4"/>
+        <path d="M30 56q14-4 28 2M30 70q14-4 28 2M82 58q14-6 28-2M82 72q14-6 28-2" fill="none" stroke="#F8BFD0" stroke-width="4" stroke-linecap="round"/>
+        <path d="M104 16l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#FCD9A8" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+        <path d="M30 14l2.4 5.6 5.6 2.4-5.6 2.4L30 30l-2.4-5.6-5.6-2.4 5.6-2.4z" fill="#BCDDF1" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+      </svg>
+      <h2>Dejen el celular y cuenten</h2>
+      <div class="tips sticker">
+        <p class="label">Ideas para contarlo</p>
+        <ul>
+          <li>Túrnense: cada uno dice una parte del cuento.</li>
+          <li>Pónganle voces a los personajes.</li>
+          <li>Al final, elijan juntos un título.</li>
+          <li>Si quieren, después dibujen el cuento.</li>
+        </ul>
+      </div>
+      <button class="btn btn-main btn-wide" id="done">Terminamos · armar otro cuento</button>
+    </div>
+  </section>
+
+  <!-- DESCANSO -->
+  <section class="screen" id="s-rest" hidden>
+    <div class="center">
+      <svg class="big-ico" viewBox="0 0 120 120" aria-hidden="true">
+        <path d="M60 104C28 82 12 62 12 43a22 22 0 0148-9 22 22 0 0148 9c0 19-16 39-48 61z" fill="#F8BFD0" stroke="#4A2B4F" stroke-width="4" stroke-linejoin="round"/>
+        <ellipse cx="44" cy="48" rx="5" ry="6" fill="#4A2B4F"/><ellipse cx="76" cy="48" rx="5" ry="6" fill="#4A2B4F"/>
+        <path d="M46 64q14 13 28 0" fill="none" stroke="#4A2B4F" stroke-width="5" stroke-linecap="round"/>
+      </svg>
+      <h2>¡Inventaron dos cuentos!</h2>
+      <p class="lead">Pueden guardar el celular y seguir contando, o armar uno más con la máquina.</p>
+      <button class="btn btn-main btn-wide" id="finish">Terminar el juego</button>
+      <button class="btn btn-soft btn-wide" id="more">Armar otro cuento</button>
+    </div>
+  </section>
+
+  <!-- CIERRE -->
+  <section class="screen" id="s-end" hidden>
+    <div class="center">
+      <svg class="big-ico" viewBox="0 0 140 140" aria-hidden="true">
+        <path d="M18 40c18-8 34-8 52 4 18-12 34-12 52-4v66c-18-8-34-8-52 4-18-12-34-12-52-4z" fill="#F8BFD0" stroke="#4A2B4F" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M70 44v66" stroke="#4A2B4F" stroke-width="4"/>
+        <path d="M70 34s-9-5-9-11a4.5 4.5 0 019-1.5 4.5 4.5 0 019 1.5c0 6-9 11-9 11z" fill="#D62962"/>
+      </svg>
+      <h2>¡Gracias por contar en familia!</h2>
+      <p class="lead">Los cuentos que inventan juntos se quedan con ustedes. Mañana la máquina les reparte otros.</p>
+      <div class="closing sticker">
+        <span class="label">Un juego de la colección</span>
+        <p>La pantalla abre la puerta; el cuento sucede entre ustedes.</p>
+      </div>
+      <button class="btn btn-soft btn-wide" id="restart">Volver a empezar</button>
+    </div>
+  </section>
+
+  <footer>
+    <p class="prep" id="prep" hidden></p>
+    <span class="sig">Karina Doello <small>· @pensareninicial</small></span>
+    <b>Tecnología que abraza</b>
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   DATOS PARA PERSONALIZAR (solo cambiar lo que está entre comillas)
+   Dejar vacío ("") si no se quiere mostrar.
+   ============================================================ */
+const PERSONALIZAR = {
+  institucion: "",   // ejemplo: "Jardín de Infantes N.° 900"
+  distrito: ""       // ejemplo: "Distrito Escobar"
+};
+/* ============================================================ */
+
+(function(){
+  const $ = id => document.getElementById(id);
+  const partes = [PERSONALIZAR.institucion, PERSONALIZAR.distrito].map(s => (s||'').trim()).filter(Boolean);
+  if(partes.length){ $('prep').textContent = 'Preparado para ' + partes.join(' · '); $('prep').hidden = false; }
+
+  const ILL = {"dragon": "<ellipse cx=\"50\" cy=\"88\" rx=\"34\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M24 74Q8 74 10 60Q12 52 19 56Q15 62 22 66Z\" fill=\"url(#g-gr)\"/>\n<path d=\"M30 52l3-8 4 7M40 48l3-9 4 8M51 47l3-8 4 8\" fill=\"url(#g-or)\"/>\n<ellipse cx=\"46\" cy=\"66\" rx=\"27\" ry=\"19\" fill=\"url(#g-gr)\"/>\n<path d=\"M38 56Q44 36 62 44Q55 49 54 58Z\" fill=\"url(#g-dg)\"/>\n<ellipse cx=\"49\" cy=\"74\" rx=\"17\" ry=\"8.5\" fill=\"url(#g-yl)\" stroke=\"none\"/>\n<path d=\"M36 82q4 4 9 0M56 82q4 4 9 0\" fill=\"none\"/>\n<path d=\"M66 45l1-7 5 5M76 44l3-7 3 6\" fill=\"url(#g-yl)\"/>\n<circle cx=\"72\" cy=\"58\" r=\"14\" fill=\"url(#g-gr)\"/>\n<ellipse cx=\"83\" cy=\"63\" rx=\"9\" ry=\"7\" fill=\"url(#g-gr)\"/>\n</g><ellipse cx=\"40\" cy=\"58\" rx=\"10\" ry=\"5\" transform=\"rotate(-20 40 58)\" fill=\"#fff\" opacity=\".55\"/><ellipse cx=\"68\" cy=\"51\" rx=\"4\" ry=\"2.5\" transform=\"rotate(-20 68 51)\" fill=\"#fff\" opacity=\".55\"/>\n<circle cx=\"86\" cy=\"61\" r=\"1.2\" fill=\"#3E2445\"/><circle cx=\"89\" cy=\"63\" r=\"1.2\" fill=\"#3E2445\"/>\n<path d=\"M65 57q4 3 8 0\" fill=\"none\" stroke=\"#3E2445\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><circle cx=\"70\" cy=\"65\" r=\"3.2\" fill=\"#F28FAE\" opacity=\".55\"/>\n<text x=\"80\" y=\"36\" font-family=\"Baloo 2,sans-serif\" font-weight=\"800\" font-size=\"11\" fill=\"#9982D6\">z</text>\n<text x=\"87\" y=\"27\" font-family=\"Baloo 2,sans-serif\" font-weight=\"800\" font-size=\"14\" fill=\"#9982D6\">Z</text>", "princesa": "<ellipse cx=\"50\" cy=\"92\" rx=\"26\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M30 50Q28 30 50 26Q72 30 70 50L72 66Q50 70 28 66Z\" fill=\"url(#g-br)\"/>\n<path d=\"M34 92L38 66Q50 60 62 66L66 92Z\" fill=\"url(#g-pu)\"/>\n<path d=\"M38 66Q50 74 62 66\" fill=\"none\"/>\n<path d=\"M62 70Q74 66 78 56\" fill=\"none\" stroke=\"#6E4D72\" stroke-width=\"7\"/><path d=\"M62 70Q74 66 78 56\" fill=\"none\" stroke=\"#F5C6A2\" stroke-width=\"4.4\" stroke-linecap=\"round\"/>\n<circle cx=\"80\" cy=\"47\" r=\"8\" fill=\"#E6F3FF\" opacity=\".85\"/><path d=\"M80 55l-1.5 7\" stroke-width=\"3.2\"/>\n<path d=\"M38 70Q30 76 32 86\" fill=\"none\" stroke=\"#6E4D72\" stroke-width=\"7\"/><path d=\"M38 70Q30 76 32 86\" fill=\"none\" stroke=\"#F5C6A2\" stroke-width=\"4.4\" stroke-linecap=\"round\"/>\n<ellipse cx=\"50\" cy=\"46\" rx=\"15\" ry=\"16\" fill=\"url(#g-sk)\"/>\n<path d=\"M35 44Q36 28 50 28Q64 28 65 44Q58 34 50 36Q42 34 35 44Z\" fill=\"url(#g-br)\"/>\n<path d=\"M39 30l2-10 5 6 4-8 4 8 5-6 2 10Q50 26 39 30Z\" fill=\"url(#g-gold)\"/>\n</g><ellipse cx=\"78\" cy=\"44\" rx=\"3\" ry=\"2\" transform=\"rotate(0 78 44)\" fill=\"#fff\" opacity=\".55\"/><ellipse cx=\"45\" cy=\"40\" rx=\"4\" ry=\"2.5\" transform=\"rotate(-20 45 40)\" fill=\"#fff\" opacity=\".55\"/>\n<circle cx=\"44.5\" cy=\"47\" r=\"2.6\" fill=\"#3E2445\"/><circle cx=\"45.4\" cy=\"46.1\" r=\"0.9099999999999999\" fill=\"#fff\"/><circle cx=\"55.5\" cy=\"47\" r=\"2.6\" fill=\"#3E2445\"/><circle cx=\"56.4\" cy=\"46.1\" r=\"0.9099999999999999\" fill=\"#fff\"/><circle cx=\"41\" cy=\"53\" r=\"3.2\" fill=\"#F28FAE\" opacity=\".55\"/><circle cx=\"59\" cy=\"53\" r=\"3.2\" fill=\"#F28FAE\" opacity=\".55\"/>\n<path d=\"M46 54q4 4 8 0\" fill=\"none\" stroke=\"#C2456A\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n<circle cx=\"50\" cy=\"22\" r=\"1.6\" fill=\"#F27A6D\"/>", "perro": "<ellipse cx=\"50\" cy=\"90\" rx=\"28\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M28 44Q18 50 22 70Q30 68 34 56Z\" fill=\"url(#g-br)\"/>\n<path d=\"M72 44Q82 50 78 70Q70 68 66 56Z\" fill=\"url(#g-br)\"/>\n<ellipse cx=\"50\" cy=\"56\" rx=\"22\" ry=\"22\" fill=\"url(#g-or)\"/>\n<ellipse cx=\"50\" cy=\"68\" rx=\"12\" ry=\"9\" fill=\"url(#g-wh)\"/>\n<path d=\"M26 40Q28 20 50 18Q72 20 74 40L80 42Q50 30 20 42Z\" fill=\"url(#g-rd)\"/>\n<path d=\"M44 30h12v9H44z\" fill=\"url(#g-gold)\"/>\n<path d=\"M57 72q-1 7-6 7t-5-6\" fill=\"#F27A9A\"/>\n</g><ellipse cx=\"42\" cy=\"48\" rx=\"6\" ry=\"3.5\" transform=\"rotate(-20 42 48)\" fill=\"#fff\" opacity=\".55\"/><ellipse cx=\"40\" cy=\"26\" rx=\"7\" ry=\"2.5\" transform=\"rotate(-10 40 26)\" fill=\"#fff\" opacity=\".55\"/>\n<circle cx=\"42\" cy=\"55\" r=\"2.6\" fill=\"#3E2445\"/><circle cx=\"42.9\" cy=\"54.1\" r=\"0.9099999999999999\" fill=\"#fff\"/><circle cx=\"58\" cy=\"55\" r=\"2.6\" fill=\"#3E2445\"/><circle cx=\"58.9\" cy=\"54.1\" r=\"0.9099999999999999\" fill=\"#fff\"/><ellipse cx=\"50\" cy=\"64\" rx=\"4\" ry=\"3\" fill=\"#3E2445\"/>\n<path d=\"M44 69q6 4 12 0\" fill=\"none\" stroke=\"#3E2445\" stroke-width=\"1.6\" stroke-linecap=\"round\"/>", "vaca": "<ellipse cx=\"50\" cy=\"92\" rx=\"24\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M42 84l-3 7M58 84l3 7\" stroke-width=\"4\"/>\n<ellipse cx=\"50\" cy=\"66\" rx=\"17\" ry=\"18\" fill=\"url(#g-wh)\"/>\n<path d=\"M40 56q6-4 9 2t-4 8q-7-2-5-10zM56 70q6-3 8 3t-5 6q-5-4-3-9z\" fill=\"#6E4D72\" opacity=\".75\" stroke=\"none\"/>\n<path d=\"M28 78Q50 66 72 78Q74 86 50 86Q26 86 28 78Z\" fill=\"url(#g-pk)\"/>\n<path d=\"M32 80q6 4 12 0q6 4 12 0q6 4 12 0\" fill=\"none\"/>\n<path d=\"M34 60Q24 52 22 42\" fill=\"none\" stroke=\"#6E4D72\" stroke-width=\"7\"/><path d=\"M34 60Q24 52 22 42\" fill=\"none\" stroke=\"#F7F2EF\" stroke-width=\"4.4\" stroke-linecap=\"round\"/>\n<path d=\"M66 60Q76 52 78 42\" fill=\"none\" stroke=\"#6E4D72\" stroke-width=\"7\"/><path d=\"M66 60Q76 52 78 42\" fill=\"none\" stroke=\"#F7F2EF\" stroke-width=\"4.4\" stroke-linecap=\"round\"/>\n<path d=\"M36 22q-6-6-10-2M64 22q6-6 10-2\" fill=\"none\" stroke-width=\"3.4\"/>\n<ellipse cx=\"33\" cy=\"31\" rx=\"7\" ry=\"4\" fill=\"url(#g-wh)\" transform=\"rotate(-25 33 31)\"/>\n<ellipse cx=\"67\" cy=\"31\" rx=\"7\" ry=\"4\" fill=\"url(#g-wh)\" transform=\"rotate(25 67 31)\"/>\n<ellipse cx=\"50\" cy=\"34\" rx=\"15\" ry=\"14\" fill=\"url(#g-wh)\"/>\n<ellipse cx=\"50\" cy=\"43\" rx=\"10\" ry=\"7\" fill=\"url(#g-pk)\"/>\n</g><ellipse cx=\"44\" cy=\"28\" rx=\"5\" ry=\"3\" transform=\"rotate(-20 44 28)\" fill=\"#fff\" opacity=\".55\"/>\n<circle cx=\"44\" cy=\"33\" r=\"2.6\" fill=\"#3E2445\"/><circle cx=\"44.9\" cy=\"32.1\" r=\"0.9099999999999999\" fill=\"#fff\"/><circle cx=\"56\" cy=\"33\" r=\"2.6\" fill=\"#3E2445\"/><circle cx=\"56.9\" cy=\"32.1\" r=\"0.9099999999999999\" fill=\"#fff\"/><circle cx=\"46.5\" cy=\"43\" r=\"1.4\" fill=\"#C2456A\"/><circle cx=\"53.5\" cy=\"43\" r=\"1.4\" fill=\"#C2456A\"/>\n<path d=\"M16 32Q17.0 35.0 20 36Q17.0 37.0 16 40Q15.0 37.0 12 36Q15.0 35.0 16 32Z\" fill=\"#F8B4C8\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M86 30.6Q86.85 33.15 89.4 34Q86.85 34.85 86 37.4Q85.15 34.85 82.6 34Q85.15 33.15 86 30.6Z\" fill=\"#C9B8F2\" stroke=\"#6E4D72\" stroke-width=\"1\"/>", "oso": "<ellipse cx=\"50\" cy=\"92\" rx=\"30\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<ellipse cx=\"50\" cy=\"70\" rx=\"24\" ry=\"20\" fill=\"url(#g-br)\"/>\n<ellipse cx=\"50\" cy=\"74\" rx=\"14\" ry=\"12\" fill=\"url(#g-sand)\"/>\n<ellipse cx=\"34\" cy=\"88\" rx=\"8\" ry=\"5\" fill=\"url(#g-br)\"/><ellipse cx=\"66\" cy=\"88\" rx=\"8\" ry=\"5\" fill=\"url(#g-br)\"/>\n<circle cx=\"32\" cy=\"24\" r=\"7\" fill=\"url(#g-br)\"/><circle cx=\"68\" cy=\"24\" r=\"7\" fill=\"url(#g-br)\"/>\n<circle cx=\"32\" cy=\"24\" r=\"3.4\" fill=\"#F5C6A2\" stroke=\"none\"/><circle cx=\"68\" cy=\"24\" r=\"3.4\" fill=\"#F5C6A2\" stroke=\"none\"/>\n<circle cx=\"50\" cy=\"38\" r=\"19\" fill=\"url(#g-br)\"/>\n<ellipse cx=\"50\" cy=\"46\" rx=\"9\" ry=\"7\" fill=\"url(#g-sand)\"/>\n<path d=\"M58 62h16l-2 20H60z\" fill=\"url(#g-gold)\"/><path d=\"M57 60h18v5H57z\" fill=\"url(#g-br)\"/>\n<path d=\"M60 66q3 6 0 9\" fill=\"none\" stroke=\"#D59D1A\" stroke-width=\"3\"/>\n<path d=\"M38 66q12 4 20 2\" fill=\"none\" stroke=\"#6E4D72\" stroke-width=\"7\"/><path d=\"M38 66q12 4 20 2\" fill=\"none\" stroke=\"#C9925F\" stroke-width=\"4.4\" stroke-linecap=\"round\"/>\n</g><ellipse cx=\"42\" cy=\"30\" rx=\"6\" ry=\"3.5\" transform=\"rotate(-20 42 30)\" fill=\"#fff\" opacity=\".55\"/><ellipse cx=\"63\" cy=\"68\" rx=\"2.5\" ry=\"5\" transform=\"rotate(0 63 68)\" fill=\"#fff\" opacity=\".55\"/>\n<circle cx=\"43\" cy=\"36\" r=\"2.6\" fill=\"#3E2445\"/><circle cx=\"43.9\" cy=\"35.1\" r=\"0.9099999999999999\" fill=\"#fff\"/><circle cx=\"57\" cy=\"36\" r=\"2.6\" fill=\"#3E2445\"/><circle cx=\"57.9\" cy=\"35.1\" r=\"0.9099999999999999\" fill=\"#fff\"/><ellipse cx=\"50\" cy=\"43\" rx=\"3.6\" ry=\"2.6\" fill=\"#3E2445\"/>\n<path d=\"M46 48q4 3 8 0\" fill=\"none\" stroke=\"#3E2445\" stroke-width=\"1.6\" stroke-linecap=\"round\"/>\n<path d=\"M55 50q2 4 4 1\" fill=\"#F27A9A\"/>", "gallina": "<ellipse cx=\"48\" cy=\"91\" rx=\"28\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M40 82l-2 8h-5M54 82l2 8h5\" fill=\"none\" stroke=\"#E4874A\" stroke-width=\"2.6\"/>\n<path d=\"M20 50Q16 36 26 40Q24 48 30 52Z\" fill=\"url(#g-wh)\"/>\n<ellipse cx=\"46\" cy=\"64\" rx=\"24\" ry=\"20\" fill=\"url(#g-wh)\"/>\n<path d=\"M34 60Q44 52 54 62Q46 70 34 60Z\" fill=\"url(#g-gy)\"/>\n<circle cx=\"62\" cy=\"40\" r=\"13\" fill=\"url(#g-wh)\"/>\n<path d=\"M56 28q2-7 6-3 3-6 6 0 4-2 3 5z\" fill=\"url(#g-rd)\"/>\n<path d=\"M74 40l9 3-9 4z\" fill=\"url(#g-yl)\"/>\n<path d=\"M70 48q2 6-2 7-3-2-1-7z\" fill=\"url(#g-rd)\"/>\n<rect x=\"60\" y=\"66\" width=\"20\" height=\"15\" rx=\"3\" fill=\"url(#g-br)\"/><path d=\"M66 66v-4h8v4M60 72h20\" fill=\"none\"/>\n<circle cx=\"72\" cy=\"58\" r=\"0\" />\n</g><ellipse cx=\"38\" cy=\"56\" rx=\"8\" ry=\"4\" transform=\"rotate(-20 38 56)\" fill=\"#fff\" opacity=\".55\"/><ellipse cx=\"58\" cy=\"35\" rx=\"3\" ry=\"2\" transform=\"rotate(0 58 35)\" fill=\"#fff\" opacity=\".55\"/>\n<circle cx=\"66\" cy=\"39\" r=\"2.3\" fill=\"#3E2445\"/><circle cx=\"66.9\" cy=\"38.1\" r=\"0.8049999999999999\" fill=\"#fff\"/>\n<path d=\"M54 30q-8-10-14-6 6 1 8 8\" fill=\"url(#g-or)\" stroke=\"#6E4D72\" stroke-width=\"1.4\"/>\n<path d=\"M40 22h18\" stroke=\"#E4874A\" stroke-width=\"2.2\" stroke-linecap=\"round\"/>", "robot": "<ellipse cx=\"50\" cy=\"92\" rx=\"26\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M50 14v8\" stroke-width=\"2.4\"/><circle cx=\"50\" cy=\"12\" r=\"4\" fill=\"url(#g-pk)\"/>\n<rect x=\"30\" y=\"22\" width=\"40\" height=\"30\" rx=\"11\" fill=\"url(#g-bl)\"/>\n<rect x=\"36\" y=\"28\" width=\"28\" height=\"18\" rx=\"7\" fill=\"#3E4A7A\"/>\n<rect x=\"34\" y=\"56\" width=\"32\" height=\"28\" rx=\"9\" fill=\"url(#g-gy)\"/>\n<path d=\"M50 78s-8-4.6-8-9.4a4 4 0 018-1.3 4 4 0 018 1.3c0 4.8-8 9.4-8 9.4z\" fill=\"url(#g-rd)\"/>\n<path d=\"M34 62Q22 62 20 52\" fill=\"none\" stroke-width=\"6.5\"/><path d=\"M34 62Q22 62 20 52\" fill=\"none\" stroke=\"#CFCFDC\" stroke-width=\"4\" stroke-linecap=\"round\"/>\n<path d=\"M66 62Q78 62 80 52\" fill=\"none\" stroke-width=\"6.5\"/><path d=\"M66 62Q78 62 80 52\" fill=\"none\" stroke=\"#CFCFDC\" stroke-width=\"4\" stroke-linecap=\"round\"/>\n<circle cx=\"20\" cy=\"49\" r=\"4\" fill=\"url(#g-bl)\"/><circle cx=\"80\" cy=\"49\" r=\"4\" fill=\"url(#g-bl)\"/>\n<rect x=\"38\" y=\"84\" width=\"8\" height=\"6\" rx=\"2\" fill=\"url(#g-bl)\"/><rect x=\"54\" y=\"84\" width=\"8\" height=\"6\" rx=\"2\" fill=\"url(#g-bl)\"/>\n</g><ellipse cx=\"38\" cy=\"27\" rx=\"6\" ry=\"2.5\" transform=\"rotate(-10 38 27)\" fill=\"#fff\" opacity=\".55\"/><ellipse cx=\"40\" cy=\"60\" rx=\"4\" ry=\"2.5\" transform=\"rotate(0 40 60)\" fill=\"#fff\" opacity=\".55\"/>\n<circle cx=\"44\" cy=\"36\" r=\"3\" fill=\"#8EF0D2\"/><circle cx=\"56\" cy=\"36\" r=\"3\" fill=\"#8EF0D2\"/>\n<path d=\"M45 41q5 3 10 0\" fill=\"none\" stroke=\"#8EF0D2\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><circle cx=\"40\" cy=\"41\" r=\"2.2\" fill=\"#F28FAE\" opacity=\".55\"/><circle cx=\"60\" cy=\"41\" r=\"2.2\" fill=\"#F28FAE\" opacity=\".55\"/>", "astronauta": "<ellipse cx=\"50\" cy=\"92\" rx=\"26\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<rect x=\"32\" y=\"56\" width=\"36\" height=\"32\" rx=\"12\" fill=\"url(#g-wh)\"/>\n<rect x=\"42\" y=\"64\" width=\"16\" height=\"10\" rx=\"3\" fill=\"url(#g-bl)\"/>\n<circle cx=\"46\" cy=\"69\" r=\"1.6\" fill=\"#F27A6D\" stroke=\"none\"/><circle cx=\"52\" cy=\"69\" r=\"1.6\" fill=\"#FFD86B\" stroke=\"none\"/>\n<path d=\"M32 64Q22 66 20 56\" fill=\"none\" stroke-width=\"8\"/><path d=\"M32 64Q22 66 20 56\" fill=\"none\" stroke=\"#F7F2EF\" stroke-width=\"5.4\" stroke-linecap=\"round\"/>\n<path d=\"M68 64Q78 70 82 62\" fill=\"none\" stroke-width=\"8\"/><path d=\"M68 64Q78 70 82 62\" fill=\"none\" stroke=\"#F7F2EF\" stroke-width=\"5.4\" stroke-linecap=\"round\"/>\n<circle cx=\"50\" cy=\"36\" r=\"22\" fill=\"url(#g-wh)\"/>\n<circle cx=\"50\" cy=\"37\" r=\"16\" fill=\"#DCEEFF\"/>\n<ellipse cx=\"50\" cy=\"39\" rx=\"11\" ry=\"11.5\" fill=\"url(#g-sk2)\" stroke=\"none\"/>\n<path d=\"M39 38Q39 26 50 26Q61 26 61 38Q56 31 50 32Q44 31 39 38Z\" fill=\"#3B2418\" stroke=\"none\"/>\n</g><ellipse cx=\"40\" cy=\"26\" rx=\"7\" ry=\"3.5\" transform=\"rotate(-30 40 26)\" fill=\"#fff\" opacity=\".55\"/>\n<circle cx=\"46\" cy=\"39\" r=\"2.2\" fill=\"#3E2445\"/><circle cx=\"46.9\" cy=\"38.1\" r=\"0.77\" fill=\"#fff\"/><circle cx=\"54\" cy=\"39\" r=\"2.2\" fill=\"#3E2445\"/><circle cx=\"54.9\" cy=\"38.1\" r=\"0.77\" fill=\"#fff\"/><circle cx=\"43\" cy=\"44\" r=\"2.4\" fill=\"#F28FAE\" opacity=\".55\"/><circle cx=\"57\" cy=\"44\" r=\"2.4\" fill=\"#F28FAE\" opacity=\".55\"/>\n<path d=\"M47 45q3 2.5 6 0\" fill=\"none\" stroke=\"#C2456A\" stroke-width=\"1.6\" stroke-linecap=\"round\"/>\n<path d=\"M84 17Q85.25 20.75 89 22Q85.25 23.25 84 27Q82.75 23.25 79 22Q82.75 20.75 84 17Z\" fill=\"#FFD86B\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M16 22.6Q16.85 25.15 19.4 26Q16.85 26.85 16 29.4Q15.15 26.85 12.6 26Q15.15 25.15 16 22.6Z\" fill=\"#C9B8F2\" stroke=\"#6E4D72\" stroke-width=\"1\"/>", "sapo": "<ellipse cx=\"50\" cy=\"90\" rx=\"30\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<ellipse cx=\"28\" cy=\"84\" rx=\"11\" ry=\"5\" fill=\"url(#g-gr)\"/><ellipse cx=\"72\" cy=\"84\" rx=\"11\" ry=\"5\" fill=\"url(#g-gr)\"/>\n<ellipse cx=\"50\" cy=\"66\" rx=\"26\" ry=\"20\" fill=\"url(#g-gr)\"/>\n<ellipse cx=\"50\" cy=\"72\" rx=\"16\" ry=\"11\" fill=\"url(#g-yl)\" stroke=\"none\"/>\n<circle cx=\"36\" cy=\"44\" r=\"9\" fill=\"url(#g-gr)\"/><circle cx=\"64\" cy=\"44\" r=\"9\" fill=\"url(#g-gr)\"/>\n<ellipse cx=\"50\" cy=\"58\" rx=\"9\" ry=\"7\" fill=\"#C2456A\"/>\n<path d=\"M44 61q6 4 12 0\" fill=\"#F27A9A\" stroke=\"none\"/>\n</g><ellipse cx=\"38\" cy=\"58\" rx=\"8\" ry=\"4\" transform=\"rotate(-20 38 58)\" fill=\"#fff\" opacity=\".55\"/>\n<circle cx=\"36\" cy=\"44\" r=\"4.4\" fill=\"#fff\"/><circle cx=\"64\" cy=\"44\" r=\"4.4\" fill=\"#fff\"/><circle cx=\"36\" cy=\"44.5\" r=\"2.4\" fill=\"#3E2445\"/><circle cx=\"36.9\" cy=\"43.6\" r=\"0.84\" fill=\"#fff\"/><circle cx=\"64\" cy=\"44.5\" r=\"2.4\" fill=\"#3E2445\"/><circle cx=\"64.9\" cy=\"43.6\" r=\"0.84\" fill=\"#fff\"/>\n<circle cx=\"30\" cy=\"58\" r=\"3.2\" fill=\"#F28FAE\" opacity=\".55\"/><circle cx=\"70\" cy=\"58\" r=\"3.2\" fill=\"#F28FAE\" opacity=\".55\"/>\n<path d=\"M80 26v14\" stroke=\"#9982D6\" stroke-width=\"2.2\" stroke-linecap=\"round\"/><ellipse cx=\"77\" cy=\"40\" rx=\"3.6\" ry=\"2.8\" fill=\"#9982D6\"/>\n<path d=\"M86 14v12\" stroke=\"#E28BA6\" stroke-width=\"2.2\" stroke-linecap=\"round\"/><ellipse cx=\"83\" cy=\"26\" rx=\"3.2\" ry=\"2.5\" fill=\"#E28BA6\"/>", "conejo": "<ellipse cx=\"50\" cy=\"92\" rx=\"26\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<ellipse cx=\"50\" cy=\"72\" rx=\"18\" ry=\"18\" fill=\"url(#g-wh)\"/>\n<ellipse cx=\"50\" cy=\"76\" rx=\"10\" ry=\"10\" fill=\"url(#g-pk)\" stroke=\"none\" opacity=\".6\"/>\n<ellipse cx=\"40\" cy=\"26\" rx=\"6\" ry=\"17\" fill=\"url(#g-wh)\" transform=\"rotate(-12 40 26)\"/>\n<ellipse cx=\"60\" cy=\"26\" rx=\"6\" ry=\"17\" fill=\"url(#g-wh)\" transform=\"rotate(12 60 26)\"/>\n<ellipse cx=\"40\" cy=\"26\" rx=\"2.6\" ry=\"11\" fill=\"#F8B4C8\" stroke=\"none\" transform=\"rotate(-12 40 26)\"/>\n<ellipse cx=\"60\" cy=\"26\" rx=\"2.6\" ry=\"11\" fill=\"#F8B4C8\" stroke=\"none\" transform=\"rotate(12 60 26)\"/>\n<circle cx=\"50\" cy=\"48\" r=\"15\" fill=\"url(#g-wh)\"/>\n<path d=\"M66 64L82 40\" stroke-width=\"3.4\"/><path d=\"M66 64L82 40\" stroke=\"#3E2445\" stroke-width=\"2\"/>\n<path d=\"M68 66Q62 62 62 58\" fill=\"none\" stroke=\"#6E4D72\" stroke-width=\"7\"/><path d=\"M68 66Q62 62 62 58\" fill=\"none\" stroke=\"#F7F2EF\" stroke-width=\"4.4\" stroke-linecap=\"round\"/>\n</g><ellipse cx=\"44\" cy=\"42\" rx=\"5\" ry=\"3\" transform=\"rotate(-20 44 42)\" fill=\"#fff\" opacity=\".55\"/>\n<circle cx=\"44\" cy=\"47\" r=\"2.4\" fill=\"#3E2445\"/><circle cx=\"44.9\" cy=\"46.1\" r=\"0.84\" fill=\"#fff\"/><circle cx=\"56\" cy=\"47\" r=\"2.4\" fill=\"#3E2445\"/><circle cx=\"56.9\" cy=\"46.1\" r=\"0.84\" fill=\"#fff\"/><ellipse cx=\"50\" cy=\"53\" rx=\"2.4\" ry=\"1.8\" fill=\"#E28BA6\"/>\n<path d=\"M46 56q4 3 8 0\" fill=\"none\" stroke=\"#3E2445\" stroke-width=\"1.5\" stroke-linecap=\"round\"/><circle cx=\"41\" cy=\"53\" r=\"3.2\" fill=\"#F28FAE\" opacity=\".55\"/><circle cx=\"59\" cy=\"53\" r=\"3.2\" fill=\"#F28FAE\" opacity=\".55\"/>\n<path d=\"M84 30Q85.5 34.5 90 36Q85.5 37.5 84 42Q82.5 37.5 78 36Q82.5 34.5 84 30Z\" fill=\"#FFD86B\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M76 21Q76.75 23.25 79 24Q76.75 24.75 76 27Q75.25 24.75 73 24Q75.25 23.25 76 21Z\" fill=\"#F8B4C8\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M92 45.4Q92.65 47.35 94.6 48Q92.65 48.65 92 50.6Q91.35 48.65 89.4 48Q91.35 47.35 92 45.4Z\" fill=\"#A9D3F5\" stroke=\"#6E4D72\" stroke-width=\"1\"/>", "bruja": "<ellipse cx=\"50\" cy=\"92\" rx=\"26\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M30 92Q32 66 50 62Q68 66 70 92Z\" fill=\"url(#g-pu)\"/>\n<path d=\"M30 46Q26 66 36 74M70 46Q74 66 64 74\" fill=\"none\" stroke=\"#E4874A\" stroke-width=\"7\"/>\n<path d=\"M30 46Q26 66 36 74M70 46Q74 66 64 74\" fill=\"none\" stroke=\"#FDB57A\" stroke-width=\"4.6\"/>\n<ellipse cx=\"50\" cy=\"50\" rx=\"15\" ry=\"16\" fill=\"url(#g-sk)\"/>\n<path d=\"M22 40Q50 30 78 40Q74 46 50 42Q26 46 22 40Z\" fill=\"url(#g-pu)\"/>\n<path d=\"M36 38Q42 14 56 10Q66 8 74 18Q64 16 60 22Q62 32 64 38Z\" fill=\"url(#g-pu)\"/>\n<path d=\"M38 36Q50 32 64 36\" fill=\"none\" stroke=\"#FFD86B\" stroke-width=\"3\"/>\n<circle cx=\"44\" cy=\"51\" r=\"5\" fill=\"#fff\" fill-opacity=\".35\"/><circle cx=\"57\" cy=\"53\" r=\"5\" fill=\"#fff\" fill-opacity=\".35\"/><path d=\"M49 52l3 1\"/>\n</g><ellipse cx=\"42\" cy=\"20\" rx=\"4\" ry=\"6\" transform=\"rotate(-30 42 20)\" fill=\"#fff\" opacity=\".55\"/>\n<circle cx=\"44\" cy=\"51\" r=\"2\" fill=\"#3E2445\"/><circle cx=\"44.9\" cy=\"50.1\" r=\"0.7\" fill=\"#fff\"/><circle cx=\"57\" cy=\"53\" r=\"2\" fill=\"#3E2445\"/><circle cx=\"57.9\" cy=\"52.1\" r=\"0.7\" fill=\"#fff\"/><circle cx=\"41\" cy=\"58\" r=\"3.2\" fill=\"#F28FAE\" opacity=\".55\"/><circle cx=\"60\" cy=\"59\" r=\"3.2\" fill=\"#F28FAE\" opacity=\".55\"/>\n<path d=\"M47 60q3 2 6-1\" fill=\"none\" stroke=\"#C2456A\" stroke-width=\"1.6\" stroke-linecap=\"round\"/>\n<path d=\"M76 22l3 3-3 3\" fill=\"none\" stroke=\"#9982D6\" stroke-width=\"2\"/><path d=\"M82 44.6Q82.85 47.15 85.4 48Q82.85 48.85 82 51.4Q81.15 48.85 78.6 48Q81.15 47.15 82 44.6Z\" fill=\"#FFD86B\" stroke=\"#6E4D72\" stroke-width=\"1\"/>", "lobo": "<ellipse cx=\"50\" cy=\"90\" rx=\"28\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M30 40L26 14L44 30Z\" fill=\"url(#g-gy)\"/><path d=\"M70 40L74 14L56 30Z\" fill=\"url(#g-gy)\"/>\n<path d=\"M31 32L29 20L39 29Z\" fill=\"#F8B4C8\" stroke=\"none\"/><path d=\"M69 32L71 20L61 29Z\" fill=\"#F8B4C8\" stroke=\"none\"/>\n<path d=\"M24 50Q24 28 50 26Q76 28 76 50Q76 66 62 74L50 80L38 74Q24 66 24 50Z\" fill=\"url(#g-gy)\"/>\n<path d=\"M36 58Q50 50 64 58Q62 76 50 80Q38 76 36 58Z\" fill=\"url(#g-wh)\"/>\n<path d=\"M52 72q4 8-2 10-5-2-3-9\" fill=\"#F27A9A\"/>\n</g><ellipse cx=\"38\" cy=\"38\" rx=\"7\" ry=\"3.5\" transform=\"rotate(-20 38 38)\" fill=\"#fff\" opacity=\".55\"/>\n<circle cx=\"40\" cy=\"48\" r=\"2.6\" fill=\"#3E2445\"/><circle cx=\"40.9\" cy=\"47.1\" r=\"0.9099999999999999\" fill=\"#fff\"/><circle cx=\"60\" cy=\"48\" r=\"2.6\" fill=\"#3E2445\"/><circle cx=\"60.9\" cy=\"47.1\" r=\"0.9099999999999999\" fill=\"#fff\"/><ellipse cx=\"50\" cy=\"62\" rx=\"5\" ry=\"3.6\" fill=\"#3E2445\"/>\n<path d=\"M42 70q8 5 16 0\" fill=\"none\" stroke=\"#3E2445\" stroke-width=\"1.6\" stroke-linecap=\"round\"/>\n<path d=\"M34 42l8 2M66 42l-8 2\" stroke=\"#6E4D72\" stroke-width=\"1.8\" stroke-linecap=\"round\"/>\n<path d=\"M80 72q4 4 0 8M86 68q6 8 0 14\" fill=\"none\" stroke=\"#A9D3F5\" stroke-width=\"2\" stroke-linecap=\"round\"/>", "loro": "<g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M14 84Q50 78 88 86\" fill=\"none\" stroke=\"#8A5A34\" stroke-width=\"5\"/>\n<path d=\"M44 70L36 94L46 90L48 96L54 72Z\" fill=\"url(#g-bl)\"/>\n<ellipse cx=\"48\" cy=\"58\" rx=\"16\" ry=\"20\" fill=\"url(#g-gr)\"/>\n<path d=\"M36 56Q30 72 42 82Q46 70 44 58Z\" fill=\"url(#g-yl)\"/>\n<circle cx=\"52\" cy=\"36\" r=\"13\" fill=\"url(#g-rd)\"/>\n<path d=\"M62 34Q72 36 68 46Q64 44 60 42Z\" fill=\"url(#g-yl)\"/>\n<path d=\"M44 80l-1 5M52 80l1 5\" stroke=\"#E4874A\" stroke-width=\"2.2\"/>\n<path d=\"M64 10h22a5 5 0 015 5v8a5 5 0 01-5 5h-12l-6 5v-5h-4a5 5 0 01-5-5v-8a5 5 0 015-5z\" fill=\"#fff\"/>\n</g><ellipse cx=\"46\" cy=\"30\" rx=\"5\" ry=\"3\" transform=\"rotate(-20 46 30)\" fill=\"#fff\" opacity=\".55\"/><ellipse cx=\"42\" cy=\"50\" rx=\"4\" ry=\"7\" transform=\"rotate(-10 42 50)\" fill=\"#fff\" opacity=\".55\"/>\n<circle cx=\"55\" cy=\"34\" r=\"4\" fill=\"#fff\"/><circle cx=\"55.5\" cy=\"34.4\" r=\"2\" fill=\"#3E2445\"/><circle cx=\"56.4\" cy=\"33.5\" r=\"0.7\" fill=\"#fff\"/>\n<circle cx=\"70\" cy=\"19\" r=\"1.8\" fill=\"#9982D6\"/><circle cx=\"76\" cy=\"19\" r=\"1.8\" fill=\"#E28BA6\"/><circle cx=\"82\" cy=\"19\" r=\"1.8\" fill=\"#6DB068\"/>", "fantasma": "<ellipse cx=\"50\" cy=\"92\" rx=\"22\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M28 84V44Q28 20 50 20Q72 20 72 44V84L64 78L57 86L50 78L43 86L36 78Z\" fill=\"url(#g-wh)\"/>\n<path d=\"M28 54Q18 52 20 44M72 54Q82 52 80 44\" fill=\"none\" stroke-width=\"6\"/>\n<path d=\"M28 54Q18 52 20 44M72 54Q82 52 80 44\" fill=\"none\" stroke=\"#F7F2EF\" stroke-width=\"3.6\" stroke-linecap=\"round\"/>\n</g><ellipse cx=\"40\" cy=\"32\" rx=\"7\" ry=\"4\" transform=\"rotate(-25 40 32)\" fill=\"#fff\" opacity=\".55\"/>\n<ellipse cx=\"42\" cy=\"46\" rx=\"3.4\" ry=\"4.4\" fill=\"#3E2445\"/><ellipse cx=\"58\" cy=\"46\" rx=\"3.4\" ry=\"4.4\" fill=\"#3E2445\"/>\n<circle cx=\"43\" cy=\"44.5\" r=\"1.2\" fill=\"#fff\"/><circle cx=\"59\" cy=\"44.5\" r=\"1.2\" fill=\"#fff\"/>\n<ellipse cx=\"50\" cy=\"58\" rx=\"4\" ry=\"5\" fill=\"#C2456A\"/><circle cx=\"37\" cy=\"54\" r=\"3.2\" fill=\"#F28FAE\" opacity=\".55\"/><circle cx=\"63\" cy=\"54\" r=\"3.2\" fill=\"#F28FAE\" opacity=\".55\"/>\n<path d=\"M16 30q-3 3 0 6t0 6M84 30q3 3 0 6t0 6\" fill=\"none\" stroke=\"#C9B8F2\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n<path d=\"M60 14q4-4 8 0\" fill=\"none\" stroke=\"#C9B8F2\" stroke-width=\"2\" stroke-linecap=\"round\"/>", "tortuga": "<ellipse cx=\"54\" cy=\"88\" rx=\"32\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M8 66h12M4 74h14M10 82h10\" stroke=\"#A9D3F5\" stroke-width=\"2.6\"/>\n<ellipse cx=\"38\" cy=\"82\" rx=\"6\" ry=\"5\" fill=\"url(#g-gr)\"/><ellipse cx=\"70\" cy=\"82\" rx=\"6\" ry=\"5\" fill=\"url(#g-gr)\"/>\n<path d=\"M30 78Q30 46 54 46Q78 46 78 78Z\" fill=\"url(#g-dg)\"/>\n<path d=\"M44 52l4 12-6 12M64 52l-4 12 6 12M36 66h12l6 0 6 0h12\" fill=\"none\" stroke=\"#3E8549\" stroke-width=\"1.6\"/>\n<path d=\"M78 72Q90 72 90 60Q90 52 82 52Q76 52 76 60Z\" fill=\"url(#g-gr)\"/>\n<path d=\"M26 78h56\" stroke-width=\"2.6\"/>\n<path d=\"M30 76q-8 0-10-4\" fill=\"none\" stroke-width=\"5\"/><path d=\"M30 76q-8 0-10-4\" fill=\"none\" stroke=\"#A9DC9A\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n</g><ellipse cx=\"46\" cy=\"54\" rx=\"8\" ry=\"3.5\" transform=\"rotate(-15 46 54)\" fill=\"#fff\" opacity=\".55\"/>\n<circle cx=\"84\" cy=\"58\" r=\"3\" fill=\"#fff\"/><circle cx=\"84.5\" cy=\"58.4\" r=\"1.8\" fill=\"#3E2445\"/><circle cx=\"85.4\" cy=\"57.5\" r=\"0.63\" fill=\"#fff\"/>\n<path d=\"M82 66q3 2 6-1\" fill=\"none\" stroke=\"#3E2445\" stroke-width=\"1.4\" stroke-linecap=\"round\"/><circle cx=\"80\" cy=\"63\" r=\"2.4\" fill=\"#F28FAE\" opacity=\".55\"/>", "dino": "<ellipse cx=\"46\" cy=\"90\" rx=\"32\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M18 74Q4 76 6 64Q12 70 22 66Z\" fill=\"url(#g-mint)\"/>\n<ellipse cx=\"38\" cy=\"70\" rx=\"22\" ry=\"15\" fill=\"url(#g-mint)\"/>\n<path d=\"M26 82v8M34 83v8M44 83v8M52 82v8\" stroke-width=\"5\"/>\n<path d=\"M26 82v8M34 83v8M44 83v8M52 82v8\" stroke=\"#A6E3CB\" stroke-width=\"3\"/>\n<path d=\"M52 64Q60 54 62 34Q62 24 70 22Q80 22 80 30Q80 36 72 38Q68 52 58 70Z\" fill=\"url(#g-mint)\"/>\n<path d=\"M28 58l3-5 3 5M38 56l3-5 3 5M48 58l3-5 3 5\" fill=\"url(#g-pk)\"/>\n<path d=\"M80 30Q90 26 94 32Q90 40 80 36Z\" fill=\"url(#g-dg)\"/><path d=\"M82 32h10\" fill=\"none\"/>\n</g><ellipse cx=\"30\" cy=\"64\" rx=\"8\" ry=\"4\" transform=\"rotate(-15 30 64)\" fill=\"#fff\" opacity=\".55\"/><ellipse cx=\"68\" cy=\"26\" rx=\"3\" ry=\"2\" transform=\"rotate(0 68 26)\" fill=\"#fff\" opacity=\".55\"/>\n<circle cx=\"72\" cy=\"28\" r=\"2.2\" fill=\"#3E2445\"/><circle cx=\"72.9\" cy=\"27.1\" r=\"0.77\" fill=\"#fff\"/><circle cx=\"75\" cy=\"34\" r=\"2.4\" fill=\"#F28FAE\" opacity=\".55\"/>", "rey": "<ellipse cx=\"50\" cy=\"92\" rx=\"26\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M28 92Q30 66 50 64Q70 66 72 92Z\" fill=\"url(#g-rd)\"/>\n<path d=\"M44 66l6 12 6-12\" fill=\"url(#g-wh)\"/>\n<ellipse cx=\"50\" cy=\"44\" rx=\"17\" ry=\"18\" fill=\"url(#g-sk)\"/>\n<path d=\"M34 50Q36 70 50 72Q64 70 66 50Q58 58 50 56Q42 58 34 50Z\" fill=\"url(#g-wh)\"/>\n<path d=\"M33 30l3-16 8 9 6-12 6 12 8-9 3 16Q50 25 33 30Z\" fill=\"url(#g-gold)\"/>\n<circle cx=\"50\" cy=\"20\" r=\"2.4\" fill=\"#F27A6D\" stroke=\"none\"/>\n</g><ellipse cx=\"44\" cy=\"36\" rx=\"5\" ry=\"3\" transform=\"rotate(-20 44 36)\" fill=\"#fff\" opacity=\".55\"/><ellipse cx=\"40\" cy=\"22\" rx=\"3\" ry=\"2\" transform=\"rotate(0 40 22)\" fill=\"#fff\" opacity=\".55\"/>\n<circle cx=\"43\" cy=\"44\" r=\"2.6\" fill=\"#3E2445\"/><circle cx=\"43.9\" cy=\"43.1\" r=\"0.9099999999999999\" fill=\"#fff\"/><circle cx=\"57\" cy=\"44\" r=\"2.6\" fill=\"#3E2445\"/><circle cx=\"57.9\" cy=\"43.1\" r=\"0.9099999999999999\" fill=\"#fff\"/>\n<path d=\"M38 37l9 3M62 37l-9 3\" stroke=\"#3E2445\" stroke-width=\"2.2\" stroke-linecap=\"round\"/>\n<circle cx=\"38\" cy=\"50\" r=\"3.6\" fill=\"#F28FAE\" opacity=\".55\"/><circle cx=\"62\" cy=\"50\" r=\"3.6\" fill=\"#F28FAE\" opacity=\".55\"/>\n<path d=\"M45 60q5-3 10 0\" fill=\"none\" stroke=\"#3E2445\" stroke-width=\"1.8\" stroke-linecap=\"round\"/>\n<path d=\"M78 24l4-4M82 30h5M78 36l4 3\" stroke=\"#F27A6D\" stroke-width=\"2\" stroke-linecap=\"round\"/>", "abeja": "<ellipse cx=\"50\" cy=\"90\" rx=\"24\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<ellipse cx=\"36\" cy=\"38\" rx=\"12\" ry=\"16\" fill=\"#EAF6FF\" fill-opacity=\".85\" transform=\"rotate(-25 36 38)\"/>\n<ellipse cx=\"62\" cy=\"36\" rx=\"12\" ry=\"16\" fill=\"#EAF6FF\" fill-opacity=\".85\" transform=\"rotate(25 62 36)\"/>\n<ellipse cx=\"50\" cy=\"64\" rx=\"20\" ry=\"22\" fill=\"url(#g-yl)\"/>\n<path d=\"M31 58h38M30 70h40\" stroke=\"#5B3A5F\" stroke-width=\"5\"/>\n<path d=\"M50 86l-3 6h6z\" fill=\"#5B3A5F\"/>\n<circle cx=\"50\" cy=\"40\" r=\"13\" fill=\"url(#g-yl)\"/>\n<path d=\"M44 28q-4-10-10-10M56 28q4-10 10-10\" fill=\"none\"/>\n<circle cx=\"34\" cy=\"18\" r=\"2.6\" fill=\"#5B3A5F\"/><circle cx=\"66\" cy=\"18\" r=\"2.6\" fill=\"#5B3A5F\"/>\n<path d=\"M30 66Q20 60 24 50\" fill=\"none\" stroke-width=\"5\"/><path d=\"M30 66Q20 60 24 50\" fill=\"none\" stroke=\"#FFD86B\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<path d=\"M70 66Q82 66 84 58\" fill=\"none\" stroke-width=\"5\"/><path d=\"M70 66Q82 66 84 58\" fill=\"none\" stroke=\"#FFD86B\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n</g><ellipse cx=\"42\" cy=\"52\" rx=\"6\" ry=\"5\" transform=\"rotate(-20 42 52)\" fill=\"#fff\" opacity=\".55\"/><ellipse cx=\"46\" cy=\"35\" rx=\"3.6\" ry=\"2.4\" transform=\"rotate(0 46 35)\" fill=\"#fff\" opacity=\".55\"/>\n<circle cx=\"45\" cy=\"40\" r=\"2.2\" fill=\"#3E2445\"/><circle cx=\"45.9\" cy=\"39.1\" r=\"0.77\" fill=\"#fff\"/><circle cx=\"55\" cy=\"40\" r=\"2.2\" fill=\"#3E2445\"/><circle cx=\"55.9\" cy=\"39.1\" r=\"0.77\" fill=\"#fff\"/><path d=\"M41 35l6 2M59 35l-6 2\" stroke=\"#3E2445\" stroke-width=\"1.6\" stroke-linecap=\"round\"/>\n<path d=\"M46 46h8\" stroke=\"#3E2445\" stroke-width=\"1.8\" stroke-linecap=\"round\"/><circle cx=\"41\" cy=\"45\" r=\"2.4\" fill=\"#F28FAE\" opacity=\".55\"/><circle cx=\"59\" cy=\"45\" r=\"2.4\" fill=\"#F28FAE\" opacity=\".55\"/>", "gato": "<ellipse cx=\"46\" cy=\"90\" rx=\"30\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M66 80Q90 82 86 62Q84 54 78 58Q84 64 76 70Z\" fill=\"url(#g-or)\"/>\n<ellipse cx=\"46\" cy=\"72\" rx=\"20\" ry=\"16\" fill=\"url(#g-or)\"/>\n<path d=\"M28 40L28 20L40 30Z\" fill=\"url(#g-or)\"/><path d=\"M64 40L64 20L52 30Z\" fill=\"url(#g-or)\"/>\n<path d=\"M30 32L30 24L36 29Z\" fill=\"#F8B4C8\" stroke=\"none\"/><path d=\"M62 32L62 24L56 29Z\" fill=\"#F8B4C8\" stroke=\"none\"/>\n<circle cx=\"46\" cy=\"44\" r=\"18\" fill=\"url(#g-or)\"/>\n<path d=\"M40 30q6 3 12 0M28 44q4 0 6 2M64 44q-4 0-6 2\" fill=\"none\" stroke=\"#E4874A\" stroke-width=\"2\"/>\n<ellipse cx=\"46\" cy=\"76\" rx=\"10\" ry=\"8\" fill=\"url(#g-wh)\" stroke=\"none\"/>\n<circle cx=\"80\" cy=\"84\" r=\"9\" fill=\"url(#g-pu)\"/><path d=\"M73 80q7 4 14 0M74 87q6-3 13 1M76 77q8 6 6 14\" fill=\"none\" stroke=\"#9982D6\" stroke-width=\"1.4\"/>\n</g><ellipse cx=\"38\" cy=\"36\" rx=\"6\" ry=\"3.5\" transform=\"rotate(-20 38 36)\" fill=\"#fff\" opacity=\".55\"/>\n<circle cx=\"39\" cy=\"44\" r=\"2.6\" fill=\"#3E2445\"/><circle cx=\"39.9\" cy=\"43.1\" r=\"0.9099999999999999\" fill=\"#fff\"/><circle cx=\"53\" cy=\"44\" r=\"2.6\" fill=\"#3E2445\"/><circle cx=\"53.9\" cy=\"43.1\" r=\"0.9099999999999999\" fill=\"#fff\"/><path d=\"M44 51l2 2 2-2z\" fill=\"#E28BA6\"/>\n<path d=\"M42 55q2 2 4 0 2 2 4 0\" fill=\"none\" stroke=\"#3E2445\" stroke-width=\"1.4\" stroke-linecap=\"round\"/>\n<path d=\"M30 52h-8M30 56l-7 2M62 52h8M62 56l7 2\" stroke=\"#6E4D72\" stroke-width=\"1.1\" stroke-linecap=\"round\"/>", "lechuza": "<g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M14 88Q50 82 86 90\" fill=\"none\" stroke=\"#8A5A34\" stroke-width=\"5\"/>\n<ellipse cx=\"50\" cy=\"58\" rx=\"24\" ry=\"28\" fill=\"url(#g-br)\"/>\n<ellipse cx=\"50\" cy=\"66\" rx=\"15\" ry=\"17\" fill=\"url(#g-sand)\"/>\n<path d=\"M42 62q4 3 8 0q4 3 8 0M42 70q4 3 8 0q4 3 8 0\" fill=\"none\" stroke=\"#DDB871\" stroke-width=\"1.4\"/>\n<path d=\"M28 34L30 22L40 30Z\" fill=\"url(#g-br)\"/><path d=\"M72 34L70 22L60 30Z\" fill=\"url(#g-br)\"/>\n<circle cx=\"40\" cy=\"42\" r=\"10\" fill=\"url(#g-wh)\"/><circle cx=\"60\" cy=\"42\" r=\"10\" fill=\"url(#g-wh)\"/>\n<circle cx=\"40\" cy=\"42\" r=\"10.5\" fill=\"none\" stroke=\"#3E2445\" stroke-width=\"2\"/><circle cx=\"60\" cy=\"42\" r=\"10.5\" fill=\"none\" stroke=\"#3E2445\" stroke-width=\"2\"/>\n<path d=\"M50.5 42h-0.5\" stroke=\"#3E2445\" stroke-width=\"2\"/>\n<path d=\"M47 50l3 6 3-6z\" fill=\"url(#g-or)\"/>\n<path d=\"M30 76h40v10H30z\" fill=\"url(#g-pk)\"/><path d=\"M50 76v10\" />\n<path d=\"M42 87v3M58 87v3\" stroke=\"#E4874A\" stroke-width=\"2.2\"/>\n</g><ellipse cx=\"40\" cy=\"40\" rx=\"3\" ry=\"2\" transform=\"rotate(0 40 40)\" fill=\"#fff\" opacity=\".55\"/>\n<circle cx=\"40\" cy=\"43\" r=\"3.4\" fill=\"#3E2445\"/><circle cx=\"40.9\" cy=\"42.1\" r=\"1.19\" fill=\"#fff\"/><circle cx=\"60\" cy=\"43\" r=\"3.4\" fill=\"#3E2445\"/><circle cx=\"60.9\" cy=\"42.1\" r=\"1.19\" fill=\"#fff\"/>", "castillo": "<rect x=\"3\" y=\"3\" width=\"94\" height=\"94\" rx=\"18\" fill=\"url(#sky)\"/><path d=\"M3 78Q30 70 50 76Q72 82 97 74V84Q97 97 84 97H16Q3 97 3 84Z\" fill=\"url(#grass)\"/>\n<ellipse cx=\"22\" cy=\"22\" rx=\"10\" ry=\"4\" fill=\"#fff\" opacity=\".9\"/><ellipse cx=\"30\" cy=\"19\" rx=\"7\" ry=\"4\" fill=\"#fff\" opacity=\".9\"/>\n<g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<rect x=\"34\" y=\"42\" width=\"32\" height=\"38\" fill=\"url(#g-pk)\"/>\n<rect x=\"22\" y=\"34\" width=\"14\" height=\"46\" fill=\"url(#g-pu)\"/><rect x=\"64\" y=\"34\" width=\"14\" height=\"46\" fill=\"url(#g-pu)\"/>\n<path d=\"M20 34L29 18L38 34Z\" fill=\"url(#g-rd)\"/><path d=\"M62 34L71 18L80 34Z\" fill=\"url(#g-rd)\"/>\n<path d=\"M34 42v-5h5v5h6v-5h5v5h6v-5h5v5h5v-5\" fill=\"none\"/>\n<path d=\"M44 80V66a6 6 0 0112 0v14Z\" fill=\"url(#g-br)\"/>\n<path d=\"M29 18v-8l8 3-8 3M71 18v-8l8 3-8 3\" fill=\"#FFD86B\"/>\n</g><rect x=\"26\" y=\"44\" width=\"6\" height=\"8\" rx=\"3\" fill=\"#6E4D72\" opacity=\".6\"/><rect x=\"68\" y=\"44\" width=\"6\" height=\"8\" rx=\"3\" fill=\"#6E4D72\" opacity=\".6\"/>\n<ellipse cx=\"38\" cy=\"50\" rx=\"3\" ry=\"8\" transform=\"rotate(0 38 50)\" fill=\"#fff\" opacity=\".55\"/>", "playa": "<rect x=\"3\" y=\"3\" width=\"94\" height=\"94\" rx=\"18\" fill=\"url(#sky-dawn)\"/><circle cx=\"74\" cy=\"24\" r=\"10\" fill=\"url(#g-gold)\"/>\n<path d=\"M3 56Q50 50 97 56V70H3Z\" fill=\"url(#sea-l)\"/>\n<path d=\"M12 60q6-3 12 0M40 58q6-3 12 0M70 61q6-3 12 0\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.6\" stroke-linecap=\"round\" opacity=\".8\"/>\n<path d=\"M3 68Q50 62 97 70V84Q97 97 84 97H16Q3 97 3 84Z\" fill=\"url(#g-sand)\"/>\n<g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><path d=\"M36 84L46 50\" stroke-width=\"2.4\"/>\n<path d=\"M22 54Q42 30 66 50Q58 46 52 50Q46 44 40 50Q32 46 22 54Z\" fill=\"url(#g-rd)\"/>\n<path d=\"M40 50Q42 40 44 38M52 50Q50 40 46 38\" fill=\"none\"/>\n<path d=\"M66 86q0-10 8-10t8 10z\" fill=\"url(#g-or)\"/>\n</g><circle cx=\"20\" cy=\"84\" r=\"3\" fill=\"#F8B4C8\"/><circle cx=\"58\" cy=\"90\" r=\"2.4\" fill=\"#fff\"/>", "bosque": "<rect x=\"3\" y=\"3\" width=\"94\" height=\"94\" rx=\"18\" fill=\"url(#sky)\"/><path d=\"M3 76Q50 66 97 76V84Q97 97 84 97H16Q3 97 3 84Z\" fill=\"url(#grass)\"/>\n<g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M18 80V62M50 82V58M80 80V64\" stroke=\"#8A5A34\" stroke-width=\"4\"/>\n<path d=\"M18 22L32 50H4Z\" fill=\"url(#g-dg)\"/><path d=\"M18 36L34 64H2Z\" fill=\"url(#g-dg)\"/>\n<path d=\"M50 14L68 44H32Z\" fill=\"url(#g-dg)\"/><path d=\"M50 30L70 62H30Z\" fill=\"url(#g-dg)\"/>\n<path d=\"M80 28L94 54H66Z\" fill=\"url(#g-gr)\"/><path d=\"M80 40L96 66H64Z\" fill=\"url(#g-gr)\"/>\n<path d=\"M62 86q0-8 7-8t7 8z\" fill=\"url(#g-rd)\"/><path d=\"M67 86v6h4v-6\" fill=\"url(#g-wh)\"/>\n</g><circle cx=\"66\" cy=\"83\" r=\"1.3\" fill=\"#fff\"/><circle cx=\"71\" cy=\"81\" r=\"1.1\" fill=\"#fff\"/>\n<ellipse cx=\"46\" cy=\"36\" rx=\"3\" ry=\"7\" transform=\"rotate(25 46 36)\" fill=\"#fff\" opacity=\".55\"/>", "selva": "<rect x=\"3\" y=\"3\" width=\"94\" height=\"94\" rx=\"18\" fill=\"url(#jungle)\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M50 96V40\" stroke=\"#8A5A34\" stroke-width=\"5\"/>\n<path d=\"M50 40Q30 26 12 36Q30 34 50 42Z\" fill=\"url(#g-dg)\"/><path d=\"M50 40Q70 24 90 34Q70 34 50 42Z\" fill=\"url(#g-dg)\"/>\n<path d=\"M50 40Q38 18 22 16Q38 26 50 42Z\" fill=\"url(#g-gr)\"/><path d=\"M50 40Q62 18 80 16Q62 26 50 42Z\" fill=\"url(#g-gr)\"/>\n<path d=\"M4 96Q8 62 30 60Q20 76 22 96Z\" fill=\"url(#g-dg)\"/>\n<path d=\"M96 96Q92 64 70 62Q80 78 78 96Z\" fill=\"url(#g-dg)\"/>\n<path d=\"M14 4Q18 30 10 50\" fill=\"none\" stroke=\"#3E8549\" stroke-width=\"2.4\"/>\n<ellipse cx=\"11\" cy=\"52\" rx=\"4\" ry=\"6\" fill=\"url(#g-gr)\"/>\n<circle cx=\"56\" cy=\"50\" r=\"3.4\" fill=\"url(#g-or)\"/><circle cx=\"46\" cy=\"52\" r=\"3.4\" fill=\"url(#g-or)\"/>\n<path d=\"M66 72q6-10 12-2q-6 10-12 2z\" fill=\"url(#g-pk)\"/>\n</g><ellipse cx=\"50\" cy=\"36\" rx=\"10\" ry=\"2\" fill=\"#fff\" opacity=\".25\"/>", "pradera": "<rect x=\"3\" y=\"3\" width=\"94\" height=\"94\" rx=\"18\" fill=\"url(#sky)\"/><circle cx=\"78\" cy=\"22\" r=\"9\" fill=\"url(#g-gold)\"/>\n<path d=\"M3 62Q30 46 58 60Q78 52 97 60V84Q97 97 84 97H16Q3 97 3 84Z\" fill=\"url(#grass)\"/>\n<path d=\"M3 76Q40 66 97 78V84Q97 97 84 97H16Q3 97 3 84Z\" fill=\"url(#g-gr)\" opacity=\".9\"/>\n<g stroke=\"#6E4D72\" stroke-width=\"1.1\">\n<circle cx=\"20\" cy=\"80\" r=\"4\" fill=\"#fff\"/><circle cx=\"20\" cy=\"80\" r=\"1.6\" fill=\"#FFD86B\"/>\n<circle cx=\"40\" cy=\"86\" r=\"4\" fill=\"#F8B4C8\"/><circle cx=\"40\" cy=\"86\" r=\"1.6\" fill=\"#FFD86B\"/>\n<circle cx=\"62\" cy=\"82\" r=\"4\" fill=\"#C9B8F2\"/><circle cx=\"62\" cy=\"82\" r=\"1.6\" fill=\"#FFD86B\"/>\n<circle cx=\"80\" cy=\"88\" r=\"4\" fill=\"#fff\"/><circle cx=\"80\" cy=\"88\" r=\"1.6\" fill=\"#FFD86B\"/>\n<circle cx=\"30\" cy=\"70\" r=\"3\" fill=\"#FDB57A\"/><circle cx=\"72\" cy=\"70\" r=\"3\" fill=\"#F8B4C8\"/></g>\n<path d=\"M40 30q4-4 8 0q4-4 8 0\" fill=\"none\" stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linecap=\"round\"/>\n<ellipse cx=\"22\" cy=\"24\" rx=\"10\" ry=\"4\" fill=\"#fff\" opacity=\".9\"/>", "mar": "<rect x=\"3\" y=\"3\" width=\"94\" height=\"94\" rx=\"18\" fill=\"url(#deep)\"/><path d=\"M3 82Q50 74 97 82V84Q97 97 84 97H16Q3 97 3 84Z\" fill=\"url(#g-sand)\"/>\n<g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M16 86Q10 70 18 60Q24 50 18 40\" fill=\"none\" stroke=\"#3E8549\" stroke-width=\"4\"/>\n<path d=\"M84 86Q90 72 82 62Q76 54 84 46\" fill=\"none\" stroke=\"#71B66C\" stroke-width=\"4\"/>\n<path d=\"M30 46Q44 32 60 46Q44 60 30 46Z\" fill=\"url(#g-or)\"/><path d=\"M60 46l10-8v16Z\" fill=\"url(#g-or)\"/>\n<path d=\"M40 38q2 8 0 16M48 37q2 9 0 18\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2.4\"/>\n<path d=\"M56 70Q64 62 74 70Q64 78 56 70Z\" fill=\"url(#g-pk)\"/><path d=\"M74 70l7-5v10Z\" fill=\"url(#g-pk)\"/>\n<path d=\"M36 90l4-8 4 8 4-8 4 8\" fill=\"url(#g-rd)\"/>\n</g><circle cx=\"35\" cy=\"44\" r=\"1.8\" fill=\"#3E2445\"/><circle cx=\"60\" cy=\"69\" r=\"1.5\" fill=\"#3E2445\"/>\n<circle cx=\"68\" cy=\"30\" r=\"3\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\" opacity=\".9\"/><circle cx=\"72\" cy=\"20\" r=\"2\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\" opacity=\".9\"/>\n<circle cx=\"24\" cy=\"24\" r=\"2.4\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\" opacity=\".9\"/>", "luna": "<rect x=\"3\" y=\"3\" width=\"94\" height=\"94\" rx=\"18\" fill=\"url(#night)\"/><circle cx=\"74\" cy=\"26\" r=\"9\" fill=\"url(#g-bl)\" stroke=\"#6E4D72\" stroke-width=\"1.4\"/>\n<path d=\"M68 22q4 2 6-2M72 30q4 1 6-3\" fill=\"none\" stroke=\"#71B66C\" stroke-width=\"2.4\" stroke-linecap=\"round\"/>\n<path d=\"M22 18.6Q22.85 21.15 25.4 22Q22.85 22.85 22 25.4Q21.15 22.85 18.6 22Q21.15 21.15 22 18.6Z\" fill=\"#FFF6BE\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M46 11.6Q46.6 13.4 48.4 14Q46.6 14.6 46 16.4Q45.4 14.6 43.6 14Q45.4 13.4 46 11.6Z\" fill=\"#FFF6BE\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M38 34Q38.5 35.5 40 36Q38.5 36.5 38 38Q37.5 36.5 36 36Q37.5 35.5 38 34Z\" fill=\"#FFF6BE\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M88 47.6Q88.6 49.4 90.4 50Q88.6 50.6 88 52.4Q87.4 50.6 85.6 50Q87.4 49.4 88 47.6Z\" fill=\"#FFF6BE\" stroke=\"#6E4D72\" stroke-width=\"1\"/>\n<path d=\"M3 66Q30 54 56 62Q78 56 97 64V84Q97 97 84 97H16Q3 97 3 84Z\" fill=\"url(#g-gy)\"/>\n<g stroke=\"#9898B0\" stroke-width=\"1.4\"><ellipse cx=\"24\" cy=\"76\" rx=\"8\" ry=\"3.4\" fill=\"#BDBDCE\"/><ellipse cx=\"62\" cy=\"84\" rx=\"10\" ry=\"4\" fill=\"#BDBDCE\"/><ellipse cx=\"82\" cy=\"72\" rx=\"5\" ry=\"2.4\" fill=\"#BDBDCE\"/></g>\n<g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><path d=\"M44 66V48\" stroke-width=\"1.8\"/><path d=\"M44 48h14l-3 4 3 4H44\" fill=\"url(#g-pk)\"/></g>", "granja": "<rect x=\"3\" y=\"3\" width=\"94\" height=\"94\" rx=\"18\" fill=\"url(#sky)\"/><path d=\"M3 72Q50 62 97 72V84Q97 97 84 97H16Q3 97 3 84Z\" fill=\"url(#grass)\"/>\n<g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M26 82V48L44 34L62 48V82Z\" fill=\"url(#g-rd)\"/>\n<path d=\"M22 50L44 30L66 50\" fill=\"none\" stroke=\"#fff\" stroke-width=\"3\"/>\n<rect x=\"36\" y=\"62\" width=\"16\" height=\"20\" fill=\"url(#g-wh)\"/><path d=\"M36 62l16 20M52 62L36 82\" stroke=\"#CC4740\"/>\n<rect x=\"40\" y=\"44\" width=\"8\" height=\"8\" fill=\"url(#g-yl)\"/>\n<path d=\"M66 84V70M76 84V70M86 84V70M64 74h26M64 80h26\" stroke=\"#8A5A34\" stroke-width=\"2\"/>\n<circle cx=\"80\" cy=\"34\" r=\"0\" />\n</g><ellipse cx=\"78\" cy=\"22\" rx=\"10\" ry=\"4\" fill=\"#fff\" opacity=\".9\"/><ellipse cx=\"86\" cy=\"19\" rx=\"6\" ry=\"3.4\" fill=\"#fff\" opacity=\".9\"/>\n<ellipse cx=\"32\" cy=\"58\" rx=\"2.5\" ry=\"8\" transform=\"rotate(0 32 58)\" fill=\"#fff\" opacity=\".55\"/>", "golosinas": "<rect x=\"3\" y=\"3\" width=\"94\" height=\"94\" rx=\"18\" fill=\"url(#sky-pk)\"/><path d=\"M3 78Q50 70 97 78V84Q97 97 84 97H16Q3 97 3 84Z\" fill=\"url(#g-mint)\"/>\n<g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M18 82V52\" stroke=\"#fff\" stroke-width=\"3\"/><circle cx=\"18\" cy=\"44\" r=\"10\" fill=\"url(#g-pk)\"/>\n<path d=\"M18 44m-6 0a6 6 0 0112 0a4 4 0 01-8 0\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2\"/>\n<path d=\"M34 82V58h28v24Z\" fill=\"url(#g-or)\"/>\n<path d=\"M30 60Q34 44 48 44Q62 44 66 60Q60 56 56 60Q52 54 48 60Q44 54 40 60Q36 56 30 60Z\" fill=\"url(#g-wh)\"/>\n<circle cx=\"48\" cy=\"40\" r=\"4\" fill=\"url(#g-rd)\"/>\n<rect x=\"43\" y=\"68\" width=\"10\" height=\"14\" rx=\"5\" fill=\"url(#g-br)\"/>\n<path d=\"M76 82V48\" stroke=\"#fff\" stroke-width=\"3\"/><circle cx=\"76\" cy=\"40\" r=\"9\" fill=\"url(#g-bl)\"/>\n<path d=\"M70 38l12 4M70 42l12-4\" stroke=\"#fff\" stroke-width=\"1.6\"/>\n</g><circle cx=\"38\" cy=\"66\" r=\"1.6\" fill=\"#F8B4C8\"/><circle cx=\"58\" cy=\"70\" r=\"1.6\" fill=\"#C9B8F2\"/><circle cx=\"56\" cy=\"64\" r=\"1.6\" fill=\"#A9D3F5\"/>\n<path d=\"M86 15Q86.75 17.25 89 18Q86.75 18.75 86 21Q85.25 18.75 83 18Q85.25 17.25 86 15Z\" fill=\"#fff\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M30 17.6Q30.6 19.4 32.4 20Q30.6 20.6 30 22.4Q29.4 20.6 27.6 20Q29.4 19.4 30 17.6Z\" fill=\"#fff\" stroke=\"#6E4D72\" stroke-width=\"1\"/>", "barco": "<rect x=\"3\" y=\"3\" width=\"94\" height=\"94\" rx=\"18\" fill=\"url(#sky-dawn)\"/><circle cx=\"22\" cy=\"24\" r=\"8\" fill=\"url(#g-gold)\"/>\n<path d=\"M3 66Q50 58 97 66V84Q97 97 84 97H16Q3 97 3 84Z\" fill=\"url(#sea-l)\"/>\n<g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M50 62V18\" stroke-width=\"2.4\"/>\n<path d=\"M52 20Q72 34 70 58H52Z\" fill=\"url(#g-wh)\"/><path d=\"M48 26Q34 38 34 58H48Z\" fill=\"url(#g-pk)\"/>\n<path d=\"M50 18l10 3-10 3\" fill=\"url(#g-rd)\"/>\n<path d=\"M22 62H80L72 76H30Z\" fill=\"url(#g-br)\"/><path d=\"M26 68h50\" stroke=\"#fff\" stroke-width=\"2\"/>\n<circle cx=\"42\" cy=\"70\" r=\"0\"/>\n</g><path d=\"M10 82q6-3 12 0M38 86q6-3 12 0M66 82q6-3 12 0\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.6\" stroke-linecap=\"round\" opacity=\".85\"/>\n<ellipse cx=\"58\" cy=\"36\" rx=\"2.5\" ry=\"10\" transform=\"rotate(-15 58 36)\" fill=\"#fff\" opacity=\".55\"/>", "paraguas": "<ellipse cx=\"50\" cy=\"92\" rx=\"22\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M50 40V80q0 8-7 8t-7-7\" fill=\"none\" stroke-width=\"3.4\"/><path d=\"M50 40V80q0 8-7 8t-7-7\" fill=\"none\" stroke=\"#C9925F\" stroke-width=\"1.8\"/>\n<path d=\"M12 46Q16 16 50 14Q84 16 88 46Q81 40 74 46Q67 40 60 46Q55 40 50 46Q45 40 40 46Q33 40 26 46Q19 40 12 46Z\" fill=\"url(#g-pu)\"/>\n<path d=\"M50 14Q38 24 40 46M50 14Q62 24 60 46M50 14Q24 22 26 46M50 14Q76 22 74 46\" fill=\"none\"/>\n<path d=\"M50 14Q42 30 40 46H60Q58 30 50 14Z\" fill=\"url(#g-pk)\"/>\n<path d=\"M50 14Q70 22 74 46H60Q58 30 50 14Z\" fill=\"url(#g-bl)\"/>\n</g><ellipse cx=\"32\" cy=\"28\" rx=\"8\" ry=\"3.5\" transform=\"rotate(-30 32 28)\" fill=\"#fff\" opacity=\".55\"/>\n<path d=\"M16 58Q17.0 61.0 20 62Q17.0 63.0 16 66Q15.0 63.0 12 62Q15.0 61.0 16 58Z\" fill=\"#FFD86B\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M82 59Q83.25 62.75 87 64Q83.25 65.25 82 69Q80.75 65.25 77 64Q80.75 62.75 82 59Z\" fill=\"#F8B4C8\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M70 79Q70.75 81.25 73 82Q70.75 82.75 70 85Q69.25 82.75 67 82Q69.25 81.25 70 79Z\" fill=\"#A9D3F5\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M24 77.4Q24.65 79.35 26.6 80Q24.65 80.65 24 82.6Q23.35 80.65 21.4 80Q23.35 79.35 24 77.4Z\" fill=\"#C9B8F2\" stroke=\"#6E4D72\" stroke-width=\"1\"/>", "llave": "<ellipse cx=\"50\" cy=\"86\" rx=\"26\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<circle cx=\"32\" cy=\"50\" r=\"17\" fill=\"url(#g-gold)\"/><circle cx=\"32\" cy=\"50\" r=\"7\" fill=\"#FFF3EF\"/>\n<path d=\"M48 45h38v10h-6v8h-7v-8h-6v6h-7v-6H48Z\" fill=\"url(#g-gold)\"/>\n</g><ellipse cx=\"26\" cy=\"40\" rx=\"6\" ry=\"3\" transform=\"rotate(-30 26 40)\" fill=\"#fff\" opacity=\".55\"/><ellipse cx=\"64\" cy=\"47\" rx=\"10\" ry=\"1.6\" transform=\"rotate(0 64 47)\" fill=\"#fff\" opacity=\".55\"/>\n<path d=\"M18 17.6Q19.1 20.9 22.4 22Q19.1 23.1 18 26.4Q16.9 23.1 13.6 22Q16.9 20.9 18 17.6Z\" fill=\"#FFD86B\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M80 25Q81.25 28.75 85 30Q81.25 31.25 80 35Q78.75 31.25 75 30Q78.75 28.75 80 25Z\" fill=\"#F8B4C8\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M60 75Q60.75 77.25 63 78Q60.75 78.75 60 81Q59.25 78.75 57 78Q59.25 77.25 60 75Z\" fill=\"#A9D3F5\" stroke=\"#6E4D72\" stroke-width=\"1\"/>", "mapa": "<ellipse cx=\"50\" cy=\"90\" rx=\"34\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M12 22L36 14L64 22L88 14V78L64 86L36 78L12 86Z\" fill=\"url(#parch)\"/>\n<path d=\"M36 14V78M64 22V86\" fill=\"none\" stroke=\"#DDB871\"/>\n<path d=\"M20 34q8-4 12 2t10 0\" fill=\"none\" stroke=\"#71B66C\" stroke-width=\"2.6\"/>\n<path d=\"M44 60q6-6 12 0t12-2\" fill=\"none\" stroke=\"#6BA6DB\" stroke-width=\"2.6\"/>\n<path d=\"M22 70Q34 52 46 50T70 40\" fill=\"none\" stroke=\"#CC4740\" stroke-width=\"2\" stroke-dasharray=\"3 4\"/>\n<path d=\"M70 32l8 8M78 32l-8 8\" stroke=\"#CC4740\" stroke-width=\"3.4\"/>\n<circle cx=\"22\" cy=\"70\" r=\"3\" fill=\"url(#g-pk)\"/>\n</g><ellipse cx=\"26\" cy=\"22\" rx=\"7\" ry=\"2\" transform=\"rotate(-20 26 22)\" fill=\"#fff\" opacity=\".55\"/>", "pelota": "<ellipse cx=\"44\" cy=\"90\" rx=\"24\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<circle cx=\"44\" cy=\"60\" r=\"26\" fill=\"url(#g-wh)\"/>\n<path d=\"M44 46l9 6-3 10H38l-3-10Z\" fill=\"#5B3A5F\" opacity=\".85\"/>\n<path d=\"M44 46V34M53 52l11-4M50 62l7 10M38 62l-7 10M35 52l-11-4\" fill=\"none\"/>\n<path d=\"M60 10h26a5 5 0 015 5v8a5 5 0 01-5 5H74l-6 6v-6h-8a5 5 0 01-5-5v-8a5 5 0 015-5z\" fill=\"#fff\"/>\n</g><ellipse cx=\"34\" cy=\"48\" rx=\"7\" ry=\"4\" transform=\"rotate(-30 34 48)\" fill=\"#fff\" opacity=\".55\"/>\n<circle cx=\"36\" cy=\"70\" r=\"2.2\" fill=\"#3E2445\"/><circle cx=\"36.9\" cy=\"69.1\" r=\"0.77\" fill=\"#fff\"/><circle cx=\"52\" cy=\"70\" r=\"2.2\" fill=\"#3E2445\"/><circle cx=\"52.9\" cy=\"69.1\" r=\"0.77\" fill=\"#fff\"/><path d=\"M40 77q4 4 8 0\" fill=\"none\" stroke=\"#C2456A\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n<text x=\"59.5\" y=\"22.5\" font-family=\"Baloo 2,sans-serif\" font-weight=\"800\" font-size=\"8.6\" fill=\"#D62962\">¡HOLA!</text>", "sombrero": "<ellipse cx=\"50\" cy=\"86\" rx=\"38\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<ellipse cx=\"50\" cy=\"74\" rx=\"42\" ry=\"12\" fill=\"url(#g-pu)\"/>\n<path d=\"M26 72V28Q26 18 50 18Q74 18 74 28V72Q50 80 26 72Z\" fill=\"url(#g-pu)\"/>\n<path d=\"M26 58Q50 66 74 58V68Q50 76 26 68Z\" fill=\"url(#g-rd)\"/>\n<ellipse cx=\"50\" cy=\"28\" rx=\"24\" ry=\"8\" fill=\"#B5A1EA\"/>\n<circle cx=\"66\" cy=\"60\" r=\"6\" fill=\"url(#g-yl)\"/><circle cx=\"66\" cy=\"60\" r=\"2\" fill=\"#E4874A\" stroke=\"none\"/>\n</g><ellipse cx=\"34\" cy=\"44\" rx=\"4\" ry=\"12\" transform=\"rotate(0 34 44)\" fill=\"#fff\" opacity=\".55\"/>\n<path d=\"M14 26Q15.0 29.0 18 30Q15.0 31.0 14 34Q13.0 31.0 10 30Q13.0 29.0 14 26Z\" fill=\"#FFD86B\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M88 31Q89.25 34.75 93 36Q89.25 37.25 88 41Q86.75 37.25 83 36Q86.75 34.75 88 31Z\" fill=\"#F8B4C8\" stroke=\"#6E4D72\" stroke-width=\"1\"/>", "torta": "<ellipse cx=\"50\" cy=\"92\" rx=\"32\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M36 30v-12M50 28v-12M64 30v-12\" stroke-width=\"5\"/><path d=\"M36 30v-12M50 28v-12M64 30v-12\" stroke=\"#A9D3F5\" stroke-width=\"3\"/>\n<path d=\"M36 14q-3-5 0-8 3 3 0 8zM50 12q-3-5 0-8 3 3 0 8zM64 14q-3-5 0-8 3 3 0 8z\" fill=\"url(#g-gold)\"/>\n<rect x=\"18\" y=\"58\" width=\"64\" height=\"28\" rx=\"8\" fill=\"url(#g-pk)\"/>\n<rect x=\"26\" y=\"34\" width=\"48\" height=\"26\" rx=\"8\" fill=\"url(#g-wh)\"/>\n<path d=\"M26 44Q32 50 38 44Q44 50 50 44Q56 50 62 44Q68 50 74 44\" fill=\"none\" stroke=\"#F8B4C8\" stroke-width=\"3\"/>\n<path d=\"M18 68Q26 76 34 68Q42 76 50 68Q58 76 66 68Q74 76 82 68\" fill=\"none\" stroke=\"#fff\" stroke-width=\"3\"/>\n</g><ellipse cx=\"32\" cy=\"40\" rx=\"6\" ry=\"2.4\" transform=\"rotate(0 32 40)\" fill=\"#fff\" opacity=\".55\"/><ellipse cx=\"26\" cy=\"64\" rx=\"6\" ry=\"2.4\" transform=\"rotate(0 26 64)\" fill=\"#fff\" opacity=\".55\"/>\n<circle cx=\"40\" cy=\"78\" r=\"2\" fill=\"#F27A6D\"/><circle cx=\"60\" cy=\"80\" r=\"2\" fill=\"#FFD86B\"/><circle cx=\"50\" cy=\"54\" r=\"2\" fill=\"#A9D3F5\"/>", "huevo": "<ellipse cx=\"50\" cy=\"90\" rx=\"22\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M50 12Q76 14 78 54Q78 86 50 86Q22 86 22 54Q24 14 50 12Z\" fill=\"url(#g-mint)\"/>\n<path d=\"M36 46l6 6 6-8 6 8 6-6\" fill=\"none\" stroke-width=\"2\"/>\n</g><circle cx=\"38\" cy=\"66\" r=\"3\" fill=\"#C9B8F2\"/><circle cx=\"58\" cy=\"70\" r=\"4\" fill=\"#F8B4C8\"/><circle cx=\"62\" cy=\"30\" r=\"3\" fill=\"#FFD86B\"/><circle cx=\"44\" cy=\"28\" r=\"2.4\" fill=\"#A9D3F5\"/>\n<ellipse cx=\"38\" cy=\"28\" rx=\"6\" ry=\"9\" transform=\"rotate(-20 38 28)\" fill=\"#fff\" opacity=\".55\"/>\n<path d=\"M84 21Q85.25 24.75 89 26Q85.25 27.25 84 31Q82.75 27.25 79 26Q82.75 24.75 84 21Z\" fill=\"#FFD86B\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M14 36.6Q14.85 39.15 17.4 40Q14.85 40.85 14 43.4Q13.15 40.85 10.6 40Q13.15 39.15 14 36.6Z\" fill=\"#F8B4C8\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M80 73Q80.75 75.25 83 76Q80.75 76.75 80 79Q79.25 76.75 77 76Q79.25 75.25 80 73Z\" fill=\"#C9B8F2\" stroke=\"#6E4D72\" stroke-width=\"1\"/>", "regalo": "<ellipse cx=\"50\" cy=\"90\" rx=\"32\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<rect x=\"20\" y=\"46\" width=\"60\" height=\"40\" rx=\"5\" fill=\"url(#g-bl)\"/>\n<rect x=\"16\" y=\"36\" width=\"68\" height=\"14\" rx=\"4\" fill=\"url(#g-bl)\"/>\n<path d=\"M44 36h12v50H44z\" fill=\"url(#g-pk)\"/>\n<path d=\"M50 36Q34 18 28 26Q24 34 50 36Q66 34 72 26Q66 18 50 36Z\" fill=\"url(#g-pk)\"/>\n<circle cx=\"50\" cy=\"35\" r=\"4.6\" fill=\"url(#g-rd)\"/>\n</g><ellipse cx=\"28\" cy=\"56\" rx=\"4\" ry=\"8\" transform=\"rotate(0 28 56)\" fill=\"#fff\" opacity=\".55\"/><ellipse cx=\"26\" cy=\"40\" rx=\"7\" ry=\"2\" transform=\"rotate(0 26 40)\" fill=\"#fff\" opacity=\".55\"/>\n<path d=\"M14 20Q15.0 23.0 18 24Q15.0 25.0 14 28Q13.0 25.0 10 24Q13.0 23.0 14 20Z\" fill=\"#FFD86B\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M86 18.6Q86.85 21.15 89.4 22Q86.85 22.85 86 25.4Q85.15 22.85 82.6 22Q85.15 21.15 86 18.6Z\" fill=\"#C9B8F2\" stroke=\"#6E4D72\" stroke-width=\"1\"/>", "varita": "<ellipse cx=\"40\" cy=\"88\" rx=\"22\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M22 84L60 40\" stroke-width=\"7\"/><path d=\"M22 84L60 40\" stroke=\"#5B3A5F\" stroke-width=\"4.4\"/>\n<path d=\"M26 79L31 73\" stroke=\"#fff\" stroke-width=\"4.4\"/>\n<path d=\"M64 14l6 12 13 2-10 9 3 13-12-7-12 7 3-13-10-9 13-2z\" fill=\"url(#g-gold)\"/>\n</g><ellipse cx=\"62\" cy=\"24\" rx=\"4\" ry=\"2.4\" transform=\"rotate(-30 62 24)\" fill=\"#fff\" opacity=\".55\"/>\n<path d=\"M86 51.6Q87.1 54.9 90.4 56Q87.1 57.1 86 60.4Q84.9 57.1 81.6 56Q84.9 54.9 86 51.6Z\" fill=\"#F8B4C8\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M40 18.4Q40.9 21.1 43.6 22Q40.9 22.9 40 25.6Q39.1 22.9 36.4 22Q39.1 21.1 40 18.4Z\" fill=\"#A9D3F5\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M84 79Q84.75 81.25 87 82Q84.75 82.75 84 85Q83.25 82.75 81 82Q83.25 81.25 84 79Z\" fill=\"#C9B8F2\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M50 57.4Q50.65 59.35 52.6 60Q50.65 60.65 50 62.6Q49.35 60.65 47.4 60Q49.35 59.35 50 57.4Z\" fill=\"#FFD86B\" stroke=\"#6E4D72\" stroke-width=\"1\"/>", "globo": "<path d=\"M50 70Q44 80 52 88T48 98\" fill=\"none\" stroke=\"#6E4D72\" stroke-width=\"1.6\"/>\n<g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M50 70Q26 66 24 40Q24 12 50 10Q76 12 76 40Q74 66 50 70Z\" fill=\"url(#g-rd)\"/>\n<path d=\"M46 70h8l-4 5z\" fill=\"url(#g-rd)\"/>\n</g><ellipse cx=\"38\" cy=\"28\" rx=\"6\" ry=\"11\" transform=\"rotate(-25 38 28)\" fill=\"#fff\" opacity=\".55\"/><ellipse cx=\"42\" cy=\"48\" rx=\"2\" ry=\"4\" fill=\"#fff\" opacity=\".35\"/>\n<path d=\"M84 18.6Q84.85 21.15 87.4 22Q84.85 22.85 84 25.4Q83.15 22.85 80.6 22Q83.15 21.15 84 18.6Z\" fill=\"#F8B4C8\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M16 55.2Q16.7 57.3 18.8 58Q16.7 58.7 16 60.8Q15.3 58.7 13.2 58Q15.3 57.3 16 55.2Z\" fill=\"#A9D3F5\" stroke=\"#6E4D72\" stroke-width=\"1\"/>"};
+  // [dibujo, nombre corto, frase para el cuento]
+  const R = {
+    quien:{ label:'¿Quién?', color:'--c-quien', items:[
+      ['dragon','dragón dormilón','un dragón dormilón'],
+      ['princesa','princesa exploradora','una princesa exploradora'],
+      ['perro','perro bombero','un perro bombero'],
+      ['vaca','vaca bailarina','una vaca bailarina'],
+      ['oso','oso goloso','un oso goloso'],
+      ['gallina','gallina viajera','una gallina viajera'],
+      ['robot','robot cariñoso','un robot cariñoso'],
+      ['astronauta','nena astronauta','una nena astronauta'],
+      ['sapo','sapo cantor','un sapo cantor'],
+      ['conejo','conejo mago','un conejo mago']
+    ]},
+    con:{ label:'¿Con quién?', color:'--c-con', items:[
+      ['bruja','bruja despistada','una bruja despistada'],
+      ['lobo','lobo hambriento','un lobo hambriento'],
+      ['loro','loro charlatán','un loro charlatán'],
+      ['fantasma','fantasma miedoso','un fantasma miedoso'],
+      ['tortuga','tortuga apurada','una tortuga apurada'],
+      ['dino','dinosaurio comilón','un dinosaurio comilón'],
+      ['rey','rey enojón','un rey enojón'],
+      ['abeja','abeja mandona','una abeja mandona'],
+      ['gato','gato travieso','un gato travieso'],
+      ['lechuza','lechuza sabia','una lechuza sabia']
+    ]},
+    donde:{ label:'¿Dónde?', color:'--c-donde', items:[
+      ['castillo','castillo','en un castillo'],
+      ['playa','playa','en la playa'],
+      ['bosque','bosque','en el bosque'],
+      ['selva','selva','en la selva'],
+      ['pradera','pradera','en la pradera'],
+      ['mar','fondo del mar','en el fondo del mar'],
+      ['luna','luna','en la luna'],
+      ['granja','granja','en una granja'],
+      ['golosinas','ciudad de golosinas','en una ciudad de golosinas'],
+      ['barco','barco','en un barco']
+    ]},
+    que:{ label:'¿Qué aparece?', color:'--c-que', items:[
+      ['paraguas','paraguas mágico','un paraguas mágico'],
+      ['llave','llave dorada','una llave dorada'],
+      ['mapa','mapa del tesoro','un mapa del tesoro'],
+      ['pelota','pelota que habla','una pelota que habla'],
+      ['sombrero','sombrero gigante','un sombrero gigante'],
+      ['torta','torta de cumpleaños','una torta de cumpleaños'],
+      ['huevo','huevo misterioso','un huevo misterioso'],
+      ['regalo','caja con moño','una caja con moño'],
+      ['varita','varita brillante','una varita brillante'],
+      ['globo','globo rojo','un globo rojo']
+    ]}
+  };
+  const PROBLEMAS = [
+    'se perdieron y no encontraban el camino',
+    'empezó a llover muy, muy fuerte',
+    'alguien no se podía dormir',
+    'desapareció la merienda',
+    'se rompió el puente para cruzar',
+    'el sol se escondió y todo quedó oscuro',
+    'se escuchó un ruido raro',
+    'se perdió un zapato',
+    'sopló un viento que se llevó todo',
+    'alguien estaba muy triste'
+  ];
+  const LAYOUT = { a:['quien','donde','que'], b:['quien','con','donde','que'] };
+
+  const screens = ['s-start','s-play','s-pause','s-rest','s-end'];
+  const show = id => screens.forEach(s => $(s).hidden = s !== id);
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const mod = (n,m)=>((n%m)+m)%m;
+
+  let age = 'a', reels = [], spinning = false, count = 0, hasResult = false;
+
+  // Sonido
+  let actx = null, soundOn = true;
+  function audio(){ if(!soundOn) return null; try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume(); return actx; }catch(e){ return null; } }
+  function beep(f, t0, d, vol, type){ const c=audio(); if(!c) return; const o=c.createOscillator(), g=c.createGain(); o.type=type||'square'; o.frequency.value=f;
+    g.gain.setValueAtTime(vol, c.currentTime+t0); g.gain.exponentialRampToValueAtTime(.0001, c.currentTime+t0+d); o.connect(g); g.connect(c.destination); o.start(c.currentTime+t0); o.stop(c.currentTime+t0+d+.02); }
+  let lastTick = 0;
+  const tick = ()=>{ const n=performance.now(); if(n-lastTick<45) return; lastTick=n; beep(1300, 0, .03, .03); };
+  const clac = ()=>{ beep(420, 0, .06, .09, 'square'); beep(820, .03, .05, .05, 'triangle'); };
+  const tada = ()=>[523,659,784,1047].forEach((f,i)=>beep(f, i*.09, .22, .08, 'triangle'));
+
+  const LOCK_OPEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 017.6-1.8"/></svg>';
+  const LOCK_CLOSED = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>';
+
+  function build(){
+    const keys = LAYOUT[age];
+    const box = $('reels');
+    box.className = 'reels n' + keys.length;
+    box.innerHTML = '';
+    reels = keys.map((k,i)=>{
+      const data = R[k], N = data.items.length;
+      const el = document.createElement('div');
+      el.className = 'reel'; el.style.setProperty('--c', `var(${data.color})`);
+      const itemsHTML = data.items.concat(data.items).map(([e,t])=>`<div class="item"><svg class="ill" viewBox="0 0 100 100" aria-hidden="true">${ILL[e]}</svg><span class="tx">${t}</span></div>`).join('');
+      el.innerHTML = `<p class="reel-label">${data.label}</p><div class="window"><div class="strip">${itemsHTML}</div></div>`+
+        `<button class="lock" disabled aria-pressed="false" aria-label="Fijar ${data.label}">${LOCK_OPEN}<span>Fijar</span></button>`;
+      box.appendChild(el);
+      const r = { k, el, strip: el.querySelector('.strip'), N, pos: Math.floor(Math.random()*N), locked:false };
+      el.querySelector('.lock').addEventListener('click', ()=>{
+        if(spinning) return;
+        r.locked = !r.locked;
+        el.classList.toggle('locked', r.locked);
+        const b = el.querySelector('.lock');
+        b.setAttribute('aria-pressed', String(r.locked));
+        b.innerHTML = (r.locked ? LOCK_CLOSED : LOCK_OPEN) + `<span>${r.locked ? 'Fijado' : 'Fijar'}</span>`;
+        $('note').hidden = true;
+      });
+      place(r);
+      return r;
+    });
+  }
+  function H(r){ return r.strip.firstElementChild.offsetHeight; }
+  function place(r){ r.strip.style.transform = `translateY(${-(mod(r.pos, r.N))*H(r)}px)`; }
+  const easeOutBack = t => { const c1=1.25, c3=c1+1; return 1 + c3*Math.pow(t-1,3) + c1*Math.pow(t-1,2); };
+
+  function spin(){
+    if(spinning) return;
+    const active = reels.filter(r=>!r.locked);
+    if(!active.length){ $('note').textContent = 'Saquen al menos un candado para volver a tirar.'; $('note').hidden = false; return; }
+    spinning = true; audio();
+    const lv = $('lever'); lv.classList.remove('pulled'); void lv.offsetWidth; lv.classList.add('pulled');
+    $('note').hidden = true; $('card').hidden = true;
+    $('machine').classList.add('spinning'); $('pull').disabled = true;
+    $('pull-text').textContent = '¡Girando…!';
+    reels.forEach(r=>r.el.querySelector('.lock').disabled = true);
+    let left = active.length;
+    active.forEach((r, j)=>{
+      const cur = mod(Math.round(r.pos), r.N);
+      let target = Math.floor(Math.random()*r.N); if(target === cur) target = mod(target+1+Math.floor(Math.random()*(r.N-1)), r.N);
+      const start = Math.round(r.pos);
+      const end = start + (reduce ? 0 : (3 + j)*r.N) + mod(target - cur, r.N);
+      const dur = reduce ? 300 : 1300 + j*600;
+      const t0 = performance.now();
+      let lastIdx = Math.floor(start);
+      function frame(now){
+        const t = Math.min(1, (now - t0)/dur);
+        r.pos = start + (end - start)*easeOutBack(t);
+        place(r);
+        const idx = Math.floor(r.pos);
+        if(idx !== lastIdx){ lastIdx = idx; if(!reduce && j === active.length-1) tick(); }
+        if(t < 1) requestAnimationFrame(frame);
+        else { r.pos = end; place(r); clac(); if(--left === 0) finish(); }
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  function finish(){
+    spinning = false; hasResult = true;
+    $('machine').classList.remove('spinning'); $('pull').disabled = false;
+    $('pull-text').textContent = 'Tirar otra vez';
+    reels.forEach(r=>r.el.querySelector('.lock').disabled = false);
+    tada(); confetti(); render();
+    setTimeout(()=>$('card').scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block:'nearest'}), 150);
+  }
+
+  function cur(k){ const r = reels.find(x=>x.k===k); return R[k].items[mod(Math.round(r.pos), r.N)]; }
+  function pick(k){ return cur(k)[2]; }
+  const mk = (k,txt)=>`<mark class="m-${k}">${txt}</mark>`;
+  function render(){
+    const q = mk('quien', pick('quien')), d = mk('donde', pick('donde')), o = mk('que', pick('que'));
+    let t;
+    if(age === 'a') t = `Había una vez ${q} que estaba ${d}. Un día apareció ${o}…`;
+    else t = `Había una vez ${q} que estaba ${d}. Un día se encontró con ${mk('con', pick('con'))}, y de pronto apareció ${o}…`;
+    $('story').innerHTML = t;
+    $('thumbs').innerHTML = LAYOUT[age].map(k=>`<svg viewBox="0 0 100 100" style="--c:var(${R[k].color})">${ILL[cur(k)[0]]}</svg>`).join('');
+    $('problem').hidden = true;
+    $('add-prob').hidden = age !== 'b';
+    $('add-prob').querySelector('svg').nextSibling.textContent = ' ¿Y si pasa algo?';
+    $('prompt').textContent = '¿Qué pasa después? ¿Cómo termina?';
+    $('count').textContent = `Cuento ${count + 1}`;
+    const card = $('card'); card.hidden = false;
+    card.classList.remove('pop'); void card.offsetWidth; card.classList.add('pop');
+  }
+
+  const CONF = ['--c-quien','--c-con','--c-donde','--c-que','--c-prob'];
+  function confetti(){
+    if(reduce) return;
+    const box = $('stage');
+    for(let i=0;i<22;i++){
+      const el = document.createElement('span');
+      el.className = 'confetti';
+      const a = Math.random()*Math.PI*2, d = 110 + Math.random()*80;
+      el.style.setProperty('--x', Math.cos(a)*d + 'px');
+      el.style.setProperty('--y', Math.sin(a)*d + 'px');
+      el.style.setProperty('--r', (Math.random()*540-270) + 'deg');
+      el.style.background = `var(${CONF[i % CONF.length]})`;
+      if(i % 3 === 0) el.style.borderRadius = '50%';
+      box.appendChild(el);
+      setTimeout(()=>el.remove(), 1050);
+    }
+  }
+
+  function startAge(a){
+    age = a; count = 0; hasResult = false;
+    $('age-label').textContent = a === 'a' ? '2 y 3 años' : '4 y 5 años';
+    $('card').hidden = true; $('note').hidden = true;
+    $('pull-text').textContent = '¡Tirar de la palanca!';
+    $('count').textContent = 'Cuento 1';
+    show('s-play'); build(); window.scrollTo(0,0);
+  }
+  const goBack = ()=>{ if(spinning) return; $('card').hidden = true; show('s-start'); window.scrollTo(0,0); };
+
+  $('age-a').addEventListener('click', ()=>startAge('a'));
+  $('age-b').addEventListener('click', ()=>startAge('b'));
+  $('change-age').addEventListener('click', goBack);
+  $('back').addEventListener('click', goBack);
+  $('pull').addEventListener('click', spin);
+  $('lever').addEventListener('click', spin);
+  $('again').addEventListener('click', ()=>{ $('machine').scrollIntoView({behavior: reduce?'auto':'smooth', block:'start'}); spin(); });
+  $('sound').addEventListener('click', ()=>{ soundOn = !soundOn; $('sound').textContent = 'Sonido: ' + (soundOn ? 'sí' : 'no'); $('sound').setAttribute('aria-pressed', String(soundOn)); });
+  $('add-prob').addEventListener('click', ()=>{
+    const p = PROBLEMAS[Math.floor(Math.random()*PROBLEMAS.length)];
+    $('problem').textContent = `Pero entonces… ${p}.`;
+    $('problem').hidden = false;
+    $('prompt').textContent = '¿Cómo lo resuelven? ¿Quién los ayuda? ¿Cómo termina?';
+    $('add-prob').querySelector('svg').nextSibling.textContent = ' Otro problema';
+  });
+  $('go').addEventListener('click', ()=>{ show('s-pause'); window.scrollTo(0,0); });
+  $('done').addEventListener('click', ()=>{
+    count++;
+    $('card').hidden = true;
+    reels.forEach(r=>{ r.locked=false; r.el.classList.remove('locked'); const b=r.el.querySelector('.lock'); b.setAttribute('aria-pressed','false'); b.innerHTML = LOCK_OPEN + '<span>Fijar</span>'; });
+    $('pull-text').textContent = '¡Tirar de la palanca!';
+    $('count').textContent = `Cuento ${count + 1}`;
+    show(count % 2 === 0 ? 's-rest' : 's-play'); window.scrollTo(0,0);
+  });
+  $('more').addEventListener('click', ()=>show('s-play'));
+  $('finish').addEventListener('click', ()=>{ show('s-end'); window.scrollTo(0,0); });
+  $('restart').addEventListener('click', ()=>show('s-start'));
+  window.addEventListener('resize', ()=>reels.forEach(place));
+})();
+</script>
+</body>
+</html>
