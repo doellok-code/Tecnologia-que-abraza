@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Caja musical</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="color-scheme" content="light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Atkinson+Hyperlegible:wght@400;700&family=Dancing+Script:wght@700&display=swap">
+<style>
+/* Layout: una columna; la cajita de música pintada es el héroe, con una repisa de 6 categorías debajo y la tarjeta de propuesta al final. Estética Tecnología que abraza, siempre en modo claro */
+:root{
+  --bg:#FFF3EF;
+  --dots:#FBDDD5;
+  --surface:#FFFFFF;
+  --fg:#3E2445;
+  --muted:#7A5A80;
+  --ink:#4A2B4F;
+  --accent:#D62962;
+  --accent-soft:#F8C9D6;
+  --display:"Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --script:"Dancing Script", "Brush Script MT", cursive;
+  --c-cantar:#F8BFD0; --c-ritmo:#FCD9A8; --c-instr:#BCDDF1; --c-bailar:#D6CCF4; --c-escuchar:#BFE6CF; --c-familia:#F9C3B4;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{background-color:var(--bg);background-image:radial-gradient(var(--dots) 3px, transparent 3.5px);background-size:28px 28px;
+  color:var(--fg);font-family:var(--body);font-size:1.0625rem;line-height:1.5;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:20px 24px;overflow-x:hidden}
+.app{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:20px;min-height:calc(100vh - 44px)}
+h1,h2{font-family:var(--display);line-height:1.02;margin:0;text-wrap:balance;color:var(--fg)}
+h1{font-size:clamp(2.5rem,10vw,3.2rem);font-weight:800}
+h2{font-size:clamp(1.8rem,7vw,2.2rem);font-weight:800}
+p{margin:0}
+.lead{font-size:1.12rem;color:var(--muted);max-width:34ch;font-weight:700}
+.screen{display:flex;flex-direction:column;gap:20px;flex:1}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible{outline:4px solid var(--accent);outline-offset:3px}
+.sticker{background:var(--surface);border:3px solid var(--ink);border-radius:24px;box-shadow:0 5px 0 var(--ink)}
+
+/* Portada */
+.hero{display:flex;flex-direction:column;gap:10px;padding-top:4px}
+.brand{font-family:var(--display);font-weight:800;color:var(--accent);font-size:1rem;letter-spacing:.02em}
+.dots-row{display:flex;gap:8px}
+.dots-row span{width:18px;height:18px;border-radius:50%;border:3px solid var(--ink)}
+.label{font-weight:700;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ages{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.age{padding:10px 8px 14px;display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform .15s, box-shadow .15s}
+.age:hover{transform:translateY(-3px);box-shadow:0 8px 0 var(--ink)}
+.age:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.age svg{width:100%;max-width:150px;height:auto}
+.age b{font-family:var(--display);font-size:1.9rem;line-height:1;color:var(--fg)}
+.age small{color:var(--muted);font-size:.95rem;font-weight:700}
+.age-a{background:#FDE4EB}
+.age-b{background:#E7E2FA}
+.how{display:flex;flex-direction:column;gap:10px;padding:16px 18px}
+.how ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px}
+.how li::marker{font-family:var(--display);font-weight:800;color:var(--accent)}
+
+/* Barra */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:3px solid var(--ink);border-radius:999px;padding:5px 14px;font-weight:700;font-size:.95rem;box-shadow:0 3px 0 var(--ink)}
+.count{font-variant-numeric:tabular-nums;font-weight:800;font-family:var(--display);font-size:1.25rem}
+
+/* Caja */
+.stage{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;padding-top:6px}
+.box-btn{position:relative;width:min(84vw,320px);max-width:100%;aspect-ratio:1.1;-webkit-tap-highlight-color:transparent}
+.box-btn svg.box{width:100%;height:100%;display:block;overflow:visible}
+.box-btn.shake svg.box{animation:shake .55s ease-in-out}
+@keyframes shake{0%,100%{transform:rotate(0)}15%{transform:rotate(-4deg) translateY(-3px)}35%{transform:rotate(4deg)}55%{transform:rotate(-3deg) translateY(-2px)}75%{transform:rotate(2deg)}}
+#lid{transform-box:view-box;transform-origin:52px 92px;transition:transform .5s cubic-bezier(.3,1.4,.5,1)}
+.open #lid{transform:rotate(-24deg)}
+#crank{transform-box:view-box;transform-origin:204px 132px}
+.cranking #crank{animation:crank .5s linear infinite}
+@keyframes crank{to{transform:rotate(360deg)}}
+#glow{opacity:0;transition:opacity .4s}
+.open #glow{opacity:1}
+.note-fly{position:absolute;left:46%;top:30%;width:30px;height:30px;pointer-events:none;animation:fly 1.6s ease-out forwards;z-index:2}
+@keyframes fly{0%{transform:translate(0,0) scale(.4) rotate(0);opacity:0}15%{opacity:1}100%{transform:translate(var(--x),-150px) scale(1.1) rotate(var(--r));opacity:0}}
+.tap{font-family:var(--display);font-weight:800;font-size:1.35rem;display:flex;align-items:center;gap:8px;text-align:center}
+.tap svg{width:26px;height:26px;color:var(--accent);animation:nudge 1.2s ease-in-out infinite;flex:none}
+@keyframes nudge{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.open-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:linear-gradient(#E8457A,#C8205A);color:#fff;border:3px solid var(--ink);border-radius:18px;box-shadow:0 5px 0 var(--ink), inset 0 2px 0 rgba(255,255,255,.4);
+  min-height:62px;font-family:var(--display);font-weight:800;font-size:1.35rem;transition:transform .1s, box-shadow .1s}
+.open-btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.open-btn:disabled{cursor:default;filter:saturate(.8)}
+.shelf{width:100%;display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:8px;border-radius:20px;background:linear-gradient(#fff,#FBEDE8);border:3px solid var(--ink);box-shadow:0 5px 0 var(--ink)}
+.slot{display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:14px;padding:4px 2px;transition:transform .12s, background .12s}
+.slot svg{width:100%;max-width:52px;height:auto;border-radius:12px;border:2px solid transparent}
+.slot span{font-size:.56rem;font-weight:700;text-transform:uppercase;text-align:center;line-height:1.05;color:var(--muted)}
+.slot.hot{background:var(--c);transform:translateY(-3px)}
+.slot.hot svg{border-color:var(--ink)}
+.slot.hot span{color:var(--fg)}
+
+/* Tarjeta */
+.card{--c:var(--c-cantar);background:var(--c);color:var(--fg);border:3px solid var(--ink);border-radius:26px;box-shadow:0 6px 0 var(--ink);
+  padding:18px 18px 18px;display:flex;flex-direction:column;gap:14px}
+.card.pop{animation:pop .5s cubic-bezier(.3,1.5,.5,1)}
+@keyframes pop{from{transform:translateY(-40px) scale(.7) rotate(-4deg);opacity:0}to{transform:none;opacity:1}}
+.cat{display:flex;align-items:center;gap:12px}
+.cat svg{width:64px;height:64px;flex:none;border-radius:16px;background:#fff;border:3px solid var(--ink)}
+.cat span{font-weight:700;letter-spacing:.07em;text-transform:uppercase;font-size:.9rem}
+.mission{font-family:var(--display);font-weight:800;font-size:clamp(1.45rem,6vw,1.8rem);line-height:1.15;text-wrap:balance;text-transform:uppercase;letter-spacing:.01em}
+.tip{font-size:1rem;font-weight:700;color:var(--muted)}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:16px;padding:13px 18px;font-weight:700;font-size:1.05rem;min-height:54px;border:3px solid var(--ink);box-shadow:0 4px 0 var(--ink);transition:transform .1s, box-shadow .1s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn svg{width:22px;height:22px;flex:none}
+.btn-main{background:var(--accent);color:#fff;flex:1 1 100%;font-size:1.2rem}
+.btn-soft{background:#fff;color:var(--fg);flex:1 1 130px;white-space:nowrap;padding-inline:10px;gap:6px;font-size:1rem}
+.btn-wide{width:100%;flex:none}
+
+/* Pausa y cierre */
+.center{display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;padding-top:20px}
+.big-ico{width:140px;height:140px}
+.stars{display:flex;gap:10px;justify-content:center}
+.stars span{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:800;color:var(--fg);font-size:1.4rem;border:3px solid var(--ink)}
+.closing{padding:16px 18px;display:flex;flex-direction:column;gap:4px;width:100%}
+.closing p{color:var(--muted);font-weight:700}
+.pause-mission{font-family:var(--display);font-weight:800;font-size:1.25rem;line-height:1.2;text-transform:uppercase;color:var(--muted);max-width:30ch}
+
+footer{margin-top:auto;padding:14px 18px 16px;text-align:center;background:var(--surface);border:3px solid var(--ink);border-radius:24px;box-shadow:0 5px 0 var(--ink);display:flex;flex-direction:column;gap:2px}
+footer .prep{font-weight:700;font-size:.95rem;color:var(--muted);padding-bottom:6px;margin-bottom:4px;border-bottom:2px dashed var(--accent-soft)}
+footer .sig{white-space:nowrap;font-family:var(--script);font-weight:700;font-size:clamp(1.3rem,5.6vw,1.6rem);line-height:1.1;color:var(--fg);text-transform:none}
+footer .sig small{font-family:var(--body);font-size:clamp(.78rem,3.4vw,.95rem);font-weight:700;color:var(--muted)}
+footer b{font-family:var(--display);font-weight:800;font-size:clamp(1.35rem,6vw,1.6rem);line-height:1.1;color:var(--accent)}
+@media (prefers-reduced-motion: reduce){
+  .box-btn.shake svg.box,.cranking #crank,.card.pop,.tap svg,.note-fly{animation:none}
+  .note-fly{display:none}
+  #lid{transition:none}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><radialGradient id="g-pk" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFE4EC"/><stop offset=".55" stop-color="#F8B4C8"/><stop offset="1" stop-color="#E28BA6"/></radialGradient><radialGradient id="g-gr" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#E6F7DC"/><stop offset=".55" stop-color="#A9DC9A"/><stop offset="1" stop-color="#6DB068"/></radialGradient><radialGradient id="g-dg" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#C3E9B2"/><stop offset=".55" stop-color="#71B66C"/><stop offset="1" stop-color="#3E8549"/></radialGradient><radialGradient id="g-yl" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFF7D1"/><stop offset=".55" stop-color="#FFD86B"/><stop offset="1" stop-color="#EEAE38"/></radialGradient><radialGradient id="g-or" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFE4C8"/><stop offset=".55" stop-color="#FDB57A"/><stop offset="1" stop-color="#E4874A"/></radialGradient><radialGradient id="g-bl" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#E6F3FF"/><stop offset=".55" stop-color="#A9D3F5"/><stop offset="1" stop-color="#6BA6DB"/></radialGradient><radialGradient id="g-pu" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#F0E9FF"/><stop offset=".55" stop-color="#C9B8F2"/><stop offset="1" stop-color="#9982D6"/></radialGradient><radialGradient id="g-br" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#F2D6BA"/><stop offset=".55" stop-color="#C9925F"/><stop offset="1" stop-color="#8A5A34"/></radialGradient><radialGradient id="g-gy" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#F7F7FA"/><stop offset=".55" stop-color="#CFCFDC"/><stop offset="1" stop-color="#9898B0"/></radialGradient><radialGradient id="g-wh" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#F7F2EF"/><stop offset="1" stop-color="#D9CEC9"/></radialGradient><radialGradient id="g-rd" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFD3CE"/><stop offset=".55" stop-color="#F27A6D"/><stop offset="1" stop-color="#CC4740"/></radialGradient><radialGradient id="g-sk" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFE8D6"/><stop offset=".55" stop-color="#F5C6A2"/><stop offset="1" stop-color="#D99C74"/></radialGradient><radialGradient id="g-sk2" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#F1CDAE"/><stop offset=".55" stop-color="#C58E66"/><stop offset="1" stop-color="#93603D"/></radialGradient><radialGradient id="g-sand" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFF5DC"/><stop offset=".55" stop-color="#F5DCA3"/><stop offset="1" stop-color="#DDB871"/></radialGradient><radialGradient id="g-sea" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#D9F4FF"/><stop offset=".55" stop-color="#8ED2EE"/><stop offset="1" stop-color="#4AA2CC"/></radialGradient><radialGradient id="g-gold" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFF6BE"/><stop offset=".55" stop-color="#F7CF4D"/><stop offset="1" stop-color="#D59D1A"/></radialGradient><radialGradient id="g-nv" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#5B5FA8"/><stop offset=".55" stop-color="#34386F"/><stop offset="1" stop-color="#1E2148"/></radialGradient><radialGradient id="g-mint" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#E4FAF1"/><stop offset=".55" stop-color="#A6E3CB"/><stop offset="1" stop-color="#5FB89A"/></radialGradient><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BFE3FA"/><stop offset="1" stop-color="#FFF1E8"/></linearGradient><linearGradient id="sky-pk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD3E2"/><stop offset="1" stop-color="#FFF4E8"/></linearGradient><linearGradient id="sky-dawn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE0C7"/><stop offset="1" stop-color="#FFF6E9"/></linearGradient><linearGradient id="night" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2B2E66"/><stop offset="1" stop-color="#5A5EA6"/></linearGradient><linearGradient id="deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ED6F0"/><stop offset="1" stop-color="#2F7FB3"/></linearGradient><linearGradient id="jungle" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D9F3C9"/><stop offset="1" stop-color="#9ED48C"/></linearGradient><linearGradient id="sea-l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9FDDF2"/><stop offset="1" stop-color="#4EA6D0"/></linearGradient><linearGradient id="grass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B8E3A3"/><stop offset="1" stop-color="#78BC6E"/></linearGradient><linearGradient id="parch" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF3D6"/><stop offset="1" stop-color="#EBCB8E"/></linearGradient></defs></svg>
+<div class="app">
+
+  <!-- PORTADA -->
+  <section class="screen" id="s-start">
+    <div class="hero">
+      <p class="brand">Tecnología que abraza</p>
+      <div class="dots-row" aria-hidden="true">
+        <span style="background:var(--c-cantar)"></span><span style="background:var(--c-ritmo)"></span><span style="background:var(--c-instr)"></span><span style="background:var(--c-bailar)"></span><span style="background:var(--c-escuchar)"></span>
+      </div>
+      <h1>Caja musical</h1>
+      <p class="lead">La caja guarda canciones, ritmos y bailes. La música la hacen ustedes, juntos.</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <p class="label">¿Cuántos años tiene quien juega?</p>
+      <div class="ages">
+        <button class="age age-a sticker" id="age-a">
+          <svg viewBox="0 0 140 150" aria-hidden="true">
+            <ellipse cx="72" cy="141" rx="40" ry="5.5" fill="rgba(74,43,79,.13)"/>
+            <path d="M104 131h-9M106 125h-6" stroke="#B79BBE" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="119" cy="128" r="11" fill="#fff" stroke="#4A2B4F" stroke-width="2.5"/>
+            <path d="M109 124q10 6 20 0M119 117q-5 11 0 22" fill="none" stroke="#8FD0AE" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M62 106Q58 121 53 131" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M62 106Q58 121 53 131" fill="none" stroke="#F2C3A0" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M80 106Q87 118 93 126" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M80 106Q87 118 93 126" fill="none" stroke="#F2C3A0" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <ellipse cx="51" cy="134" rx="9.5" ry="6" transform="rotate(-8 51 134)" fill="#9CCBEB" stroke="#4A2B4F" stroke-width="2.5"/>
+            <ellipse cx="96" cy="129" rx="9.5" ry="6" transform="rotate(28 96 129)" fill="#9CCBEB" stroke="#4A2B4F" stroke-width="2.5"/>
+            <path d="M57 82Q43 80 35 68" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M57 82Q43 80 35 68" fill="none" stroke="#F2C3A0" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M84 82Q98 79 106 65" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M84 82Q98 79 106 65" fill="none" stroke="#F2C3A0" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="34" cy="66" r="6.5" fill="#F2C3A0" stroke="#4A2B4F" stroke-width="2.5"/>
+            <circle cx="107" cy="63" r="6.5" fill="#F2C3A0" stroke="#4A2B4F" stroke-width="2.5"/>
+            <path d="M54 74C46 86 44 102 50 112C58 120 82 120 90 112C97 102 94 86 86 74C78 68 62 68 54 74Z" fill="#F7A9BE" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M59 73Q61 84 62 91M81 73Q79 84 78 91" fill="none" stroke="#FCE3A8" stroke-width="4" stroke-linecap="round"/>
+            <path d="M58 90Q70 86 82 90L80 104Q70 107 60 104Z" fill="#FCE3A8" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M70 101s-5.5-3.2-5.5-6.8a2.8 2.8 0 015.5-.9 2.8 2.8 0 015.5.9c0 3.6-5.5 6.8-5.5 6.8z" fill="#D62962"/>
+            <g transform="rotate(-7 70 50)">
+              <circle cx="42" cy="50" r="5" fill="#F2C3A0" stroke="#4A2B4F" stroke-width="2.5"/>
+              <circle cx="98" cy="50" r="5" fill="#F2C3A0" stroke="#4A2B4F" stroke-width="2.5"/>
+              <ellipse cx="70" cy="47" rx="29" ry="28" fill="#F2C3A0" stroke="#4A2B4F" stroke-width="2.5"/>
+              <path d="M41 46C38 24 52 13 70 13C88 13 102 24 99 46C97 40 95 36 92 35C89 38 85 38 82 35C79 38 74 38 71 35C68 38 63 38 60 35C57 38 52 38 49 35C46 37 43 41 41 46Z" fill="#8A5A3B" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="M61 18q-5 6-6 14M79 17q4 6 4 15" fill="none" stroke="#6B4129" stroke-width="2" stroke-linecap="round"/>
+              <ellipse cx="60" cy="49" rx="4" ry="5" fill="#4A2B4F"/><circle cx="61.4" cy="47.2" r="1.5" fill="#fff"/>
+              <ellipse cx="80" cy="49" rx="4" ry="5" fill="#4A2B4F"/><circle cx="81.4" cy="47.2" r="1.5" fill="#fff"/>
+              <circle cx="51" cy="58" r="5" fill="#F79AB5" opacity=".75"/><circle cx="89" cy="58" r="5" fill="#F79AB5" opacity=".75"/>
+              <path d="M62 59Q70 68 78 59Q70 62 62 59Z" fill="#C2456A" stroke="#4A2B4F" stroke-width="2" stroke-linejoin="round"/>
+            </g>
+          </svg>
+          <b>2 y 3</b><small>años</small>
+        </button>
+        <button class="age age-b sticker" id="age-b">
+          <svg viewBox="0 0 140 150" aria-hidden="true">
+            <ellipse cx="66" cy="143" rx="26" ry="4.5" fill="rgba(74,43,79,.12)"/>
+            <path d="M18 92l2.5 5.5 5.5 2.5-5.5 2.5-2.5 5.5-2.5-5.5-5.5-2.5 5.5-2.5z" fill="#FCD9A8" stroke="#4A2B4F" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M118 84l2 4.5 4.5 2-4.5 2-2 4.5-2-4.5-4.5-2 4.5-2z" fill="#BCDDF1" stroke="#4A2B4F" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M58 132q8 4 16 0" fill="none" stroke="#B79BBE" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M58 102Q50 116 40 120" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M58 102Q50 116 40 120" fill="none" stroke="#C58E66" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M72 102Q82 116 92 118" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M72 102Q82 116 92 118" fill="none" stroke="#C58E66" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <ellipse cx="37" cy="121" rx="8.5" ry="5.5" transform="rotate(-22 37 121)" fill="#F7A9BE" stroke="#4A2B4F" stroke-width="2.5"/>
+            <ellipse cx="96" cy="118" rx="8.5" ry="5.5" transform="rotate(20 96 118)" fill="#F7A9BE" stroke="#4A2B4F" stroke-width="2.5"/>
+            <path d="M51 65Q39 55 31 39" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M51 65Q39 55 31 39" fill="none" stroke="#C58E66" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M77 65Q89 55 97 39" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M77 65Q89 55 97 39" fill="none" stroke="#C58E66" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="30" cy="36" r="6.5" fill="#C58E66" stroke="#4A2B4F" stroke-width="2.5"/>
+            <circle cx="98" cy="36" r="6.5" fill="#C58E66" stroke="#4A2B4F" stroke-width="2.5"/>
+            <path d="M50 60C47 70 47 80 46 88L82 88C81 80 81 70 78 60C70 55 58 55 50 60Z" fill="#A9DDC2" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M46 86L82 86Q92 96 99 108Q66 117 29 108Q36 96 46 86Z" fill="#C9BDF2" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M50 92Q44 101 40 109M64 90V112M78 92Q84 101 88 109" fill="none" stroke="#E7E2FA" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M64 77s-5.5-3.2-5.5-6.8a2.8 2.8 0 015.5-.9 2.8 2.8 0 015.5.9c0 3.6-5.5 6.8-5.5 6.8z" fill="#D62962"/>
+            <g transform="rotate(6 64 36)">
+              <path d="M45 27C31 17 21 22 18 33C24 29 33 30 43 35Z" fill="#3B2418" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="M83 27C97 17 107 22 110 33C104 29 95 30 85 35Z" fill="#3B2418" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+              <circle cx="44" cy="28" r="4.2" fill="#F7A9BE" stroke="#4A2B4F" stroke-width="2"/>
+              <circle cx="84" cy="28" r="4.2" fill="#F7A9BE" stroke="#4A2B4F" stroke-width="2"/>
+              <circle cx="42" cy="38" r="4.8" fill="#C58E66" stroke="#4A2B4F" stroke-width="2.5"/>
+              <circle cx="86" cy="38" r="4.8" fill="#C58E66" stroke="#4A2B4F" stroke-width="2.5"/>
+              <ellipse cx="64" cy="36" rx="22" ry="21.5" fill="#C58E66" stroke="#4A2B4F" stroke-width="2.5"/>
+              <path d="M42 36C40 18 52 12 64 12C76 12 88 18 86 36C82 28 74 24 66 26C60 22 50 26 42 36Z" fill="#3B2418" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="M52 38q3.5-4.5 7 0M69 38q3.5-4.5 7 0" fill="none" stroke="#4A2B4F" stroke-width="2.6" stroke-linecap="round"/>
+              <circle cx="49" cy="44" r="4" fill="#F08FA8" opacity=".65"/><circle cx="79" cy="44" r="4" fill="#F08FA8" opacity=".65"/>
+              <path d="M56 44Q64 54 72 44Z" fill="#C2456A" stroke="#4A2B4F" stroke-width="2" stroke-linejoin="round"/>
+            </g>
+          </svg>
+          <b>4 y 5</b><small>años</small>
+        </button>
+      </div>
+    </div>
+
+    <div class="how sticker">
+      <p class="label">Cómo se juega</p>
+      <ol>
+        <li>Toquen la caja: gira la manivela, suena la música y se abre.</li>
+        <li>Lean la propuesta, dejen el celular y hagan música juntos.</li>
+        <li>Cuando terminen, abran la caja otra vez. Con tres propuestas ya es un lindo rato.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- JUEGO -->
+  <section class="screen" id="s-play" hidden>
+    <div class="bar">
+      <button class="chip" id="change-age" aria-label="Volver atrás para cambiar la edad">← <span id="age-label">2 y 3 años</span></button>
+      <button class="chip" id="sound" aria-pressed="true">Sonido: sí</button>
+      <span class="count" id="count">Propuesta 1</span>
+    </div>
+
+    <div class="stage" id="stage">
+      <button class="box-btn" id="box-btn" aria-label="Abrir la caja musical">
+        <svg class="box" viewBox="0 0 240 220" aria-hidden="true">
+<ellipse cx="118" cy="207" rx="94" ry="9" fill="#5B3A5F" opacity=".14"/>
+<ellipse id="glow" cx="118" cy="92" rx="86" ry="34" fill="#FFE7A0" opacity="0"/>
+<g stroke="#6E4D72" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" stroke-width="2.4">
+  <circle cx="54" cy="198" r="7" fill="url(#g-gold)"/><circle cx="182" cy="198" r="7" fill="url(#g-gold)"/>
+  <rect x="40" y="88" width="156" height="18" rx="6" fill="#6E4D72"/>
+  <rect x="32" y="98" width="172" height="96" rx="16" fill="url(#g-pk)"/>
+  <path d="M32 112h172M32 178h172" stroke="#D59D1A" stroke-width="5"/>
+  <path d="M32 112h172M32 178h172" stroke="#F7CF4D" stroke-width="2.6"/>
+  <circle cx="118" cy="145" r="22" fill="url(#g-gold)"/>
+  <path d="M118 157s-11-6.3-11-13a5.5 5.5 0 0111-1.8 5.5 5.5 0 0111 1.8c0 6.7-11 13-11 13z" fill="url(#g-rd)"/>
+  <path d="M60 156v-20l14-3v17" fill="none" stroke="#9982D6" stroke-width="3"/>
+  <circle cx="56" cy="157" r="4.6" fill="#C9B8F2"/><circle cx="70" cy="151" r="4.6" fill="#C9B8F2"/>
+  <path d="M166 160v-22q8 2 10 9" fill="none" stroke="#6BA6DB" stroke-width="3"/><circle cx="162" cy="161" r="5" fill="#A9D3F5"/>
+  <circle cx="204" cy="132" r="9" fill="url(#g-gold)"/>
+  <g id="crank"><path d="M204 132V104" stroke-width="5"/><path d="M204 132V104" stroke="#F7CF4D" stroke-width="2.6"/><circle cx="204" cy="100" r="8" fill="url(#g-pk)"/></g>
+  <g id="lid">
+    <rect x="26" y="72" width="184" height="26" rx="12" fill="url(#g-pk)"/>
+    <path d="M26 88h184" stroke="#D59D1A" stroke-width="4.4"/><path d="M26 88h184" stroke="#F7CF4D" stroke-width="2.2"/>
+    <path d="M118 72Q102 54 94 62Q90 70 118 74Q146 70 142 62Q134 54 118 72Z" fill="url(#g-pu)"/>
+    <circle cx="118" cy="71" r="5.6" fill="url(#g-gold)"/>
+  </g>
+</g>
+<ellipse cx="62" cy="122" rx="16" ry="5" fill="#fff" opacity=".5"/><ellipse cx="54" cy="79" rx="14" ry="3.2" fill="#fff" opacity=".55"/>
+<ellipse cx="111" cy="138" rx="6" ry="3.6" fill="#fff" opacity=".6"/>
+<path d="M22 58Q23.5 62.5 28 64Q23.5 65.5 22 70Q20.5 65.5 16 64Q20.5 62.5 22 58Z" fill="#FFD86B" stroke="#6E4D72" stroke-width="1"/><path d="M222 53Q223.25 56.75 227 58Q223.25 59.25 222 63Q220.75 59.25 217 58Q220.75 56.75 222 53Z" fill="#F8B4C8" stroke="#6E4D72" stroke-width="1"/><path d="M16 146Q17.0 149.0 20 150Q17.0 151.0 16 154Q15.0 151.0 12 150Q15.0 149.0 16 146Z" fill="#A9D3F5" stroke="#6E4D72" stroke-width="1"/>
+</svg>
+      </button>
+      <div class="shelf" id="shelf" aria-hidden="true"></div>
+      <button class="open-btn" id="open"><span id="open-text">¡Abrir la caja!</span></button>
+    </div>
+
+    <article class="card" id="card" hidden aria-live="polite">
+      <div class="cat"><span id="cat-ico"></span><span id="cat-name">Cantar</span></div>
+      <p class="mission" id="mission"></p>
+      <p class="tip" id="tip" hidden></p>
+      <div class="actions">
+        <button class="btn btn-main" id="go">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
+          ¡A jugar!
+        </button>
+        <button class="btn btn-soft" id="back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 5l-7 7 7 7M3.5 12H20"/></svg>
+          Volver atrás
+        </button>
+        <button class="btn btn-soft" id="skip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 0113.7-5.6L20 8.7M20 4v4.7h-4.7"/><path d="M20 12a8 8 0 01-13.7 5.6L4 15.3M4 20v-4.7h4.7"/></svg>
+          Otra propuesta
+        </button>
+      </div>
+    </article>
+  </section>
+
+  <!-- PAUSA -->
+  <section class="screen" id="s-pause" hidden>
+    <div class="center">
+      <svg class="big-ico" viewBox="0 0 140 140" aria-hidden="true">
+        <rect x="46" y="12" width="48" height="80" rx="10" fill="#fff" stroke="#4A2B4F" stroke-width="4" transform="rotate(-12 70 52)"/>
+        <path d="M58 46q12 10 24 0" fill="none" stroke="#4A2B4F" stroke-width="4" stroke-linecap="round" transform="rotate(-12 70 52)"/>
+        <path d="M26 128V96l24-6v32" fill="none" stroke="#4A2B4F" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <ellipse cx="20" cy="128" rx="8" ry="6" fill="#F8BFD0" stroke="#4A2B4F" stroke-width="3"/><ellipse cx="44" cy="122" rx="8" ry="6" fill="#D6CCF4" stroke="#4A2B4F" stroke-width="3"/>
+        <path d="M110 128V100" stroke="#4A2B4F" stroke-width="4" stroke-linecap="round"/><path d="M110 100q10 4 12 14" fill="none" stroke="#4A2B4F" stroke-width="4" stroke-linecap="round"/>
+        <ellipse cx="103" cy="128" rx="8" ry="6" fill="#BFE6CF" stroke="#4A2B4F" stroke-width="3"/>
+      </svg>
+      <h2>Dejen el celular y hagan música</h2>
+      <p class="pause-mission" id="pause-mission"></p>
+      <button class="btn btn-main btn-wide" id="done">Terminamos · abrir otra vez</button>
+    </div>
+  </section>
+
+  <!-- DESCANSO -->
+  <section class="screen" id="s-rest" hidden>
+    <div class="center">
+      <div class="stars" aria-hidden="true">
+        <span style="background:var(--c-cantar)">1</span><span style="background:var(--c-instr)">2</span><span style="background:var(--c-escuchar)">3</span>
+      </div>
+      <h2>¡Hicieron tres propuestas!</h2>
+      <p class="lead">Pueden guardar el celular y seguir con la música, o abrir la caja una vez más.</p>
+      <button class="btn btn-main btn-wide" id="finish">Terminar el juego</button>
+      <button class="btn btn-soft btn-wide" id="more">Abrir otra vez</button>
+    </div>
+  </section>
+
+  <!-- CIERRE -->
+  <section class="screen" id="s-end" hidden>
+    <div class="center">
+      <svg class="big-ico" viewBox="0 0 120 120" aria-hidden="true">
+        <path d="M60 104C28 82 12 62 12 43a22 22 0 0148-9 22 22 0 0148 9c0 19-16 39-48 61z" fill="#F8BFD0" stroke="#4A2B4F" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M54 78V48l18-4v28" fill="none" stroke="#4A2B4F" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <ellipse cx="49" cy="78" rx="6" ry="5" fill="#fff" stroke="#4A2B4F" stroke-width="3"/><ellipse cx="67" cy="73" rx="6" ry="5" fill="#fff" stroke="#4A2B4F" stroke-width="3"/>
+      </svg>
+      <h2>¡Gracias por hacer música en familia!</h2>
+      <p class="lead">Las canciones que cantan juntos se quedan con ustedes. Mañana la caja guarda otras sorpresas.</p>
+      <div class="closing sticker">
+        <span class="label">Un juego de la colección</span>
+        <p>La pantalla abre la puerta; la música sucede entre ustedes.</p>
+      </div>
+      <button class="btn btn-soft btn-wide" id="restart">Volver a empezar</button>
+    </div>
+  </section>
+
+  <footer>
+    <p class="prep" id="prep" hidden></p>
+    <span class="sig">Karina Doello <small>· @pensareninicial</small></span>
+    <b>Tecnología que abraza</b>
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   DATOS PARA PERSONALIZAR (solo cambiar lo que está entre comillas)
+   Dejar vacío ("") si no se quiere mostrar.
+   ============================================================ */
+const PERSONALIZAR = {
+  institucion: "",   // ejemplo: "Jardín de Infantes N.° 900"
+  distrito: ""       // ejemplo: "Distrito Escobar"
+};
+/* ============================================================ */
+
+(function(){
+  const $ = id => document.getElementById(id);
+  const partes = [PERSONALIZAR.institucion, PERSONALIZAR.distrito].map(s => (s||'').trim()).filter(Boolean);
+  if(partes.length){ $('prep').textContent = 'Preparado para ' + partes.join(' · '); $('prep').hidden = false; }
+
+  const ICO = {"cantar": "<g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M44 50h12v30a6 6 0 01-12 0Z\" fill=\"url(#g-pk)\"/>\n<path d=\"M44 58h12\" stroke-width=\"1.4\"/>\n<circle cx=\"50\" cy=\"34\" r=\"17\" fill=\"url(#g-gy)\"/>\n<path d=\"M36 28h28M34 36h32M38 44h24M44 18v32M56 18v32\" fill=\"none\" stroke=\"#9898B0\" stroke-width=\"1.2\"/>\n<path d=\"M78 24v14\" stroke=\"#9982D6\" stroke-width=\"2.6\"/></g>\n<ellipse cx=\"75\" cy=\"38\" rx=\"4\" ry=\"3\" fill=\"#9982D6\"/><ellipse cx=\"44\" cy=\"27\" rx=\"5\" ry=\"3\" transform=\"rotate(-30 44 27)\" fill=\"#fff\" opacity=\".55\"/>\n<path d=\"M22 30v12\" stroke=\"#E28BA6\" stroke-width=\"2.6\" stroke-linecap=\"round\"/><ellipse cx=\"19\" cy=\"42\" rx=\"3.6\" ry=\"2.8\" fill=\"#E28BA6\"/>", "ritmo": "<g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M28 78Q20 62 26 44L36 30Q40 26 43 30L40 42 50 26Q54 22 57 26L52 44 46 72Q40 84 28 78Z\" fill=\"url(#g-sk)\"/>\n<path d=\"M72 78Q80 62 74 44L64 30Q60 26 57 30L60 42 52 28Q48 24 45 28L50 46 54 72Q60 84 72 78Z\" fill=\"url(#g-sk2)\"/>\n</g><path d=\"M50 14v-6M36 16l-4-5M64 16l4-5\" stroke=\"#E4874A\" stroke-width=\"2.6\" stroke-linecap=\"round\"/>\n<ellipse cx=\"32\" cy=\"52\" rx=\"3\" ry=\"8\" transform=\"rotate(15 32 52)\" fill=\"#fff\" opacity=\".55\"/>", "instr": "<g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M62 18L44 56\" stroke-width=\"6\"/><path d=\"M62 18L44 56\" stroke=\"#C9925F\" stroke-width=\"3.6\"/>\n<ellipse cx=\"64\" cy=\"15\" rx=\"6\" ry=\"8\" fill=\"url(#g-br)\" transform=\"rotate(25 64 15)\"/>\n<path d=\"M18 52h64v18a14 14 0 01-14 14H32a14 14 0 01-14-14Z\" fill=\"url(#g-gy)\"/>\n<ellipse cx=\"50\" cy=\"52\" rx=\"32\" ry=\"7\" fill=\"#E9E9F2\"/>\n<path d=\"M12 56h8M80 56h8\" stroke-width=\"4\"/>\n</g><ellipse cx=\"28\" cy=\"66\" rx=\"4\" ry=\"8\" transform=\"rotate(0 28 66)\" fill=\"#fff\" opacity=\".55\"/>\n<path d=\"M30 40q3-6 0-12M38 38q3-5 0-10\" fill=\"none\" stroke=\"#6BA6DB\" stroke-width=\"2\" stroke-linecap=\"round\"/>", "bailar": "<path d=\"M20 74Q30 30 54 42Q78 54 62 70Q46 84 40 64Q36 46 62 30Q76 22 84 28\" fill=\"none\" stroke=\"#6E4D72\" stroke-width=\"9\" stroke-linecap=\"round\"/>\n<path d=\"M20 74Q30 30 54 42Q78 54 62 70Q46 84 40 64Q36 46 62 30Q76 22 84 28\" fill=\"none\" stroke=\"#F27A9A\" stroke-width=\"5.6\" stroke-linecap=\"round\"/>\n<path d=\"M22 70Q30 40 52 46\" fill=\"none\" stroke=\"#FFE4EC\" stroke-width=\"1.6\" stroke-linecap=\"round\"/>\n<path d=\"M80 54Q81.5 58.5 86 60Q81.5 61.5 80 66Q78.5 61.5 74 60Q78.5 58.5 80 54Z\" fill=\"#FFD86B\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M26 21.6Q27.1 24.9 30.4 26Q27.1 27.1 26 30.4Q24.9 27.1 21.6 26Q24.9 24.9 26 21.6Z\" fill=\"#C9B8F2\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M54 82.6Q54.85 85.15 57.4 86Q54.85 86.85 54 89.4Q53.15 86.85 50.6 86Q53.15 85.15 54 82.6Z\" fill=\"#A9D3F5\" stroke=\"#6E4D72\" stroke-width=\"1\"/>", "escuchar": "<g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M34 46Q34 20 56 20Q76 20 76 42Q76 54 66 60Q60 64 60 72Q60 84 48 84Q40 84 38 76\" fill=\"url(#g-sk)\"/>\n<path d=\"M46 46Q46 32 56 32Q66 32 66 42Q66 50 58 52Q54 54 54 60\" fill=\"none\" stroke-width=\"2\"/>\n</g><ellipse cx=\"48\" cy=\"28\" rx=\"6\" ry=\"3\" transform=\"rotate(-20 48 28)\" fill=\"#fff\" opacity=\".55\"/>\n<path d=\"M84 34q6 8 0 18M90 28q10 14 0 30\" fill=\"none\" stroke=\"#5FB89A\" stroke-width=\"2.6\" stroke-linecap=\"round\"/>\n<path d=\"M18 30q-6 8 0 18\" fill=\"none\" stroke=\"#5FB89A\" stroke-width=\"2.6\" stroke-linecap=\"round\"/>", "familia": "<g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M20 50L50 22L80 50\" fill=\"none\" stroke-width=\"5\"/><path d=\"M20 50L50 22L80 50\" fill=\"none\" stroke=\"#E4874A\" stroke-width=\"2.6\"/>\n<path d=\"M28 46V84H72V46L50 28Z\" fill=\"url(#g-or)\"/>\n<rect x=\"43\" y=\"64\" width=\"14\" height=\"20\" rx=\"6\" fill=\"url(#g-br)\"/>\n<path d=\"M50 56s-8-4.6-8-9.4a4 4 0 018-1.3 4 4 0 018 1.3c0 4.8-8 9.4-8 9.4z\" fill=\"url(#g-rd)\"/>\n</g><ellipse cx=\"34\" cy=\"58\" rx=\"3\" ry=\"8\" transform=\"rotate(0 34 58)\" fill=\"#fff\" opacity=\".55\"/>\n<path d=\"M82 14v12\" stroke=\"#9982D6\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><ellipse cx=\"79\" cy=\"26\" rx=\"3.4\" ry=\"2.6\" fill=\"#9982D6\"/>"};
+  const CAT = {
+    cantar:['Cantar','--c-cantar'], ritmo:['Ritmo con el cuerpo','--c-ritmo'], instr:['Instrumentos caseros','--c-instr'],
+    bailar:['Bailar','--c-bailar'], escuchar:['Escuchar','--c-escuchar'], familia:['Canciones de la familia','--c-familia']
+  };
+  const SHORT = { cantar:'Cantar', ritmo:'Ritmo', instr:'Instru-<br>mentos', bailar:'Bailar', escuchar:'Escuchar', familia:'Familia' };
+  // a = 2 y 3 años · b = 4 y 5 años
+  const M = [
+    ['cantar','Canten una canción que sepan todos.','ab'],
+    ['cantar','Canten una canción muy bajito, como un secreto.','ab'],
+    ['cantar','Canten una canción con voz de ratón y después con voz de oso.','ab'],
+    ['cantar','Inventen una canción con el nombre de quien juega.','ab'],
+    ['cantar','Canten “Los pollitos dicen” haciendo los gestos.','ab'],
+    ['cantar','Canten la misma canción rápido y después lento, lento.','b'],
+    ['cantar','Canten y paren de golpe cuando alguien levante la mano.','b'],
+    ['cantar','Canten una canción cambiando una palabra por un sonido.','b','Por ejemplo, en vez de “pollito”, digan “pío”.'],
+    ['ritmo','Aplaudan fuerte y después muy suave.','ab'],
+    ['ritmo','Hagan ritmo con las manos sobre las piernas.','ab'],
+    ['ritmo','Caminen marcando el paso: ¡tum, tum, tum!','ab'],
+    ['ritmo','Golpeen suavecito la mesa con los dedos, como si lloviera.','ab'],
+    ['ritmo','Una persona hace un ritmo con palmas y la otra lo copia.','b'],
+    ['ritmo','Hagan sonar el cuerpo: palmas, pies y chasquidos.','b'],
+    ['ritmo','Aplaudan una vez por cada parte de su nombre.','b','Ejemplo: MA-RI-NA son tres palmas.'],
+    ['instr','Hagan música con ollas, cucharas y tapas.','ab'],
+    ['instr','Llenen una botella con arroz o fideos y armen una maraca.','ab','Que quede bien cerrada.'],
+    ['instr','Busquen tres cosas de la casa que suenen distinto.','ab'],
+    ['instr','Toquen fuerte y despacio con una cuchara de madera.','a'],
+    ['instr','Hagan sonar un papel: arrúguenlo, sacúdanlo, rómpanlo.','a'],
+    ['instr','Armen una banda: cada uno elige un instrumento casero.','b'],
+    ['instr','Soplen en una botella vacía y escuchen qué sonido sale.','b'],
+    ['bailar','Bailen y quédense quietos como estatuas cuando pare la música.','ab','Una persona canta y, de golpe, se calla.'],
+    ['bailar','Bailen como un árbol con mucho viento.','ab'],
+    ['bailar','Bailen muy lento, como en cámara lenta.','ab'],
+    ['bailar','Bailen moviendo un pañuelo o una media.','ab'],
+    ['bailar','Bailen tomados de las manos y giren despacito.','ab'],
+    ['bailar','Inventen un paso de baile y enséñenselo a la familia.','b'],
+    ['bailar','Bailen como animales: un pato, una víbora, un canguro.','b'],
+    ['escuchar','Cierren los ojos y cuenten cuántos sonidos escuchan.','ab'],
+    ['escuchar','Hagan silencio total y busquen el sonido más chiquito.','ab'],
+    ['escuchar','Escuchen una canción y muévanse solo con las manos.','ab'],
+    ['escuchar','Imiten sonidos: un perro, un auto, el viento.','a'],
+    ['escuchar','Una persona hace un sonido escondida y la otra adivina qué es.','b'],
+    ['escuchar','Busquen en la casa algo que suene como lluvia.','b'],
+    ['familia','Canten la canción de cuna que se cantaba en casa cuando era bebé.','ab'],
+    ['familia','Las personas grandes cantan una canción de cuando eran pequeñas.','ab'],
+    ['familia','Pregunten a una abuela o un abuelo qué canción le gustaba.','ab','Pueden llamar por teléfono.'],
+    ['familia','Canten una canción mientras se mecen abrazados.','a'],
+    ['familia','Elijan “la canción de la familia” y cántenla juntos.','b'],
+    ['familia','Canten una canción de otro lugar que conozca la familia.','b']
+  ];
+
+  const screens = ['s-start','s-play','s-pause','s-rest','s-end'];
+  const show = id => screens.forEach(s => $(s).hidden = s !== id);
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ORDER = Object.keys(CAT);
+
+  // Repisa
+  $('shelf').innerHTML = ORDER.map(k=>`<div class="slot" data-k="${k}" style="--c:var(${CAT[k][1]})"><svg viewBox="0 0 100 100" style="background:var(${CAT[k][1]})">${ICO[k]}</svg><span>${SHORT[k]}</span></div>`).join('');
+  const slots = [...document.querySelectorAll('.slot')];
+
+  let age = 'a', deck = [], current = null, played = 0, busy = false;
+  function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+  function refill(){ deck = shuffle(M.filter(m => m[2].includes(age))); }
+  function next(){ if(!deck.length) refill(); return deck.pop(); }
+
+  // Sonido: timbre de cajita de música
+  let actx = null, soundOn = true;
+  function audio(){ if(!soundOn) return null; try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume(); return actx; }catch(e){ return null; } }
+  function bell(f, t0, vol){
+    const c = audio(); if(!c) return;
+    [[1,vol],[2.01,vol*.35],[3.98,vol*.12]].forEach(([m,v])=>{
+      const o=c.createOscillator(), g=c.createGain(); o.type='sine'; o.frequency.value=f*m;
+      const t=c.currentTime+t0; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+.005); g.gain.exponentialRampToValueAtTime(.0001,t+1.1);
+      o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+1.2);
+    });
+  }
+  const N = {G4:392,A4:440,C5:523.25,D5:587.33,E5:659.25,G5:783.99,A5:880,C6:1046.5};
+  const TUNES = [
+    ['G4','C5','E5','G5','E5','C5','D5','E5','C5'],
+    ['C5','E5','G5','A5','G5','E5','D5','C5','G4','C5'],
+    ['E5','D5','C5','D5','E5','E5','G5','E5','C5'],
+    ['G5','E5','C5','E5','D5','G4','C5','E5','C6']
+  ];
+  function melody(){ const t = TUNES[Math.floor(Math.random()*TUNES.length)]; t.forEach((n,i)=>bell(N[n], i*.2, .07)); }
+
+  function notesFly(){
+    if(reduce) return;
+    const box = $('box-btn');
+    const cols = ['#D62962','#9982D6','#6BA6DB','#6DB068','#E4874A'];
+    for(let i=0;i<9;i++){
+      const el = document.createElementNS('http://www.w3.org/2000/svg','svg');
+      el.setAttribute('viewBox','0 0 24 24'); el.classList.add('note-fly');
+      el.innerHTML = i%2 ? '<path d="M9 18V5l10-2v12" fill="none" stroke="'+cols[i%5]+'" stroke-width="2.4" stroke-linecap="round"/><circle cx="6.5" cy="18" r="3" fill="'+cols[i%5]+'"/><circle cx="16.5" cy="15" r="3" fill="'+cols[i%5]+'"/>'
+                         : '<path d="M12 18V4q5 1 6 5" fill="none" stroke="'+cols[i%5]+'" stroke-width="2.4" stroke-linecap="round"/><circle cx="9" cy="18" r="3.4" fill="'+cols[i%5]+'"/>';
+      el.style.setProperty('--x', (Math.random()*180-90)+'px');
+      el.style.setProperty('--r', (Math.random()*60-30)+'deg');
+      el.style.animationDelay = (i*0.17)+'s';
+      box.appendChild(el);
+      setTimeout(()=>el.remove(), 1700 + i*170);
+    }
+  }
+
+  function render(m){
+    const [cat, txt, , tip] = m; const [name, color] = CAT[cat];
+    const card = $('card');
+    card.style.setProperty('--c', `var(${color})`);
+    $('cat-ico').outerHTML = `<svg id="cat-ico" viewBox="0 0 100 100" aria-hidden="true">${ICO[cat]}</svg>`;
+    $('cat-name').textContent = name;
+    $('mission').textContent = txt;
+    $('tip').hidden = !tip; $('tip').textContent = tip || '';
+    card.hidden = false;
+    card.classList.remove('pop'); void card.offsetWidth; card.classList.add('pop');
+    $('count').textContent = `Propuesta ${played + 1}`;
+  }
+
+  function openBox(){
+    if(busy) return;
+    busy = true; audio();
+    current = next();
+    const target = ORDER.indexOf(current[0]);
+    const btn = $('box-btn');
+    $('card').hidden = true;
+    btn.classList.remove('open','shake'); void btn.offsetWidth;
+    btn.classList.add('shake','cranking');
+    $('open').disabled = true; $('open-text').textContent = 'Suena la música…';
+    melody();
+    // la repisa se ilumina de a una y frena en la categoría
+    const steps = reduce ? 0 : 15;
+    let i = 0, delay = 55;
+    slots.forEach(s=>s.classList.remove('hot'));
+    (function run(){
+      const k = (((target - (steps - i)) % 6) + 6) % 6;
+      slots.forEach(s=>s.classList.remove('hot')); slots[k].classList.add('hot');
+      if(i < steps){ i++; delay *= 1.12; setTimeout(run, delay); }
+    })();
+    setTimeout(()=>{ btn.classList.add('open'); notesFly(); }, reduce ? 0 : 1300);
+    setTimeout(()=>{
+      btn.classList.remove('cranking');
+      render(current);
+      $('open').disabled = false; $('open-text').textContent = 'Abrir otra vez';
+      busy = false;
+      setTimeout(()=>$('card').scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block:'nearest'}), 120);
+    }, reduce ? 50 : 2300);
+  }
+
+  function startAge(a){
+    age = a; refill(); played = 0;
+    $('age-label').textContent = a === 'a' ? '2 y 3 años' : '4 y 5 años';
+    $('card').hidden = true; $('box-btn').classList.remove('open');
+    slots.forEach(s=>s.classList.remove('hot'));
+    $('open-text').textContent = '¡Abrir la caja!';
+    $('count').textContent = 'Propuesta 1';
+    show('s-play'); window.scrollTo(0,0);
+  }
+  const goBack = ()=>{ if(busy) return; $('card').hidden = true; show('s-start'); window.scrollTo(0,0); };
+
+  $('age-a').addEventListener('click', ()=>startAge('a'));
+  $('age-b').addEventListener('click', ()=>startAge('b'));
+  $('change-age').addEventListener('click', goBack);
+  $('back').addEventListener('click', goBack);
+  $('box-btn').addEventListener('click', openBox);
+  $('open').addEventListener('click', openBox);
+  $('skip').addEventListener('click', ()=>{ $('box-btn').scrollIntoView({behavior: reduce?'auto':'smooth', block:'center'}); openBox(); });
+  $('sound').addEventListener('click', ()=>{ soundOn = !soundOn; $('sound').textContent = 'Sonido: ' + (soundOn ? 'sí' : 'no'); $('sound').setAttribute('aria-pressed', String(soundOn)); });
+  $('go').addEventListener('click', ()=>{ $('pause-mission').textContent = current ? current[1] : ''; show('s-pause'); window.scrollTo(0,0); });
+  $('done').addEventListener('click', ()=>{
+    played++;
+    $('card').hidden = true; $('box-btn').classList.remove('open');
+    slots.forEach(s=>s.classList.remove('hot'));
+    $('open-text').textContent = '¡Abrir la caja!';
+    $('count').textContent = `Propuesta ${played + 1}`;
+    show(played % 3 === 0 ? 's-rest' : 's-play'); window.scrollTo(0,0);
+  });
+  $('more').addEventListener('click', ()=>show('s-play'));
+  $('finish').addEventListener('click', ()=>{ show('s-end'); window.scrollTo(0,0); });
+  $('restart').addEventListener('click', ()=>show('s-start'));
+})();
+</script>
+</body>
+</html>
