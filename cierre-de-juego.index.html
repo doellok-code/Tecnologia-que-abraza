@@ -109,7 +109,7 @@ button:focus-visible{outline:4px solid var(--c-cuento);outline-offset:3px}
 .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
 .btn svg{width:22px;height:22px;flex:none}
 .btn-main{background:var(--ink);color:var(--on-ink);flex:1 1 100%;font-size:1.2rem}
-.btn-soft{background:#fff;color:#1B1340;flex:1 1 140px}
+.btn-soft{background:#fff;color:#1B1340;flex:1 1 130px;white-space:nowrap;padding-inline:10px;gap:6px;font-size:1rem}
 .btn-wide{width:100%;flex:none}
 
 /* Pausa y cierre */
@@ -242,7 +242,7 @@ footer b{font-family:var(--display);font-weight:800;font-size:clamp(1.6rem,7vw,2
     <div class="how sticker">
       <p class="label">Cómo se juega</p>
       <ol>
-        <li>Giren la ruleta y lean o escuchen la misión.</li>
+        <li>Giren la ruleta y lean la misión.</li>
         <li>Dejen el celular a un costado y jueguen juntos.</li>
         <li>Cuando terminen, giren otra vez. Con tres misiones ya es un lindo rato.</li>
       </ol>
@@ -252,7 +252,7 @@ footer b{font-family:var(--display);font-weight:800;font-size:clamp(1.6rem,7vw,2
   <!-- JUEGO -->
   <section class="screen" id="s-play" hidden>
     <div class="bar">
-      <button class="chip" id="change-age" aria-label="Cambiar edad"><span id="age-label">2 y 3 años</span> · cambiar</button>
+      <button class="chip" id="change-age" aria-label="Volver atrás para cambiar la edad">← <span id="age-label">2 y 3 años</span></button>
       <button class="chip" id="sound" aria-pressed="true">Sonido: sí</button>
       <span class="count" id="count">Misión 1</span>
     </div>
@@ -281,9 +281,9 @@ footer b{font-family:var(--display);font-weight:800;font-size:clamp(1.6rem,7vw,2
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
           ¡A jugar!
         </button>
-        <button class="btn btn-soft" id="listen">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 010 6M18 6.5a7.5 7.5 0 010 11"/></svg>
-          Escuchar
+        <button class="btn btn-soft" id="back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 5l-7 7 7 7M3.5 12H20"/></svg>
+          Volver atrás
         </button>
         <button class="btn btn-soft" id="skip">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 0113.7-5.6L20 8.7M20 4v4.7h-4.7"/><path d="M20 12a8 8 0 01-13.7 5.6L4 15.3M4 20v-4.7h4.7"/></svg>
@@ -470,21 +470,6 @@ footer b{font-family:var(--display);font-weight:800;font-size:clamp(1.6rem,7vw,2
   function refill(){ deck = shuffle(M.filter(m => m[2].includes(age))); }
   function next(){ if(!deck.length) refill(); return deck.pop(); }
 
-  const synth = 'speechSynthesis' in window ? window.speechSynthesis : null;
-  if(!synth) $('listen').hidden = true;
-  function speak(text){
-    if(!synth) return;
-    try{
-      synth.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = 'es-AR'; u.rate = .9; u.pitch = 1.05;
-      const vs = synth.getVoices();
-      const v = vs.find(v=>/es[-_]AR/i.test(v.lang)) || vs.find(v=>/^es/i.test(v.lang));
-      if(v) u.voice = v;
-      synth.speak(u);
-    }catch(e){}
-  }
-
   const CONF = ['--c-abrazo','--c-buscar','--c-mover','--c-cuento','--c-cancion','--c-antes','--c-crear'];
   function confetti(){
     if(reduce) return;
@@ -521,7 +506,6 @@ footer b{font-family:var(--display);font-weight:800;font-size:clamp(1.6rem,7vw,2
   function roll(){
     if(rolling) return;
     rolling = true;
-    if(synth) synth.cancel();
     audio();
     current = next();
     const idx = ORDER.indexOf(current[0]);
@@ -568,14 +552,14 @@ footer b{font-family:var(--display);font-weight:800;font-size:clamp(1.6rem,7vw,2
 
   $('age-a').addEventListener('click', ()=>startAge('a'));
   $('age-b').addEventListener('click', ()=>startAge('b'));
-  $('change-age').addEventListener('click', ()=>{ if(synth) synth.cancel(); show('s-start'); });
+  const goBack = ()=>{ $('card').hidden = true; show('s-start'); window.scrollTo(0,0); };
+  $('change-age').addEventListener('click', goBack);
+  $('back').addEventListener('click', goBack);
   $('spin').addEventListener('click', roll);
   $('wheel').addEventListener('click', roll);
   $('sound').addEventListener('click', ()=>{ soundOn = !soundOn; $('sound').textContent = 'Sonido: ' + (soundOn ? 'sí' : 'no'); $('sound').setAttribute('aria-pressed', String(soundOn)); });
   $('skip').addEventListener('click', ()=>{ $('wheel-box').scrollIntoView({behavior: reduce?'auto':'smooth', block:'center'}); roll(); });
-  $('listen').addEventListener('click', ()=>{ if(current) speak(current[1] + (current[3] ? ' ' + current[3] : '')); });
   $('go').addEventListener('click', ()=>{
-    if(synth) synth.cancel();
     $('pause-mission').textContent = current ? current[1] : '';
     show('s-pause'); window.scrollTo(0,0);
   });
