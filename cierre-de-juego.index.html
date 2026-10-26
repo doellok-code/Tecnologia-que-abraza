@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La ruleta de las misiones</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: una columna tipo juego de mesa con estética de calcomanía (bordes gruesos y sombras corridas); el dado 3D es el héroe */
+:root{
+  --bg:#FFD21F;
+  --dots:rgba(255,255,255,.45);
+  --surface:#FFFFFF;
+  --fg:#1B1340;
+  --muted:#4A3F7A;
+  --ink:#1B1340;
+  --on-ink:#FFFFFF;
+  --display:"Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --c-buscar:#FFB300; --c-mover:#00B85C; --c-abrazo:#FF2D7A; --c-cuento:#2F6BFF;
+  --c-cancion:#9B3CF5; --c-antes:#FF6A13; --c-preguntar:#0091C2; --c-crear:#7CC400;
+  --c-calma:#00A99D; --c-palabras:#E8302E;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#2A1A7A; --dots:rgba(255,255,255,.08); --surface:#3A2A96; --fg:#FFFFFF; --muted:#D9D1FF;
+  --ink:#0E0830; --on-ink:#FFFFFF; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#2A1A7A; --dots:rgba(255,255,255,.08); --surface:#3A2A96; --fg:#FFFFFF; --muted:#D9D1FF;
+  --ink:#0E0830; --on-ink:#FFFFFF; color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{background-color:var(--bg);background-image:radial-gradient(var(--dots) 3px, transparent 3.5px);background-size:28px 28px;
+  color:var(--fg);font-family:var(--body);font-size:1.0625rem;line-height:1.5;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:20px 24px;overflow-x:hidden}
+.app{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:20px;min-height:calc(100vh - 44px)}
+h1,h2{font-family:var(--display);line-height:1.02;margin:0;text-wrap:balance}
+h1{font-size:clamp(2.6rem,10vw,3.3rem);font-weight:800}
+h2{font-size:clamp(1.8rem,7vw,2.2rem);font-weight:800}
+p{margin:0}
+.lead{font-size:1.15rem;color:var(--muted);max-width:34ch;font-weight:700}
+.screen{display:flex;flex-direction:column;gap:20px;flex:1}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible{outline:4px solid var(--c-cuento);outline-offset:3px}
+.sticker{background:var(--surface);border:3px solid var(--ink);border-radius:24px;box-shadow:0 6px 0 var(--ink)}
+
+/* Portada */
+.hero{display:flex;flex-direction:column;gap:12px;padding-top:6px}
+.title-word{display:inline-block}
+.title-word span{display:inline-block}
+.dots-row{display:flex;gap:8px}
+.dots-row span{width:18px;height:18px;border-radius:50%;border:3px solid var(--ink)}
+.label{font-weight:700;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ages{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.age{padding:10px 8px 14px;display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform .15s, box-shadow .15s}
+.age:hover{transform:translateY(-3px);box-shadow:0 9px 0 var(--ink)}
+.age:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink)}
+.age svg{width:100%;max-width:150px;height:auto}
+.age b{font-family:var(--display);font-size:1.9rem;line-height:1;color:var(--fg)}
+.age small{color:var(--muted);font-size:.95rem;font-weight:700}
+.age-a{background:color-mix(in srgb, var(--c-abrazo) 18%, var(--surface))}
+.age-b{background:color-mix(in srgb, var(--c-cuento) 18%, var(--surface))}
+.how{display:flex;flex-direction:column;gap:10px;padding:16px 18px}
+.how ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px}
+.how li::marker{font-family:var(--display);font-weight:800;color:var(--c-abrazo)}
+
+/* Barra */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:3px solid var(--ink);border-radius:999px;padding:5px 14px;font-weight:700;font-size:.95rem;box-shadow:0 3px 0 var(--ink)}
+.count{font-variant-numeric:tabular-nums;font-weight:800;font-family:var(--display);font-size:1.25rem}
+
+/* Ruleta */
+.stage{position:relative;display:flex;flex-direction:column;align-items:center;gap:12px;padding-top:10px}
+.wheel-box{position:relative;width:min(86vw,340px);max-width:100%;aspect-ratio:1}
+.wheel{width:100%;height:100%;display:block;filter:drop-shadow(0 7px 0 var(--ink));cursor:pointer}
+.pointer{position:absolute;top:-16px;left:50%;width:46px;height:56px;margin-left:-23px;transform-origin:50% 30%;z-index:2;pointer-events:none}
+.spin-btn{position:absolute;left:50%;top:50%;width:31%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:var(--ink);color:#fff;
+  border:5px solid #fff;font-family:var(--display);font-weight:800;font-size:clamp(1.15rem,5.4vw,1.5rem);line-height:1;box-shadow:0 0 0 4px var(--ink), 0 5px 0 4px var(--ink);transition:transform .1s}
+.spin-btn:active{transform:translate(-50%,-50%) scale(.93)}
+.spin-btn:disabled{cursor:default}
+.bulb{fill:#fff}
+.spinning .bulb.alt{animation:blink .28s steps(1) infinite}
+.spinning .bulb:not(.alt){animation:blink .28s steps(1) infinite reverse}
+@keyframes blink{0%{fill:#fff}50%{fill:#FFD21F}}
+.hint{font-family:var(--display);font-weight:800;font-size:1.4rem;display:flex;align-items:center;gap:8px;text-align:center}
+.hint svg{width:26px;height:26px;animation:nudge 1.2s ease-in-out infinite;flex:none}
+@keyframes nudge{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.confetti{position:absolute;left:50%;top:50%;width:13px;height:13px;border-radius:3px;pointer-events:none;border:2px solid var(--ink);z-index:3;animation:burst 1s ease-out forwards}
+@keyframes burst{from{transform:translate(-50%,-50%) rotate(0) scale(1);opacity:1}to{transform:translate(calc(-50% + var(--x)), calc(-50% + var(--y))) rotate(var(--r)) scale(.6);opacity:0}}
+
+/* Tarjeta de misión */
+.card{--c:var(--c-cuento);--t:#fff;background:var(--c);color:var(--t);border:3px solid var(--ink);border-radius:26px;box-shadow:0 7px 0 var(--ink);
+  padding:20px 20px 18px;display:flex;flex-direction:column;gap:14px}
+.card.pop{animation:pop .45s cubic-bezier(.3,1.5,.5,1)}
+@keyframes pop{from{transform:translateY(16px) scale(.92) rotate(-2deg);opacity:0}to{transform:none;opacity:1}}
+.cat{display:flex;align-items:center;gap:10px}
+.cat .ico{width:48px;height:48px;border-radius:50%;background:#fff;color:var(--ink);border:3px solid var(--ink);display:grid;place-items:center;flex:none}
+.cat .ico svg{width:26px;height:26px}
+.cat span{font-weight:700;letter-spacing:.07em;text-transform:uppercase;font-size:.88rem}
+.mission{font-family:var(--display);font-weight:800;font-size:clamp(1.6rem,6.6vw,2rem);line-height:1.12;text-wrap:balance}
+.tip{font-size:1rem;font-weight:700;opacity:.92}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:16px;padding:13px 18px;font-weight:700;font-size:1.05rem;min-height:54px;border:3px solid var(--ink);box-shadow:0 4px 0 var(--ink);transition:transform .1s, box-shadow .1s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn svg{width:22px;height:22px;flex:none}
+.btn-main{background:var(--ink);color:var(--on-ink);flex:1 1 100%;font-size:1.2rem}
+.btn-soft{background:#fff;color:#1B1340;flex:1 1 140px}
+.btn-wide{width:100%;flex:none}
+
+/* Pausa y cierre */
+.center{display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;padding-top:20px}
+.big-ico{width:140px;height:140px}
+.stars{display:flex;gap:10px;justify-content:center}
+.stars span{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:800;color:#fff;font-size:1.4rem;border:3px solid var(--ink)}
+.closing{padding:18px;display:flex;flex-direction:column;gap:4px;width:100%}
+.closing b{font-family:var(--display);font-size:clamp(1.9rem,8vw,2.4rem);line-height:1.1;color:var(--fg)}
+
+footer{margin-top:auto;padding:14px 18px 16px;text-align:center;background:var(--surface);border:3px solid var(--ink);border-radius:24px;box-shadow:0 6px 0 var(--ink);display:flex;flex-direction:column;gap:2px}
+footer span{font-weight:700;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+footer b{font-family:var(--display);font-weight:800;font-size:clamp(1.6rem,7vw,2rem);line-height:1.05;color:var(--fg);text-wrap:balance}
+@media (prefers-reduced-motion: reduce){
+  .card.pop,.hint svg,.confetti,.spinning .bulb{animation:none}
+  .confetti{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- PORTADA -->
+  <section class="screen" id="s-start">
+    <div class="hero">
+      <div class="dots-row" aria-hidden="true">
+        <span style="background:var(--c-abrazo)"></span><span style="background:var(--c-buscar)"></span><span style="background:var(--c-mover)"></span><span style="background:var(--c-cuento)"></span><span style="background:var(--c-cancion)"></span>
+      </div>
+      <h1>La ruleta de las misiones</h1>
+      <p class="lead">Un juego para jugar en familia. El celular solo gira la ruleta: el juego lo hacen ustedes.</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <p class="label">¿Cuántos años tiene quien juega?</p>
+      <div class="ages">
+        <!-- Nene de 2 y 3 años -->
+        <button class="age age-a sticker" id="age-a">
+          <svg viewBox="0 0 140 150" aria-hidden="true">
+            <ellipse cx="70" cy="142" rx="38" ry="6" fill="rgba(27,19,64,.18)"/>
+            <!-- piernas y zapatillas -->
+            <rect x="50" y="108" width="15" height="26" rx="7" fill="#F2B98E" stroke="#1B1340" stroke-width="3"/>
+            <rect x="75" y="108" width="15" height="26" rx="7" fill="#F2B98E" stroke="#1B1340" stroke-width="3"/>
+            <path d="M44 134q0-8 10-8h10q4 0 4 5v4H47q-3 0-3-1z" fill="#2F6BFF" stroke="#1B1340" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M96 134q0-8-10-8H76q-4 0-4 5v4h21q3 0 3-1z" fill="#2F6BFF" stroke="#1B1340" stroke-width="3" stroke-linejoin="round"/>
+            <!-- brazos -->
+            <path d="M42 84q-14 6-16 20" fill="none" stroke="#1B1340" stroke-width="13" stroke-linecap="round"/>
+            <path d="M42 84q-14 6-16 20" fill="none" stroke="#F2B98E" stroke-width="7" stroke-linecap="round"/>
+            <path d="M98 84q14 4 18 16" fill="none" stroke="#1B1340" stroke-width="13" stroke-linecap="round"/>
+            <path d="M98 84q14 4 18 16" fill="none" stroke="#F2B98E" stroke-width="7" stroke-linecap="round"/>
+            <!-- enterito -->
+            <path d="M44 78q0-6 8-6h36q8 0 8 6l4 34q0 6-6 6H46q-6 0-6-6z" fill="#FF2D7A" stroke="#1B1340" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M52 72v18M88 72v18" stroke="#FFD21F" stroke-width="5" stroke-linecap="round"/>
+            <rect x="56" y="88" width="28" height="20" rx="6" fill="#FFD21F" stroke="#1B1340" stroke-width="3"/>
+            <circle cx="70" cy="98" r="4" fill="#FF2D7A"/>
+            <!-- pelota -->
+            <circle cx="120" cy="106" r="13" fill="#fff" stroke="#1B1340" stroke-width="3"/>
+            <path d="M108 102q12 6 24 0M120 93q-6 13 0 26" fill="none" stroke="#00B85C" stroke-width="3"/>
+            <circle cx="24" cy="106" r="6" fill="#F2B98E" stroke="#1B1340" stroke-width="3"/>
+            <!-- cabeza -->
+            <circle cx="42" cy="48" r="5.5" fill="#F2B98E" stroke="#1B1340" stroke-width="3"/>
+            <circle cx="98" cy="48" r="5.5" fill="#F2B98E" stroke="#1B1340" stroke-width="3"/>
+            <circle cx="70" cy="44" r="30" fill="#F2B98E" stroke="#1B1340" stroke-width="3"/>
+            <!-- pelo lacio con flequillo -->
+            <path d="M40 46Q36 13 70 12Q104 13 100 46L98 36L92 33L86 35L80 33L74 35L68 33L62 35L56 33L50 35L44 33L42 38Z" fill="#7A4A26" stroke="#1B1340" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M58 18q-6 6-8 14M76 17q4 6 4 15" fill="none" stroke="#5A3418" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- cara -->
+            <ellipse cx="59" cy="46" rx="4.5" ry="5.5" fill="#1B1340"/><circle cx="60.5" cy="44" r="1.6" fill="#fff"/>
+            <ellipse cx="81" cy="46" rx="4.5" ry="5.5" fill="#1B1340"/><circle cx="82.5" cy="44" r="1.6" fill="#fff"/>
+            <circle cx="51" cy="56" r="5" fill="#FF7FA8" opacity=".75"/><circle cx="89" cy="56" r="5" fill="#FF7FA8" opacity=".75"/>
+            <path d="M62 58q8 9 16 0z" fill="#B8233F" stroke="#1B1340" stroke-width="2.5" stroke-linejoin="round"/>
+          </svg>
+          <b>2 y 3</b><small>años</small>
+        </button>
+
+        <!-- Nena de 4 y 5 años -->
+        <button class="age age-b sticker" id="age-b">
+          <svg viewBox="0 0 140 150" aria-hidden="true">
+            <ellipse cx="66" cy="143" rx="36" ry="6" fill="rgba(27,19,64,.18)"/>
+            <!-- piernas -->
+            <path d="M54 100v32M74 100v32" stroke="#1B1340" stroke-width="14" stroke-linecap="round"/>
+            <path d="M54 100v32M74 100v32" stroke="#B9774A" stroke-width="8" stroke-linecap="round"/>
+            <path d="M54 122v10M74 122v10" stroke="#fff" stroke-width="8" stroke-linecap="round"/>
+            <!-- zapatillas -->
+            <path d="M40 140q0-9 10-9h8q5 0 5 5v4z" fill="#E8302E" stroke="#1B1340" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M88 140q0-9-10-9h-8q-5 0-5 5v4z" fill="#E8302E" stroke="#1B1340" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M41 140h22M65 140h22" stroke="#fff" stroke-width="3"/>
+            <!-- brazo saludando -->
+            <path d="M88 66q16-8 20-30" fill="none" stroke="#1B1340" stroke-width="14" stroke-linecap="round"/>
+            <path d="M88 66q16-8 20-30" fill="none" stroke="#B9774A" stroke-width="8" stroke-linecap="round"/>
+            <circle cx="109" cy="30" r="8" fill="#B9774A" stroke="#1B1340" stroke-width="3"/>
+            <path d="M120 20q5 6 0 14M127 16q8 10 0 22" fill="none" stroke="#1B1340" stroke-width="3" stroke-linecap="round"/>
+            <!-- brazo abajo -->
+            <path d="M42 70q-10 14-8 30" fill="none" stroke="#1B1340" stroke-width="14" stroke-linecap="round"/>
+            <path d="M42 70q-10 14-8 30" fill="none" stroke="#B9774A" stroke-width="8" stroke-linecap="round"/>
+            <circle cx="34" cy="102" r="6.5" fill="#B9774A" stroke="#1B1340" stroke-width="3"/>
+            <!-- remera -->
+            <path d="M42 66q0-8 10-8h24q10 0 10 8l1 24H41z" fill="#00B85C" stroke="#1B1340" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M41 88h46l8 24q1 3-3 3H36q-4 0-3-3z" fill="#9B3CF5" stroke="#1B1340" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M46 100l-3 13M64 98v16M82 100l3 13" stroke="#B57BFF" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M64 70l3.5 7.5 8 .8-6 5.4 1.8 8-7.3-4.2-7.3 4.2 1.8-8-6-5.4 8-.8z" fill="#FFD21F" stroke="#1B1340" stroke-width="2.5" stroke-linejoin="round"/>
+            <!-- mochila (tira) -->
+            <path d="M46 60l6 40" stroke="#FF6A13" stroke-width="5" stroke-linecap="round"/>
+            <!-- cuello y cabeza -->
+            <rect x="58" y="50" width="12" height="12" rx="4" fill="#B9774A" stroke="#1B1340" stroke-width="3"/>
+            <circle cx="42" cy="34" r="6" fill="#B9774A" stroke="#1B1340" stroke-width="3"/>
+            <circle cx="86" cy="34" r="6" fill="#B9774A" stroke="#1B1340" stroke-width="3"/>
+            <circle cx="64" cy="32" r="23" fill="#B9774A" stroke="#1B1340" stroke-width="3"/>
+            <!-- pelo -->
+            <path d="M36 22q-14 4-12 22 2 10 8 12-2-12 6-22z" fill="#2A1A10" stroke="#1B1340" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M92 22q14 4 12 22-2 10-8 12 2-12-6-22z" fill="#2A1A10" stroke="#1B1340" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M41 30q-2-23 23-23 25 0 23 23-6-10-14-12-4 6-12 6-12 0-20 6z" fill="#2A1A10" stroke="#1B1340" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M30 18l8 4-8 5z M46 22l-8 0" fill="#FF2D7A" stroke="#1B1340" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M98 18l-8 4 8 5z" fill="#FF2D7A" stroke="#1B1340" stroke-width="2.5" stroke-linejoin="round"/>
+            <circle cx="38" cy="22" r="3.5" fill="#FF2D7A" stroke="#1B1340" stroke-width="2.5"/>
+            <circle cx="90" cy="22" r="3.5" fill="#FF2D7A" stroke="#1B1340" stroke-width="2.5"/>
+            <!-- cara -->
+            <path d="M50 26q5-3 9 0M69 26q5-3 9 0" fill="none" stroke="#1B1340" stroke-width="2.5" stroke-linecap="round"/>
+            <ellipse cx="55" cy="33" rx="3.8" ry="4.6" fill="#1B1340"/><circle cx="56.3" cy="31.5" r="1.3" fill="#fff"/>
+            <ellipse cx="73" cy="33" rx="3.8" ry="4.6" fill="#1B1340"/><circle cx="74.3" cy="31.5" r="1.3" fill="#fff"/>
+            <circle cx="49" cy="41" r="4" fill="#E86A7E" opacity=".6"/><circle cx="79" cy="41" r="4" fill="#E86A7E" opacity=".6"/>
+            <path d="M55 41q9 10 18 0z" fill="#fff" stroke="#1B1340" stroke-width="2.5" stroke-linejoin="round"/>
+          </svg>
+          <b>4 y 5</b><small>años</small>
+        </button>
+      </div>
+    </div>
+
+    <div class="how sticker">
+      <p class="label">Cómo se juega</p>
+      <ol>
+        <li>Giren la ruleta y lean o escuchen la misión.</li>
+        <li>Dejen el celular a un costado y jueguen juntos.</li>
+        <li>Cuando terminen, giren otra vez. Con tres misiones ya es un lindo rato.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- JUEGO -->
+  <section class="screen" id="s-play" hidden>
+    <div class="bar">
+      <button class="chip" id="change-age" aria-label="Cambiar edad"><span id="age-label">2 y 3 años</span> · cambiar</button>
+      <button class="chip" id="sound" aria-pressed="true">Sonido: sí</button>
+      <span class="count" id="count">Misión 1</span>
+    </div>
+
+    <div class="stage" id="stage">
+      <div class="wheel-box" id="wheel-box">
+        <svg class="pointer" id="pointer" viewBox="0 0 46 56" aria-hidden="true">
+          <path d="M23 53L7 21a17 17 0 1132 0z" fill="#FF2D7A" stroke="#1B1340" stroke-width="4" stroke-linejoin="round"/>
+          <circle cx="23" cy="19" r="6" fill="#fff" stroke="#1B1340" stroke-width="3"/>
+        </svg>
+        <svg class="wheel" id="wheel" viewBox="-160 -160 320 320" aria-hidden="true"></svg>
+        <button class="spin-btn" id="spin" aria-label="Girar la ruleta">¡Girar!</button>
+      </div>
+      <p class="hint" id="hint">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V6M6 11l6-6 6 6"/></svg>
+        <span id="hint-text">Toquen ¡Girar!</span>
+      </p>
+    </div>
+
+    <article class="card" id="card" hidden aria-live="polite">
+      <div class="cat"><div class="ico" id="cat-ico"></div><span id="cat-name">Buscar</span></div>
+      <p class="mission" id="mission"></p>
+      <p class="tip" id="tip" hidden></p>
+      <div class="actions">
+        <button class="btn btn-main" id="go">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
+          ¡A jugar!
+        </button>
+        <button class="btn btn-soft" id="listen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 010 6M18 6.5a7.5 7.5 0 010 11"/></svg>
+          Escuchar
+        </button>
+        <button class="btn btn-soft" id="skip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 0113.7-5.6L20 8.7M20 4v4.7h-4.7"/><path d="M20 12a8 8 0 01-13.7 5.6L4 15.3M4 20v-4.7h4.7"/></svg>
+          Otra misión
+        </button>
+      </div>
+    </article>
+  </section>
+
+  <!-- PAUSA -->
+  <section class="screen" id="s-pause" hidden>
+    <div class="center">
+      <svg class="big-ico" viewBox="0 0 140 140" aria-hidden="true">
+        <rect x="46" y="12" width="48" height="80" rx="10" fill="#fff" stroke="#1B1340" stroke-width="4" transform="rotate(-12 70 52)"/>
+        <path d="M58 46q12 10 24 0" fill="none" stroke="#1B1340" stroke-width="4" stroke-linecap="round" transform="rotate(-12 70 52)"/>
+        <circle cx="30" cy="110" r="16" fill="#FF2D7A" stroke="#1B1340" stroke-width="4"/>
+        <circle cx="70" cy="118" r="16" fill="#00B85C" stroke="#1B1340" stroke-width="4"/>
+        <circle cx="110" cy="110" r="16" fill="#2F6BFF" stroke="#1B1340" stroke-width="4"/>
+      </svg>
+      <h2>Dejen el celular y jueguen</h2>
+      <p class="lead" id="pause-mission"></p>
+      <button class="btn btn-main btn-wide" id="done">Terminamos · girar otra vez</button>
+    </div>
+  </section>
+
+  <!-- DESCANSO -->
+  <section class="screen" id="s-rest" hidden>
+    <div class="center">
+      <div class="stars" aria-hidden="true">
+        <span style="background:var(--c-abrazo)">1</span><span style="background:var(--c-mover)">2</span><span style="background:var(--c-cuento)">3</span>
+      </div>
+      <h2>¡Jugaron tres misiones!</h2>
+      <p class="lead">Pueden guardar el celular y seguir jugando como quieran, o girar la ruleta una vez más.</p>
+      <button class="btn btn-main btn-wide" id="finish">Terminar el juego</button>
+      <button class="btn btn-soft btn-wide" id="more">Girar otra vez</button>
+    </div>
+  </section>
+
+  <!-- CIERRE -->
+  <section class="screen" id="s-end" hidden>
+    <div class="center">
+      <svg class="big-ico" viewBox="0 0 120 120" aria-hidden="true">
+        <path d="M60 104C28 82 12 62 12 43a22 22 0 0148-9 22 22 0 0148 9c0 19-16 39-48 61z" fill="#FF2D7A" stroke="#1B1340" stroke-width="4" stroke-linejoin="round"/>
+        <ellipse cx="44" cy="48" rx="5" ry="6" fill="#1B1340"/><ellipse cx="76" cy="48" rx="5" ry="6" fill="#1B1340"/>
+        <path d="M46 64q14 13 28 0" fill="none" stroke="#1B1340" stroke-width="5" stroke-linecap="round"/>
+      </svg>
+      <h2>¡Gracias por jugar en familia!</h2>
+      <p class="lead">El juego sigue aunque se apague la pantalla. Mañana pueden volver a girar la ruleta.</p>
+      <div class="closing sticker">
+        <span class="label">Cierre de juego</span>
+        <b>Jardines 906, 920 y 926</b>
+      </div>
+      <button class="btn btn-soft btn-wide" id="restart">Volver a empezar</button>
+    </div>
+  </section>
+
+  <footer><span>Cierre de juego</span><b>Jardines 906, 920 y 926</b></footer>
+</div>
+
+<script>
+(function(){
+  const I = {
+    buscar:'<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/>',
+    mover:'<path d="M8 4.5c1.6 0 2.5 1.6 2.5 3.6S9.6 12 8 12 5.5 10.1 5.5 8.1 6.4 4.5 8 4.5zM16 9.5c1.6 0 2.5 1.6 2.5 3.6S17.6 17 16 17s-2.5-1.9-2.5-3.9.9-3.6 2.5-3.6z"/>',
+    abrazo:'<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0112 7.4 4.3 4.3 0 0119.5 10C19.5 15.4 12 20 12 20z"/>',
+    cuento:'<path d="M3.5 6c3-1.3 5.8-1.3 8.5.5 2.7-1.8 5.5-1.8 8.5-.5v12c-3-1.3-5.8-1.3-8.5.5-2.7-1.8-5.5-1.8-8.5-.5z"/><path d="M12 6.5v12"/>',
+    cancion:'<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>',
+    antes:'<path d="M12 3l3 6H9z"/><path d="M6.5 9h11l-2.5 9h-6z"/><path d="M12 18v3"/>',
+    preguntar:'<path d="M4 5.5h11a2 2 0 012 2v5a2 2 0 01-2 2H9l-4 3.5v-3.5H4a2 2 0 01-2-2v-5a2 2 0 012-2z"/><path d="M19 9h1a2 2 0 012 2v4a2 2 0 01-2 2v2.5L17 17h-3"/>',
+    crear:'<path d="M14.5 4.5l5 5L9 20H4v-5z"/><path d="M12.5 6.5l5 5"/>',
+    calma:'<path d="M19 14.5A7.5 7.5 0 019.5 5a7.5 7.5 0 109.5 9.5z"/>',
+    palabras:'<path d="M5 18l4.5-12h1L15 18M6.6 14h7.3"/><path d="M17 9.5h4M19 7.5v4"/>'
+  };
+  // [nombre, color, color de texto]
+  const CAT = {
+    buscar:['Buscar','--c-buscar','#1B1340'], mover:['Moverse','--c-mover','#fff'], abrazo:['Encontrarse','--c-abrazo','#fff'],
+    cuento:['Cuentos','--c-cuento','#fff'], cancion:['Canciones','--c-cancion','#fff'], antes:['Juegos de antes','--c-antes','#fff'],
+    preguntar:['Preguntar a la familia','--c-preguntar','#fff'], crear:['Crear','--c-crear','#1B1340'], calma:['Calma','--c-calma','#fff'],
+    palabras:['Palabras','--c-palabras','#fff']
+  };
+  // a = 2 y 3 años · b = 4 y 5 años
+  const M = [
+    ['buscar','Busquen algo rojo en la casa.','ab'],
+    ['buscar','Traigan algo blandito para acariciar.','ab'],
+    ['buscar','Busquen algo que haga ruido.','ab'],
+    ['buscar','Encuentren una media y su pareja.','ab'],
+    ['buscar','Busquen algo más grande que una mano.','b'],
+    ['buscar','Encuentren tres cosas redondas.','b'],
+    ['buscar','Busquen algo que empiece con el mismo sonido que su nombre.','b','Ejemplo: Sofía, silla.'],
+    ['buscar','Escondan un juguete y que lo busque la otra persona.','b','Pueden ayudar con “frío, frío… caliente, caliente”.'],
+    ['mover','Salten como ranas hasta la puerta.','ab'],
+    ['mover','Caminen como elefantes, muy despacito.','ab'],
+    ['mover','Vuelen como pájaros por toda la casa.','a'],
+    ['mover','Hagan una estatua y no se muevan hasta contar 5.','ab'],
+    ['mover','Bailen y quédense quietos cuando alguien aplauda.','ab'],
+    ['mover','Caminen en puntas de pie sin hacer ruido.','ab'],
+    ['mover','Imiten a un animal y la familia adivina cuál es.','b'],
+    ['mover','Hagan un camino con almohadones y crúcenlo sin tocar el piso.','b'],
+    ['abrazo','Abrazo de oso: cuenten juntos hasta 5.','ab'],
+    ['abrazo','Hagan caras: contento, enojado, sorpresa. Copien la del otro.','ab'],
+    ['abrazo','Hagan lluvia en la espalda: gotas suaves con los dedos.','ab'],
+    ['abrazo','Comparen las manos: ¿cuál es más grande?','a'],
+    ['abrazo','Cuéntense algo lindo que pasó hoy.','b'],
+    ['abrazo','Cosquillas suaves: paran cuando alguien dice “¡basta!”.','ab'],
+    ['cuento','Lean un cuento juntos. Lo elige la niña o el niño.','ab'],
+    ['cuento','Miren las imágenes de un libro y cuenten qué ven.','a'],
+    ['cuento','Lean un cuento y después inventen otro final.','b'],
+    ['cuento','Inventen un cuento con tres cosas que tengan cerca.','b'],
+    ['cuento','Cuenten un cuento con voz de animal.','ab'],
+    ['cuento','Las personas grandes cuentan el cuento que más les gustaba cuando eran pequeñas.','ab'],
+    ['cancion','Canten una canción que sepan todos.','ab'],
+    ['cancion','Canten una canción susurrando, muy bajito.','ab'],
+    ['cancion','Canten la canción de cuna que se cantaba en casa cuando era bebé.','ab'],
+    ['cancion','Canten una canción con palmas.','a'],
+    ['cancion','Canten la misma canción rápido y después lento, lento.','b'],
+    ['cancion','Hagan música con ollas, cucharas y tapas.','ab'],
+    ['antes','Las personas grandes enseñan un juego al que jugaban cuando eran pequeñas.','ab'],
+    ['antes','Jueguen a la escondida.','ab'],
+    ['antes','Hagan una ronda y canten “Arroz con leche”.','ab'],
+    ['antes','Jueguen a “Aserrín, aserrán” sentados frente a frente.','a'],
+    ['antes','Jueguen al “Veo veo”.','b'],
+    ['antes','Jueguen a “Simón dice”.','b'],
+    ['antes','Jueguen a piedra, papel o tijera.','b'],
+    ['antes','Jueguen a las palmas con una canción.','b'],
+    ['preguntar','Llamen a una abuela, un abuelo, una tía o un tío y pregúntenle a qué jugaba cuando era pequeño.','ab','Puede ser cualquier persona querida de la familia.'],
+    ['preguntar','Pregunten a alguien de la familia cuál era su juguete preferido.','ab'],
+    ['preguntar','Pregunten qué canción le cantaban para dormir.','ab'],
+    ['preguntar','Pregunten cómo era su jardín de infantes.','b'],
+    ['preguntar','Pidan a un familiar que les enseñe un juego de su infancia la próxima vez que se vean.','ab'],
+    ['preguntar','Miren juntos una foto familiar de hace mucho y cuenten quién es quién.','ab'],
+    ['crear','Dibujen juntos en la misma hoja.','ab'],
+    ['crear','Armen una torre con lo que encuentren, sin romper nada.','ab'],
+    ['crear','Armen una cueva con sábanas y almohadones.','ab'],
+    ['crear','Hagan sombras con las manos en la pared.','ab','Se ve mejor con una linterna o una lámpara.'],
+    ['crear','Hagan un títere con una media y que hable.','b'],
+    ['calma','Respiren como globos: se inflan… y se desinflan.','ab'],
+    ['calma','Acuéstense en silencio y escuchen: ¿qué sonidos se oyen?','ab'],
+    ['calma','Miren por la ventana y cuenten qué ven.','ab'],
+    ['calma','Silencio de ratón: un ratito sin hacer nada de ruido.','a'],
+    ['palabras','Digan palabras que rimen con “gato”.','b','Pato, zapato, rato…'],
+    ['palabras','Por turnos, digan nombres de frutas.','b'],
+    ['palabras','Inventen una adivinanza para que adivine la familia.','b'],
+    ['palabras','Nombren juntos las partes de la cara mientras las tocan.','a']
+  ];
+
+  const $ = id => document.getElementById(id);
+  const screens = ['s-start','s-play','s-pause','s-rest','s-end'];
+  const show = id => screens.forEach(s => $(s).hidden = s !== id);
+
+  // Ruleta
+  const ORDER = Object.keys(CAT), SEG = 360/ORDER.length;
+  const pt = (r,a)=>{const t=a*Math.PI/180;return [(r*Math.sin(t)).toFixed(2),(-r*Math.cos(t)).toFixed(2)];};
+  (function build(){
+    const R = 142;
+    let g = '<circle r="158" fill="#1B1340"/><circle r="147" fill="#fff"/><g id="rotor">';
+    ORDER.forEach((k,i)=>{
+      const a0 = i*SEG - SEG/2, a1 = i*SEG + SEG/2;
+      const [x0,y0]=pt(R,a0),[x1,y1]=pt(R,a1);
+      g += `<path d="M0 0L${x0} ${y0}A${R} ${R} 0 0 1 ${x1} ${y1}Z" fill="var(${CAT[k][1]})" stroke="#1B1340" stroke-width="3" stroke-linejoin="round"/>`;
+      const [ix,iy]=pt(98,i*SEG);
+      g += `<g transform="translate(${ix} ${iy}) rotate(${i*SEG})"><circle r="21" fill="#fff" stroke="#1B1340" stroke-width="3"/>`+
+           `<g transform="scale(1.25) translate(-12 -12)" fill="none" stroke="#1B1340" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${I[k]}</g></g>`;
+    });
+    g += '</g>';
+    for(let j=0;j<20;j++){ const [bx,by]=pt(152.5,j*18+9); g += `<circle class="bulb${j%2?' alt':''}" cx="${bx}" cy="${by}" r="4" stroke="#1B1340" stroke-width="1.5"/>`; }
+    $('wheel').innerHTML = g;
+  })();
+  const rotor = $('rotor');
+  let rot = 0;
+
+  // Sonido (se activa con el primer toque)
+  let actx = null, soundOn = true;
+  function audio(){ if(!soundOn) return null; try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume(); return actx; }catch(e){ return null; } }
+  function beep(f, t0, d, vol, type){ const c=audio(); if(!c) return; const o=c.createOscillator(), g=c.createGain(); o.type=type||'square'; o.frequency.value=f;
+    g.gain.setValueAtTime(vol, c.currentTime+t0); g.gain.exponentialRampToValueAtTime(.0001, c.currentTime+t0+d); o.connect(g); g.connect(c.destination); o.start(c.currentTime+t0); o.stop(c.currentTime+t0+d+.02); }
+  const tick = ()=>beep(1250, 0, .035, .045);
+  const tada = ()=>[523,659,784,1047].forEach((f,i)=>beep(f, i*.09, .22, .09, 'triangle'));
+
+  let age = 'a', deck = [], current = null, played = 0, rolling = false;
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+  function refill(){ deck = shuffle(M.filter(m => m[2].includes(age))); }
+  function next(){ if(!deck.length) refill(); return deck.pop(); }
+
+  const synth = 'speechSynthesis' in window ? window.speechSynthesis : null;
+  if(!synth) $('listen').hidden = true;
+  function speak(text){
+    if(!synth) return;
+    try{
+      synth.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'es-AR'; u.rate = .9; u.pitch = 1.05;
+      const vs = synth.getVoices();
+      const v = vs.find(v=>/es[-_]AR/i.test(v.lang)) || vs.find(v=>/^es/i.test(v.lang));
+      if(v) u.voice = v;
+      synth.speak(u);
+    }catch(e){}
+  }
+
+  const CONF = ['--c-abrazo','--c-buscar','--c-mover','--c-cuento','--c-cancion','--c-antes','--c-crear'];
+  function confetti(){
+    if(reduce) return;
+    const box = $('wheel-box');
+    for(let i=0;i<24;i++){
+      const el = document.createElement('span');
+      el.className = 'confetti';
+      const a = Math.random()*Math.PI*2, d = 120 + Math.random()*80;
+      el.style.setProperty('--x', Math.cos(a)*d + 'px');
+      el.style.setProperty('--y', Math.sin(a)*d + 'px');
+      el.style.setProperty('--r', (Math.random()*540-270) + 'deg');
+      el.style.background = `var(${CONF[i % CONF.length]})`;
+      if(i % 3 === 0) el.style.borderRadius = '50%';
+      box.appendChild(el);
+      setTimeout(()=>el.remove(), 1050);
+    }
+  }
+
+  function render(m){
+    const [cat, txt, , tip] = m; const [name, color, tc] = CAT[cat];
+    const card = $('card');
+    card.style.setProperty('--c', `var(${color})`);
+    card.style.setProperty('--t', tc);
+    $('cat-ico').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[cat]}</svg>`;
+    $('cat-name').textContent = name;
+    $('mission').textContent = txt;
+    $('tip').hidden = !tip; $('tip').textContent = tip || '';
+    card.hidden = false;
+    card.classList.remove('pop'); void card.offsetWidth; card.classList.add('pop');
+    $('hint-text').textContent = 'Si no les sirve, pidan otra';
+    $('count').textContent = `Misión ${played + 1}`;
+  }
+
+  function roll(){
+    if(rolling) return;
+    rolling = true;
+    if(synth) synth.cancel();
+    audio();
+    current = next();
+    const idx = ORDER.indexOf(current[0]);
+    const jitter = (Math.random()-.5)*SEG*.6;
+    const targetMod = (((-idx*SEG + jitter) % 360) + 360) % 360;
+    const curMod = ((rot % 360) + 360) % 360;
+    let delta = targetMod - curMod; if(delta < 0) delta += 360;
+    const start = rot, end = rot + (reduce ? 0 : 5*360) + delta, dur = reduce ? 400 : 4300;
+    let last = Math.floor((start + SEG/2)/SEG);
+    $('card').hidden = true;
+    $('hint-text').textContent = '¡Gira, gira, gira…!';
+    $('wheel-box').classList.add('spinning');
+    $('spin').disabled = true;
+    const t0 = performance.now();
+    function frame(now){
+      const t = Math.min(1, (now - t0)/dur);
+      const e = 1 - Math.pow(1 - t, 4);
+      rot = start + (end - start)*e;
+      rotor.setAttribute('transform', `rotate(${rot.toFixed(2)})`);
+      const sct = Math.floor((rot + SEG/2)/SEG);
+      if(sct !== last){
+        last = sct;
+        if(!reduce){ tick(); $('pointer').animate([{transform:'rotate(-24deg)'},{transform:'rotate(0deg)'}], {duration:140, easing:'ease-out'}); }
+      }
+      if(t < 1) requestAnimationFrame(frame);
+      else {
+        $('wheel-box').classList.remove('spinning');
+        $('spin').disabled = false;
+        tada(); confetti();
+        render(current); rolling = false;
+        setTimeout(()=>$('card').scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block:'nearest'}), 150);
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function startAge(a){
+    age = a; refill(); played = 0;
+    $('age-label').textContent = a === 'a' ? '2 y 3 años' : '4 y 5 años';
+    $('card').hidden = true; $('hint-text').textContent = 'Toquen ¡Girar!';
+    $('count').textContent = 'Misión 1';
+    show('s-play'); window.scrollTo(0,0);
+  }
+
+  $('age-a').addEventListener('click', ()=>startAge('a'));
+  $('age-b').addEventListener('click', ()=>startAge('b'));
+  $('change-age').addEventListener('click', ()=>{ if(synth) synth.cancel(); show('s-start'); });
+  $('spin').addEventListener('click', roll);
+  $('wheel').addEventListener('click', roll);
+  $('sound').addEventListener('click', ()=>{ soundOn = !soundOn; $('sound').textContent = 'Sonido: ' + (soundOn ? 'sí' : 'no'); $('sound').setAttribute('aria-pressed', String(soundOn)); });
+  $('skip').addEventListener('click', ()=>{ $('wheel-box').scrollIntoView({behavior: reduce?'auto':'smooth', block:'center'}); roll(); });
+  $('listen').addEventListener('click', ()=>{ if(current) speak(current[1] + (current[3] ? ' ' + current[3] : '')); });
+  $('go').addEventListener('click', ()=>{
+    if(synth) synth.cancel();
+    $('pause-mission').textContent = current ? current[1] : '';
+    show('s-pause'); window.scrollTo(0,0);
+  });
+  $('done').addEventListener('click', ()=>{
+    played++;
+    $('card').hidden = true; $('hint-text').textContent = 'Toquen ¡Girar!';
+    $('count').textContent = `Misión ${played + 1}`;
+    show(played % 3 === 0 ? 's-rest' : 's-play'); window.scrollTo(0,0);
+  });
+  $('more').addEventListener('click', ()=>show('s-play'));
+  $('finish').addEventListener('click', ()=>{ show('s-end'); window.scrollTo(0,0); });
+  $('restart').addEventListener('click', ()=>show('s-start'));
+})();
+</script>
+</body>
+</html>
