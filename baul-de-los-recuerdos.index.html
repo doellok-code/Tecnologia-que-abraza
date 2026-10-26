@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Baúl de los recuerdos</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="color-scheme" content="light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Atkinson+Hyperlegible:wght@400;700&family=Dancing+Script:wght@700&display=swap">
+<style>
+/* Layout: una columna; el baúl pintado es el héroe, el objeto sale flotando, la tarjeta con la pregunta debajo y una fila de recuerdos encontrados. Estética Tecnología que abraza, siempre en modo claro */
+:root{
+  --bg:#FFF3EF;
+  --dots:#FBDDD5;
+  --surface:#FFFFFF;
+  --fg:#3E2445;
+  --muted:#7A5A80;
+  --ink:#4A2B4F;
+  --accent:#D62962;
+  --accent-soft:#F8C9D6;
+  --display:"Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --script:"Dancing Script", "Brush Script MT", cursive;
+  --c-card:#FCE3C7;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{background-color:var(--bg);background-image:radial-gradient(var(--dots) 3px, transparent 3.5px);background-size:28px 28px;
+  color:var(--fg);font-family:var(--body);font-size:1.0625rem;line-height:1.5;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:20px 24px;overflow-x:hidden}
+.app{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:20px;min-height:calc(100vh - 44px)}
+h1,h2{font-family:var(--display);line-height:1.02;margin:0;text-wrap:balance;color:var(--fg)}
+h1{font-size:clamp(2.5rem,10vw,3.2rem);font-weight:800}
+h2{font-size:clamp(1.8rem,7vw,2.2rem);font-weight:800}
+p{margin:0}
+.lead{font-size:1.12rem;color:var(--muted);max-width:34ch;font-weight:700}
+.screen{display:flex;flex-direction:column;gap:20px;flex:1}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible{outline:4px solid var(--accent);outline-offset:3px}
+.sticker{background:var(--surface);border:3px solid var(--ink);border-radius:24px;box-shadow:0 5px 0 var(--ink)}
+
+/* Portada */
+.hero{display:flex;flex-direction:column;gap:10px;padding-top:4px}
+.brand{font-family:var(--display);font-weight:800;color:var(--accent);font-size:1rem;letter-spacing:.02em}
+.dots-row{display:flex;gap:8px}
+.dots-row span{width:18px;height:18px;border-radius:50%;border:3px solid var(--ink)}
+.label{font-weight:700;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ages{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.age{padding:10px 8px 14px;display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform .15s, box-shadow .15s}
+.age:hover{transform:translateY(-3px);box-shadow:0 8px 0 var(--ink)}
+.age:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.age svg{width:100%;max-width:150px;height:auto}
+.age b{font-family:var(--display);font-size:1.9rem;line-height:1;color:var(--fg)}
+.age small{color:var(--muted);font-size:.95rem;font-weight:700}
+.age-a{background:#FDE4EB}
+.age-b{background:#E7E2FA}
+.how{display:flex;flex-direction:column;gap:10px;padding:16px 18px}
+.how ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px}
+.how li::marker{font-family:var(--display);font-weight:800;color:var(--accent)}
+
+/* Barra */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:3px solid var(--ink);border-radius:999px;padding:5px 14px;font-weight:700;font-size:.95rem;box-shadow:0 3px 0 var(--ink)}
+.count{font-variant-numeric:tabular-nums;font-weight:800;font-family:var(--display);font-size:1.25rem}
+
+/* Baúl */
+.stage{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;padding-top:6px}
+.box-btn{position:relative;width:min(84vw,320px);max-width:100%;aspect-ratio:1.2;-webkit-tap-highlight-color:transparent}
+.box-btn svg.chest{width:100%;height:100%;display:block;overflow:visible}
+.box-btn.shake svg.chest{animation:shake .6s ease-in-out}
+@keyframes shake{0%,100%{transform:rotate(0)}15%{transform:rotate(-3deg) translateY(-3px)}35%{transform:rotate(3deg)}55%{transform:rotate(-2deg) translateY(-2px)}75%{transform:rotate(1.5deg)}}
+#lid{transform-box:view-box;transform-origin:30px 100px;transition:transform .55s cubic-bezier(.3,1.4,.5,1)}
+.open #lid{transform:rotate(-26deg)}
+#glow{opacity:0;transition:opacity .4s}
+.open #glow{opacity:1}
+.float{position:absolute;left:50%;top:22%;width:46%;aspect-ratio:1;margin-left:-23%;pointer-events:none;opacity:0;transform:translateY(40%) scale(.3)}
+.float.up{animation:rise 1.1s cubic-bezier(.25,1.3,.5,1) forwards}
+@keyframes rise{0%{opacity:0;transform:translateY(40%) scale(.3) rotate(-10deg)}60%{opacity:1}100%{opacity:1;transform:translateY(-28%) scale(1) rotate(0)}}
+.float svg{width:100%;height:100%;filter:drop-shadow(0 6px 10px rgba(255,200,80,.6))}
+.dust{position:absolute;width:8px;height:8px;border-radius:50%;background:#FFE7A0;pointer-events:none;animation:dust 1.2s ease-out forwards}
+@keyframes dust{from{transform:translate(0,0);opacity:1}to{transform:translate(var(--x),var(--y));opacity:0}}
+.open-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:linear-gradient(#E8457A,#C8205A);color:#fff;border:3px solid var(--ink);border-radius:18px;box-shadow:0 5px 0 var(--ink), inset 0 2px 0 rgba(255,255,255,.4);
+  min-height:62px;font-family:var(--display);font-weight:800;font-size:1.35rem;transition:transform .1s, box-shadow .1s}
+.open-btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.open-btn:disabled{cursor:default;filter:saturate(.8)}
+.found{width:100%;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.found-row{display:flex;gap:6px;flex-wrap:wrap;min-height:48px;align-items:center}
+.found-row svg{width:46px;height:46px;border-radius:12px;background:#FFF5E6;border:2px solid var(--ink)}
+.found-row em{font-style:normal;color:var(--muted);font-weight:700;font-size:.95rem}
+
+/* Tarjeta */
+.card{background:var(--c-card);color:var(--fg);border:3px solid var(--ink);border-radius:26px;box-shadow:0 6px 0 var(--ink);
+  padding:18px 18px 18px;display:flex;flex-direction:column;gap:14px}
+.card.pop{animation:pop .5s cubic-bezier(.3,1.5,.5,1)}
+@keyframes pop{from{transform:translateY(-40px) scale(.7) rotate(-4deg);opacity:0}to{transform:none;opacity:1}}
+.cat{display:flex;align-items:center;gap:12px}
+.cat svg{width:72px;height:72px;flex:none;border-radius:16px;background:#FFF5E6;border:3px solid var(--ink)}
+.cat span{font-weight:700;letter-spacing:.07em;text-transform:uppercase;font-size:.9rem}
+.mission{font-family:var(--display);font-weight:800;font-size:clamp(1.45rem,6vw,1.8rem);line-height:1.15;text-wrap:balance;text-transform:uppercase;letter-spacing:.01em}
+.tip{font-size:1rem;font-weight:700;color:var(--muted)}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:16px;padding:13px 18px;font-weight:700;font-size:1.05rem;min-height:54px;border:3px solid var(--ink);box-shadow:0 4px 0 var(--ink);transition:transform .1s, box-shadow .1s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn svg{width:22px;height:22px;flex:none}
+.btn-main{background:var(--accent);color:#fff;flex:1 1 100%;font-size:1.2rem}
+.btn-soft{background:#fff;color:var(--fg);flex:1 1 130px;white-space:nowrap;padding-inline:10px;gap:6px;font-size:1rem}
+.btn-wide{width:100%;flex:none}
+
+/* Pausa y cierre */
+.center{display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;padding-top:20px}
+.big-ico{width:140px;height:140px}
+.stars{display:flex;gap:10px;justify-content:center}
+.stars span{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:800;color:var(--fg);font-size:1.4rem;border:3px solid var(--ink)}
+.closing{padding:16px 18px;display:flex;flex-direction:column;gap:4px;width:100%}
+.closing p{color:var(--muted);font-weight:700}
+.pause-mission{font-family:var(--display);font-weight:800;font-size:1.25rem;line-height:1.2;text-transform:uppercase;color:var(--muted);max-width:30ch}
+
+footer{margin-top:auto;padding:14px 18px 16px;text-align:center;background:var(--surface);border:3px solid var(--ink);border-radius:24px;box-shadow:0 5px 0 var(--ink);display:flex;flex-direction:column;gap:2px}
+footer .prep{font-weight:700;font-size:.95rem;color:var(--muted);padding-bottom:6px;margin-bottom:4px;border-bottom:2px dashed var(--accent-soft)}
+footer .sig{white-space:nowrap;font-family:var(--script);font-weight:700;font-size:clamp(1.3rem,5.6vw,1.6rem);line-height:1.1;color:var(--fg);text-transform:none}
+footer .sig small{font-family:var(--body);font-size:clamp(.78rem,3.4vw,.95rem);font-weight:700;color:var(--muted)}
+footer b{font-family:var(--display);font-weight:800;font-size:clamp(1.35rem,6vw,1.6rem);line-height:1.1;color:var(--accent)}
+@media (prefers-reduced-motion: reduce){
+  .box-btn.shake svg.chest,.card.pop,.float.up,.dust{animation:none}
+  .dust{display:none}
+  .float.up{opacity:1;transform:translateY(-28%) scale(1)}
+  #lid{transition:none}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><radialGradient id="g-pk" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFE4EC"/><stop offset=".55" stop-color="#F8B4C8"/><stop offset="1" stop-color="#E28BA6"/></radialGradient><radialGradient id="g-gr" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#E6F7DC"/><stop offset=".55" stop-color="#A9DC9A"/><stop offset="1" stop-color="#6DB068"/></radialGradient><radialGradient id="g-dg" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#C3E9B2"/><stop offset=".55" stop-color="#71B66C"/><stop offset="1" stop-color="#3E8549"/></radialGradient><radialGradient id="g-yl" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFF7D1"/><stop offset=".55" stop-color="#FFD86B"/><stop offset="1" stop-color="#EEAE38"/></radialGradient><radialGradient id="g-or" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFE4C8"/><stop offset=".55" stop-color="#FDB57A"/><stop offset="1" stop-color="#E4874A"/></radialGradient><radialGradient id="g-bl" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#E6F3FF"/><stop offset=".55" stop-color="#A9D3F5"/><stop offset="1" stop-color="#6BA6DB"/></radialGradient><radialGradient id="g-pu" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#F0E9FF"/><stop offset=".55" stop-color="#C9B8F2"/><stop offset="1" stop-color="#9982D6"/></radialGradient><radialGradient id="g-br" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#F2D6BA"/><stop offset=".55" stop-color="#C9925F"/><stop offset="1" stop-color="#8A5A34"/></radialGradient><radialGradient id="g-gy" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#F7F7FA"/><stop offset=".55" stop-color="#CFCFDC"/><stop offset="1" stop-color="#9898B0"/></radialGradient><radialGradient id="g-wh" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#F7F2EF"/><stop offset="1" stop-color="#D9CEC9"/></radialGradient><radialGradient id="g-rd" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFD3CE"/><stop offset=".55" stop-color="#F27A6D"/><stop offset="1" stop-color="#CC4740"/></radialGradient><radialGradient id="g-sk" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFE8D6"/><stop offset=".55" stop-color="#F5C6A2"/><stop offset="1" stop-color="#D99C74"/></radialGradient><radialGradient id="g-sk2" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#F1CDAE"/><stop offset=".55" stop-color="#C58E66"/><stop offset="1" stop-color="#93603D"/></radialGradient><radialGradient id="g-sand" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFF5DC"/><stop offset=".55" stop-color="#F5DCA3"/><stop offset="1" stop-color="#DDB871"/></radialGradient><radialGradient id="g-sea" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#D9F4FF"/><stop offset=".55" stop-color="#8ED2EE"/><stop offset="1" stop-color="#4AA2CC"/></radialGradient><radialGradient id="g-gold" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFF6BE"/><stop offset=".55" stop-color="#F7CF4D"/><stop offset="1" stop-color="#D59D1A"/></radialGradient><radialGradient id="g-nv" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#5B5FA8"/><stop offset=".55" stop-color="#34386F"/><stop offset="1" stop-color="#1E2148"/></radialGradient><radialGradient id="g-mint" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#E4FAF1"/><stop offset=".55" stop-color="#A6E3CB"/><stop offset="1" stop-color="#5FB89A"/></radialGradient><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BFE3FA"/><stop offset="1" stop-color="#FFF1E8"/></linearGradient><linearGradient id="sky-pk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD3E2"/><stop offset="1" stop-color="#FFF4E8"/></linearGradient><linearGradient id="sky-dawn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE0C7"/><stop offset="1" stop-color="#FFF6E9"/></linearGradient><linearGradient id="night" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2B2E66"/><stop offset="1" stop-color="#5A5EA6"/></linearGradient><linearGradient id="deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ED6F0"/><stop offset="1" stop-color="#2F7FB3"/></linearGradient><linearGradient id="jungle" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D9F3C9"/><stop offset="1" stop-color="#9ED48C"/></linearGradient><linearGradient id="sea-l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9FDDF2"/><stop offset="1" stop-color="#4EA6D0"/></linearGradient><linearGradient id="grass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B8E3A3"/><stop offset="1" stop-color="#78BC6E"/></linearGradient><linearGradient id="parch" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF3D6"/><stop offset="1" stop-color="#EBCB8E"/></linearGradient></defs></svg>
+<div class="app">
+
+  <!-- PORTADA -->
+  <section class="screen" id="s-start">
+    <div class="hero">
+      <p class="brand">Tecnología que abraza</p>
+      <div class="dots-row" aria-hidden="true">
+        <span style="background:#FCE3C7"></span><span style="background:#F8BFD0"></span><span style="background:#BFE6CF"></span><span style="background:#BCDDF1"></span><span style="background:#D6CCF4"></span>
+      </div>
+      <h1>Baúl de los recuerdos</h1>
+      <p class="lead">El baúl guarda objetos de antes. Cada uno trae una pregunta para que las personas grandes cuenten su infancia.</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <p class="label">¿Cuántos años tiene quien juega?</p>
+      <div class="ages">
+        <button class="age age-a sticker" id="age-a">
+          <svg viewBox="0 0 140 150" aria-hidden="true">
+            <ellipse cx="72" cy="141" rx="40" ry="5.5" fill="rgba(74,43,79,.13)"/>
+            <path d="M104 131h-9M106 125h-6" stroke="#B79BBE" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="119" cy="128" r="11" fill="#fff" stroke="#4A2B4F" stroke-width="2.5"/>
+            <path d="M109 124q10 6 20 0M119 117q-5 11 0 22" fill="none" stroke="#8FD0AE" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M62 106Q58 121 53 131" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M62 106Q58 121 53 131" fill="none" stroke="#F2C3A0" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M80 106Q87 118 93 126" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M80 106Q87 118 93 126" fill="none" stroke="#F2C3A0" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <ellipse cx="51" cy="134" rx="9.5" ry="6" transform="rotate(-8 51 134)" fill="#9CCBEB" stroke="#4A2B4F" stroke-width="2.5"/>
+            <ellipse cx="96" cy="129" rx="9.5" ry="6" transform="rotate(28 96 129)" fill="#9CCBEB" stroke="#4A2B4F" stroke-width="2.5"/>
+            <path d="M57 82Q43 80 35 68" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M57 82Q43 80 35 68" fill="none" stroke="#F2C3A0" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M84 82Q98 79 106 65" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M84 82Q98 79 106 65" fill="none" stroke="#F2C3A0" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="34" cy="66" r="6.5" fill="#F2C3A0" stroke="#4A2B4F" stroke-width="2.5"/>
+            <circle cx="107" cy="63" r="6.5" fill="#F2C3A0" stroke="#4A2B4F" stroke-width="2.5"/>
+            <path d="M54 74C46 86 44 102 50 112C58 120 82 120 90 112C97 102 94 86 86 74C78 68 62 68 54 74Z" fill="#F7A9BE" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M59 73Q61 84 62 91M81 73Q79 84 78 91" fill="none" stroke="#FCE3A8" stroke-width="4" stroke-linecap="round"/>
+            <path d="M58 90Q70 86 82 90L80 104Q70 107 60 104Z" fill="#FCE3A8" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M70 101s-5.5-3.2-5.5-6.8a2.8 2.8 0 015.5-.9 2.8 2.8 0 015.5.9c0 3.6-5.5 6.8-5.5 6.8z" fill="#D62962"/>
+            <g transform="rotate(-7 70 50)">
+              <circle cx="42" cy="50" r="5" fill="#F2C3A0" stroke="#4A2B4F" stroke-width="2.5"/>
+              <circle cx="98" cy="50" r="5" fill="#F2C3A0" stroke="#4A2B4F" stroke-width="2.5"/>
+              <ellipse cx="70" cy="47" rx="29" ry="28" fill="#F2C3A0" stroke="#4A2B4F" stroke-width="2.5"/>
+              <path d="M41 46C38 24 52 13 70 13C88 13 102 24 99 46C97 40 95 36 92 35C89 38 85 38 82 35C79 38 74 38 71 35C68 38 63 38 60 35C57 38 52 38 49 35C46 37 43 41 41 46Z" fill="#8A5A3B" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="M61 18q-5 6-6 14M79 17q4 6 4 15" fill="none" stroke="#6B4129" stroke-width="2" stroke-linecap="round"/>
+              <ellipse cx="60" cy="49" rx="4" ry="5" fill="#4A2B4F"/><circle cx="61.4" cy="47.2" r="1.5" fill="#fff"/>
+              <ellipse cx="80" cy="49" rx="4" ry="5" fill="#4A2B4F"/><circle cx="81.4" cy="47.2" r="1.5" fill="#fff"/>
+              <circle cx="51" cy="58" r="5" fill="#F79AB5" opacity=".75"/><circle cx="89" cy="58" r="5" fill="#F79AB5" opacity=".75"/>
+              <path d="M62 59Q70 68 78 59Q70 62 62 59Z" fill="#C2456A" stroke="#4A2B4F" stroke-width="2" stroke-linejoin="round"/>
+            </g>
+          </svg>
+          <b>2 y 3</b><small>años</small>
+        </button>
+        <button class="age age-b sticker" id="age-b">
+          <svg viewBox="0 0 140 150" aria-hidden="true">
+            <ellipse cx="66" cy="143" rx="26" ry="4.5" fill="rgba(74,43,79,.12)"/>
+            <path d="M18 92l2.5 5.5 5.5 2.5-5.5 2.5-2.5 5.5-2.5-5.5-5.5-2.5 5.5-2.5z" fill="#FCD9A8" stroke="#4A2B4F" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M118 84l2 4.5 4.5 2-4.5 2-2 4.5-2-4.5-4.5-2 4.5-2z" fill="#BCDDF1" stroke="#4A2B4F" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M58 132q8 4 16 0" fill="none" stroke="#B79BBE" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M58 102Q50 116 40 120" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M58 102Q50 116 40 120" fill="none" stroke="#C58E66" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M72 102Q82 116 92 118" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M72 102Q82 116 92 118" fill="none" stroke="#C58E66" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <ellipse cx="37" cy="121" rx="8.5" ry="5.5" transform="rotate(-22 37 121)" fill="#F7A9BE" stroke="#4A2B4F" stroke-width="2.5"/>
+            <ellipse cx="96" cy="118" rx="8.5" ry="5.5" transform="rotate(20 96 118)" fill="#F7A9BE" stroke="#4A2B4F" stroke-width="2.5"/>
+            <path d="M51 65Q39 55 31 39" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M51 65Q39 55 31 39" fill="none" stroke="#C58E66" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M77 65Q89 55 97 39" fill="none" stroke="#4A2B4F" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M77 65Q89 55 97 39" fill="none" stroke="#C58E66" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="30" cy="36" r="6.5" fill="#C58E66" stroke="#4A2B4F" stroke-width="2.5"/>
+            <circle cx="98" cy="36" r="6.5" fill="#C58E66" stroke="#4A2B4F" stroke-width="2.5"/>
+            <path d="M50 60C47 70 47 80 46 88L82 88C81 80 81 70 78 60C70 55 58 55 50 60Z" fill="#A9DDC2" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M46 86L82 86Q92 96 99 108Q66 117 29 108Q36 96 46 86Z" fill="#C9BDF2" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M50 92Q44 101 40 109M64 90V112M78 92Q84 101 88 109" fill="none" stroke="#E7E2FA" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M64 77s-5.5-3.2-5.5-6.8a2.8 2.8 0 015.5-.9 2.8 2.8 0 015.5.9c0 3.6-5.5 6.8-5.5 6.8z" fill="#D62962"/>
+            <g transform="rotate(6 64 36)">
+              <path d="M45 27C31 17 21 22 18 33C24 29 33 30 43 35Z" fill="#3B2418" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="M83 27C97 17 107 22 110 33C104 29 95 30 85 35Z" fill="#3B2418" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+              <circle cx="44" cy="28" r="4.2" fill="#F7A9BE" stroke="#4A2B4F" stroke-width="2"/>
+              <circle cx="84" cy="28" r="4.2" fill="#F7A9BE" stroke="#4A2B4F" stroke-width="2"/>
+              <circle cx="42" cy="38" r="4.8" fill="#C58E66" stroke="#4A2B4F" stroke-width="2.5"/>
+              <circle cx="86" cy="38" r="4.8" fill="#C58E66" stroke="#4A2B4F" stroke-width="2.5"/>
+              <ellipse cx="64" cy="36" rx="22" ry="21.5" fill="#C58E66" stroke="#4A2B4F" stroke-width="2.5"/>
+              <path d="M42 36C40 18 52 12 64 12C76 12 88 18 86 36C82 28 74 24 66 26C60 22 50 26 42 36Z" fill="#3B2418" stroke="#4A2B4F" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="M52 38q3.5-4.5 7 0M69 38q3.5-4.5 7 0" fill="none" stroke="#4A2B4F" stroke-width="2.6" stroke-linecap="round"/>
+              <circle cx="49" cy="44" r="4" fill="#F08FA8" opacity=".65"/><circle cx="79" cy="44" r="4" fill="#F08FA8" opacity=".65"/>
+              <path d="M56 44Q64 54 72 44Z" fill="#C2456A" stroke="#4A2B4F" stroke-width="2" stroke-linejoin="round"/>
+            </g>
+          </svg>
+          <b>4 y 5</b><small>años</small>
+        </button>
+      </div>
+    </div>
+
+    <div class="how sticker">
+      <p class="label">Cómo se juega</p>
+      <ol>
+        <li>Toquen el baúl: se abre y sale un objeto de antes.</li>
+        <li>Lean la pregunta, dejen el celular y escuchen la historia que les cuentan.</li>
+        <li>Abran el baúl otra vez. Los recuerdos que encuentran se van guardando.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- JUEGO -->
+  <section class="screen" id="s-play" hidden>
+    <div class="bar">
+      <button class="chip" id="change-age" aria-label="Volver atrás para cambiar la edad">← <span id="age-label">2 y 3 años</span></button>
+      <button class="chip" id="sound" aria-pressed="true">Sonido: sí</button>
+      <span class="count" id="count">Recuerdo 1</span>
+    </div>
+
+    <div class="stage" id="stage">
+      <button class="box-btn" id="box-btn" aria-label="Abrir el baúl">
+        <svg class="chest" viewBox="0 0 240 200" aria-hidden="true">
+<ellipse cx="120" cy="188" rx="96" ry="9" fill="#5B3A5F" opacity=".14"/>
+<ellipse id="glow" cx="120" cy="96" rx="88" ry="38" fill="#FFE7A0" opacity="0"/>
+<g stroke="#6E4D72" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" stroke-width="2.4">
+  <rect x="40" y="92" width="160" height="14" rx="4" fill="#5B3A5F"/>
+  <rect x="30" y="100" width="180" height="80" rx="10" fill="url(#g-br)"/>
+  <path d="M30 126h180M30 152h180" stroke="#8A5A34" stroke-width="2"/>
+  <path d="M30 108h18v-8M192 100v8h18M30 172h18v8M192 180v-8h18" fill="none" stroke="#D59D1A" stroke-width="5"/>
+  <path d="M70 100v80M170 100v80" stroke="#D59D1A" stroke-width="7"/><path d="M70 100v80M170 100v80" stroke="#F7CF4D" stroke-width="3.6"/>
+  <rect x="106" y="104" width="28" height="32" rx="6" fill="url(#g-gold)"/>
+  <circle cx="120" cy="116" r="4" fill="#5B3A5F"/><path d="M120 118v9" stroke="#5B3A5F" stroke-width="3"/>
+  <g id="lid">
+    <path d="M26 100V78Q26 46 120 44Q214 46 214 78V100Z" fill="url(#g-br)"/>
+    <path d="M26 78Q120 70 214 78" fill="none" stroke="#8A5A34" stroke-width="2"/>
+    <path d="M70 100V50M170 100V50" stroke="#D59D1A" stroke-width="7"/><path d="M70 100V50M170 100V50" stroke="#F7CF4D" stroke-width="3.6"/>
+    <path d="M26 100h188" stroke="#D59D1A" stroke-width="5"/><path d="M26 100h188" stroke="#F7CF4D" stroke-width="2.4"/>
+    <path d="M120 72s-9-5.2-9-10.6a4.5 4.5 0 019-1.5 4.5 4.5 0 019 1.5c0 5.4-9 10.6-9 10.6z" fill="url(#g-pk)"/>
+  </g>
+</g>
+<ellipse cx="62" cy="58" rx="20" ry="4" fill="#fff" opacity=".35" transform="rotate(-8 62 58)"/>
+<ellipse cx="56" cy="114" rx="14" ry="3.4" fill="#fff" opacity=".3"/>
+<path d="M18 54Q19.5 58.5 24 60Q19.5 61.5 18 66Q16.5 61.5 12 60Q16.5 58.5 18 54Z" fill="#FFD86B" stroke="#6E4D72" stroke-width="1"/><path d="M224 47Q225.25 50.75 229 52Q225.25 53.25 224 57Q222.75 53.25 219 52Q222.75 50.75 224 47Z" fill="#F8B4C8" stroke="#6E4D72" stroke-width="1"/><path d="M14 146Q15.0 149.0 18 150Q15.0 151.0 14 154Q13.0 151.0 10 150Q13.0 149.0 14 146Z" fill="#A9D3F5" stroke="#6E4D72" stroke-width="1"/>
+</svg>
+        <span class="float" id="float"></span>
+      </button>
+      <button class="open-btn" id="open"><span id="open-text">¡Abrir el baúl!</span></button>
+    </div>
+
+    <article class="card" id="card" hidden aria-live="polite">
+      <div class="cat"><span id="cat-ico"></span><span id="cat-name">Un recuerdo para preguntar</span></div>
+      <p class="mission" id="mission"></p>
+      <p class="tip" id="tip" hidden></p>
+      <div class="actions">
+        <button class="btn btn-main" id="go">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
+          ¡A preguntar!
+        </button>
+        <button class="btn btn-soft" id="back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 5l-7 7 7 7M3.5 12H20"/></svg>
+          Volver atrás
+        </button>
+        <button class="btn btn-soft" id="skip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 0113.7-5.6L20 8.7M20 4v4.7h-4.7"/><path d="M20 12a8 8 0 01-13.7 5.6L4 15.3M4 20v-4.7h4.7"/></svg>
+          Otro recuerdo
+        </button>
+      </div>
+    </article>
+
+    <div class="found sticker">
+      <p class="label">Recuerdos que encontraron</p>
+      <div class="found-row" id="found"><em>Todavía ninguno. ¡Abran el baúl!</em></div>
+    </div>
+  </section>
+
+  <!-- PAUSA -->
+  <section class="screen" id="s-pause" hidden>
+    <div class="center">
+      <svg class="big-ico" viewBox="0 0 100 100" aria-hidden="true"><ellipse cx="50" cy="90" rx="30" ry="4.5" fill="#5B3A5F" opacity=".13"/><g stroke="#6E4D72" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+<rect x="18" y="12" width="64" height="74" rx="4" fill="#FFFDF8" transform="rotate(-6 50 49)"/>
+<rect x="24" y="18" width="52" height="50" fill="#D9B98A" transform="rotate(-6 50 49)"/>
+</g>
+<g transform="rotate(-6 50 49)">
+<path d="M24 68Q34 52 50 54Q66 52 76 68Z" fill="#A9845A"/>
+<circle cx="50" cy="40" r="10" fill="#E8CBA4" stroke="#8A6A44" stroke-width="1.4"/>
+<path d="M40 38Q40 28 50 28Q60 28 60 38Q55 32 50 33Q45 32 40 38Z" fill="#6E5236"/>
+<circle cx="46.5" cy="41" r="1.4" fill="#5B4430"/><circle cx="53.5" cy="41" r="1.4" fill="#5B4430"/>
+<path d="M47 45q3 2 6 0" fill="none" stroke="#5B4430" stroke-width="1.2" stroke-linecap="round"/>
+<path d="M34 80h32" stroke="#B79BBE" stroke-width="1.6" stroke-linecap="round"/></g>
+<rect x="38" y="6" width="22" height="9" rx="2" fill="#F8C9D6" opacity=".8" transform="rotate(-10 49 10)"/></svg>
+      <h2>Dejen el celular y escuchen la historia</h2>
+      <p class="pause-mission" id="pause-mission"></p>
+      <div class="tips sticker">
+        <p class="label">Ideas para conversar</p>
+        <ul>
+          <li>Escuchen sin apuro: los recuerdos tardan en aparecer.</li>
+          <li>Hagan más preguntas: ¿y después qué pasó? ¿Con quién jugabas?</li>
+          <li>Si quieren, dibujen juntos el recuerdo.</li>
+        </ul>
+      </div>
+      <button class="btn btn-main btn-wide" id="done">Terminamos · abrir otra vez</button>
+    </div>
+  </section>
+
+  <!-- DESCANSO -->
+  <section class="screen" id="s-rest" hidden>
+    <div class="center">
+      <div class="stars" aria-hidden="true">
+        <span style="background:#FCE3C7">1</span><span style="background:#F8BFD0">2</span><span style="background:#BFE6CF">3</span>
+      </div>
+      <h2>¡Encontraron tres recuerdos!</h2>
+      <p class="lead">Pueden guardar el celular y seguir conversando, o abrir el baúl una vez más.</p>
+      <button class="btn btn-main btn-wide" id="finish">Terminar el juego</button>
+      <button class="btn btn-soft btn-wide" id="more">Abrir otra vez</button>
+    </div>
+  </section>
+
+  <!-- CIERRE -->
+  <section class="screen" id="s-end" hidden>
+    <div class="center">
+      <svg class="big-ico" viewBox="0 0 100 100" aria-hidden="true"><ellipse cx="50" cy="86" rx="34" ry="4.5" fill="#5B3A5F" opacity=".13"/><g stroke="#6E4D72" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+<rect x="12" y="26" width="76" height="52" rx="5" fill="url(#parch)"/>
+<path d="M12 30L50 58L88 30" fill="none"/>
+<path d="M12 76L40 52M88 76L60 52" fill="none" stroke="#DDB871"/>
+<rect x="66" y="32" width="14" height="16" rx="1" fill="url(#g-pk)" stroke-dasharray="2 1.4"/>
+<path d="M50 70s-6-3.4-6-7a3 3 0 016-1 3 3 0 016 1c0 3.6-6 7-6 7z" fill="url(#g-rd)"/>
+</g><ellipse cx="26" cy="34" rx="8" ry="2" transform="rotate(-5 26 34)" fill="#fff" opacity=".55"/></svg>
+      <h2>¡Gracias por recordar en familia!</h2>
+      <p class="lead">Las historias de la familia se guardan cuando alguien las escucha. Mañana el baúl trae otras.</p>
+      <div class="closing sticker">
+        <span class="label">Un juego de la colección</span>
+        <p>La pantalla abre la puerta; la memoria sucede entre ustedes.</p>
+      </div>
+      <button class="btn btn-soft btn-wide" id="restart">Volver a empezar</button>
+    </div>
+  </section>
+
+  <footer>
+    <p class="prep" id="prep" hidden></p>
+    <span class="sig">Karina Doello <small>· @pensareninicial</small></span>
+    <b>Tecnología que abraza</b>
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   DATOS PARA PERSONALIZAR (solo cambiar lo que está entre comillas)
+   Dejar vacío ("") si no se quiere mostrar.
+   ============================================================ */
+const PERSONALIZAR = {
+  institucion: "",   // ejemplo: "Jardín de Infantes N.° 900"
+  distrito: ""       // ejemplo: "Distrito Escobar"
+};
+/* ============================================================ */
+
+(function(){
+  const $ = id => document.getElementById(id);
+  const partes = [PERSONALIZAR.institucion, PERSONALIZAR.distrito].map(s => (s||'').trim()).filter(Boolean);
+  if(partes.length){ $('prep').textContent = 'Preparado para ' + partes.join(' · '); $('prep').hidden = false; }
+
+  const OBJ = {"trompo": "<ellipse cx=\"50\" cy=\"90\" rx=\"18\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M50 84L44 70h12Z\" fill=\"url(#g-gy)\"/>\n<path d=\"M18 46Q50 30 82 46Q76 70 50 74Q24 70 18 46Z\" fill=\"url(#g-br)\"/>\n<path d=\"M22 50Q50 38 78 50M26 58Q50 48 74 58\" fill=\"none\" stroke=\"#CC4740\" stroke-width=\"3\"/>\n<path d=\"M30 64Q50 58 70 64\" fill=\"none\" stroke=\"#6BA6DB\" stroke-width=\"3\"/>\n<ellipse cx=\"50\" cy=\"42\" rx=\"12\" ry=\"5\" fill=\"url(#g-or)\"/>\n<path d=\"M50 38V22\" stroke-width=\"4\"/><circle cx=\"50\" cy=\"20\" r=\"4\" fill=\"url(#g-br)\"/>\n</g><ellipse cx=\"34\" cy=\"48\" rx=\"8\" ry=\"3\" transform=\"rotate(-15 34 48)\" fill=\"#fff\" opacity=\".55\"/>\n<path d=\"M14 82q8-4 16 0M70 84q8-4 16 0\" fill=\"none\" stroke=\"#B79BBE\" stroke-width=\"2\" stroke-linecap=\"round\"/>", "balero": "<ellipse cx=\"50\" cy=\"92\" rx=\"20\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><path d=\"M50 52Q30 40 34 22Q36 14 46 16\" fill=\"none\" stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-dasharray=\"3 2\"/>\n<g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M50 56V90\" stroke-width=\"7\"/><path d=\"M50 56V90\" stroke=\"#C9925F\" stroke-width=\"4.4\"/>\n<ellipse cx=\"56\" cy=\"24\" rx=\"16\" ry=\"12\" fill=\"url(#g-rd)\"/>\n<ellipse cx=\"56\" cy=\"34\" rx=\"7\" ry=\"2.6\" fill=\"#8A3A35\"/>\n<path d=\"M44 20q12-6 24 0\" fill=\"none\" stroke=\"#FFD86B\" stroke-width=\"3\"/>\n</g><ellipse cx=\"50\" cy=\"18\" rx=\"5\" ry=\"2.5\" transform=\"rotate(-20 50 18)\" fill=\"#fff\" opacity=\".55\"/>\n<ellipse cx=\"50\" cy=\"56\" rx=\"3\" ry=\"2\" fill=\"#8A5A34\"/>", "soga": "<ellipse cx=\"50\" cy=\"92\" rx=\"34\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><path d=\"M22 30Q20 92 50 90Q80 88 78 30\" fill=\"none\" stroke=\"#6E4D72\" stroke-width=\"5\"/>\n<path d=\"M22 30Q20 92 50 90Q80 88 78 30\" fill=\"none\" stroke=\"#F8B4C8\" stroke-width=\"3\"/>\n<path d=\"M22 30Q20 92 50 90Q80 88 78 30\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1\" stroke-dasharray=\"2 5\"/>\n<g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><rect x=\"15\" y=\"10\" width=\"14\" height=\"24\" rx=\"7\" fill=\"url(#g-bl)\"/><rect x=\"71\" y=\"10\" width=\"14\" height=\"24\" rx=\"7\" fill=\"url(#g-yl)\"/></g>\n<ellipse cx=\"20\" cy=\"18\" rx=\"2\" ry=\"5\" transform=\"rotate(0 20 18)\" fill=\"#fff\" opacity=\".55\"/><ellipse cx=\"76\" cy=\"18\" rx=\"2\" ry=\"5\" transform=\"rotate(0 76 18)\" fill=\"#fff\" opacity=\".55\"/>", "bolitas": "<ellipse cx=\"50\" cy=\"86\" rx=\"32\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><circle cx=\"30\" cy=\"66\" r=\"14\" fill=\"url(#g-bl)\" stroke=\"#6E4D72\" stroke-width=\"1.6\"/><path d=\"M23.0 68.8q7.0 -11.200000000000001 14 0\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" opacity=\".7\"/><circle cx=\"25.1\" cy=\"60.4\" r=\"3.08\" fill=\"#fff\" opacity=\".85\"/><circle cx=\"58\" cy=\"70\" r=\"12\" fill=\"url(#g-rd)\" stroke=\"#6E4D72\" stroke-width=\"1.6\"/><path d=\"M52.0 72.4q6.0 -9.600000000000001 12 0\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" opacity=\".7\"/><circle cx=\"53.8\" cy=\"65.2\" r=\"2.64\" fill=\"#fff\" opacity=\".85\"/><circle cx=\"46\" cy=\"46\" r=\"13\" fill=\"url(#g-gr)\" stroke=\"#6E4D72\" stroke-width=\"1.6\"/><path d=\"M39.5 48.6q6.5 -10.4 13 0\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" opacity=\".7\"/><circle cx=\"41.45\" cy=\"40.8\" r=\"2.86\" fill=\"#fff\" opacity=\".85\"/><circle cx=\"74\" cy=\"52\" r=\"10\" fill=\"url(#g-yl)\" stroke=\"#6E4D72\" stroke-width=\"1.6\"/><path d=\"M69.0 54.0q5.0 -8.0 10 0\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" opacity=\".7\"/><circle cx=\"70.5\" cy=\"48.0\" r=\"2.2\" fill=\"#fff\" opacity=\".85\"/><circle cx=\"80\" cy=\"74\" r=\"8\" fill=\"url(#g-pu)\" stroke=\"#6E4D72\" stroke-width=\"1.6\"/><path d=\"M76.0 75.6q4.0 -6.4 8 0\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" opacity=\".7\"/><circle cx=\"77.2\" cy=\"70.8\" r=\"1.76\" fill=\"#fff\" opacity=\".85\"/>", "muneca": "<ellipse cx=\"50\" cy=\"92\" rx=\"22\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M36 88l-4 4M64 88l4 4\" stroke-width=\"5\"/><path d=\"M36 88l-4 4M64 88l4 4\" stroke=\"#F5C6A2\" stroke-width=\"3\"/>\n<path d=\"M32 88L40 54Q50 50 60 54L68 88Z\" fill=\"url(#g-pk)\"/>\n<rect x=\"44\" y=\"70\" width=\"10\" height=\"9\" fill=\"url(#g-bl)\" stroke-dasharray=\"2 2\"/>\n<path d=\"M40 58Q28 62 24 72M60 58Q72 62 76 72\" fill=\"none\" stroke-width=\"6\"/><path d=\"M40 58Q28 62 24 72M60 58Q72 62 76 72\" fill=\"none\" stroke=\"#F5C6A2\" stroke-width=\"3.6\" stroke-linecap=\"round\"/>\n<circle cx=\"50\" cy=\"38\" r=\"15\" fill=\"url(#g-sk)\"/>\n<path d=\"M34 40Q30 20 50 20Q70 20 66 40Q66 30 60 28Q54 24 50 28Q44 24 40 28Q34 30 34 40Z\" fill=\"url(#g-or)\"/>\n<path d=\"M34 40q-6 10 -2 18M66 40q6 10 2 18\" fill=\"none\" stroke=\"#E4874A\" stroke-width=\"4\"/>\n</g>\n<path d=\"M44 38h3M53 38h3\" stroke=\"#3E2445\" stroke-width=\"2.2\" stroke-linecap=\"round\"/><circle cx=\"42\" cy=\"44\" r=\"3.2\" fill=\"#F28FAE\" opacity=\".55\"/><circle cx=\"58\" cy=\"44\" r=\"3.2\" fill=\"#F28FAE\" opacity=\".55\"/>\n<path d=\"M46 46q4 3 8 0\" fill=\"none\" stroke=\"#C2456A\" stroke-width=\"1.8\" stroke-linecap=\"round\"/>\n<path d=\"M32 62l4 2M66 66l-4 2\" stroke=\"#fff\" stroke-width=\"1.2\" stroke-linecap=\"round\"/>", "autito": "<ellipse cx=\"50\" cy=\"86\" rx=\"34\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M14 70V58Q14 52 22 50L34 36Q38 32 46 32H62Q70 32 74 38L82 50Q88 52 88 58V70Z\" fill=\"url(#g-rd)\"/>\n<path d=\"M38 48L44 38H60L66 48Z\" fill=\"#E6F3FF\"/>\n<path d=\"M52 38v10\" />\n<circle cx=\"30\" cy=\"72\" r=\"9\" fill=\"#5B3A5F\"/><circle cx=\"72\" cy=\"72\" r=\"9\" fill=\"#5B3A5F\"/>\n<circle cx=\"30\" cy=\"72\" r=\"3.4\" fill=\"url(#g-gy)\"/><circle cx=\"72\" cy=\"72\" r=\"3.4\" fill=\"url(#g-gy)\"/>\n<rect x=\"80\" y=\"56\" width=\"8\" height=\"6\" rx=\"2\" fill=\"url(#g-yl)\"/>\n</g><ellipse cx=\"30\" cy=\"54\" rx=\"10\" ry=\"3\" transform=\"rotate(-10 30 54)\" fill=\"#fff\" opacity=\".55\"/>\n<path d=\"M88 34l2 6M84 30l-1 6\" stroke=\"#D59D1A\" stroke-width=\"2\" stroke-linecap=\"round\"/>", "foto": "<ellipse cx=\"50\" cy=\"90\" rx=\"30\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<rect x=\"18\" y=\"12\" width=\"64\" height=\"74\" rx=\"4\" fill=\"#FFFDF8\" transform=\"rotate(-6 50 49)\"/>\n<rect x=\"24\" y=\"18\" width=\"52\" height=\"50\" fill=\"#D9B98A\" transform=\"rotate(-6 50 49)\"/>\n</g>\n<g transform=\"rotate(-6 50 49)\">\n<path d=\"M24 68Q34 52 50 54Q66 52 76 68Z\" fill=\"#A9845A\"/>\n<circle cx=\"50\" cy=\"40\" r=\"10\" fill=\"#E8CBA4\" stroke=\"#8A6A44\" stroke-width=\"1.4\"/>\n<path d=\"M40 38Q40 28 50 28Q60 28 60 38Q55 32 50 33Q45 32 40 38Z\" fill=\"#6E5236\"/>\n<circle cx=\"46.5\" cy=\"41\" r=\"1.4\" fill=\"#5B4430\"/><circle cx=\"53.5\" cy=\"41\" r=\"1.4\" fill=\"#5B4430\"/>\n<path d=\"M47 45q3 2 6 0\" fill=\"none\" stroke=\"#5B4430\" stroke-width=\"1.2\" stroke-linecap=\"round\"/>\n<path d=\"M34 80h32\" stroke=\"#B79BBE\" stroke-width=\"1.6\" stroke-linecap=\"round\"/></g>\n<rect x=\"38\" y=\"6\" width=\"22\" height=\"9\" rx=\"2\" fill=\"#F8C9D6\" opacity=\".8\" transform=\"rotate(-10 49 10)\"/>", "radio": "<ellipse cx=\"50\" cy=\"90\" rx=\"34\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M30 30L70 16\" stroke-width=\"2\"/>\n<rect x=\"12\" y=\"30\" width=\"76\" height=\"54\" rx=\"12\" fill=\"url(#g-mint)\"/>\n<rect x=\"20\" y=\"38\" width=\"36\" height=\"38\" rx=\"8\" fill=\"url(#g-br)\"/>\n<path d=\"M24 46h28M24 52h28M24 58h28M24 64h28M24 70h28\" stroke=\"#8A5A34\" stroke-width=\"1.6\"/>\n<rect x=\"62\" y=\"40\" width=\"20\" height=\"10\" rx=\"3\" fill=\"#FFF6E0\"/><path d=\"M66 45h12\" stroke=\"#CC4740\" stroke-width=\"1.4\"/>\n<circle cx=\"66\" cy=\"66\" r=\"5\" fill=\"url(#g-gold)\"/><circle cx=\"78\" cy=\"66\" r=\"5\" fill=\"url(#g-gold)\"/>\n</g><ellipse cx=\"24\" cy=\"36\" rx=\"10\" ry=\"2.4\" transform=\"rotate(-5 24 36)\" fill=\"#fff\" opacity=\".55\"/>\n<path d=\"M84 20v12\" stroke=\"#9982D6\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><ellipse cx=\"81\" cy=\"32\" rx=\"3.4\" ry=\"2.6\" fill=\"#9982D6\"/>", "cuchara": "<ellipse cx=\"50\" cy=\"90\" rx=\"34\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><path d=\"M40 30q-4-6 0-12M52 28q-4-6 0-12M64 30q-4-6 0-12\" fill=\"none\" stroke=\"#C9C2D6\" stroke-width=\"2.4\" stroke-linecap=\"round\"/>\n<g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M14 48h72v8Q86 82 50 84Q14 82 14 56Z\" fill=\"url(#g-or)\"/>\n<ellipse cx=\"50\" cy=\"48\" rx=\"36\" ry=\"8\" fill=\"#FBE3C9\"/>\n<path d=\"M18 62Q50 70 82 62\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2.4\" opacity=\".6\"/>\n<path d=\"M66 50L88 14\" stroke-width=\"7\"/><path d=\"M66 50L88 14\" stroke=\"#C9925F\" stroke-width=\"4.4\"/>\n<ellipse cx=\"64\" cy=\"52\" rx=\"7\" ry=\"4.6\" fill=\"url(#g-br)\" transform=\"rotate(-58 64 52)\"/>\n</g><ellipse cx=\"26\" cy=\"64\" rx=\"4\" ry=\"6\" transform=\"rotate(0 26 64)\" fill=\"#fff\" opacity=\".55\"/>", "guardapolvo": "<ellipse cx=\"50\" cy=\"92\" rx=\"30\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M36 18L22 26L12 54L22 58L28 44V88H72V44L78 58L88 54L78 26L64 18Q50 28 36 18Z\" fill=\"url(#g-wh)\"/>\n<path d=\"M50 30V88\" fill=\"none\" stroke=\"#D9CEC9\"/>\n<circle cx=\"50\" cy=\"44\" r=\"1.8\" fill=\"#9898B0\"/><circle cx=\"50\" cy=\"58\" r=\"1.8\" fill=\"#9898B0\"/><circle cx=\"50\" cy=\"72\" r=\"1.8\" fill=\"#9898B0\"/>\n<path d=\"M50 26L34 18Q30 28 36 32ZM50 26L66 18Q70 28 64 32Z\" fill=\"url(#g-bl)\"/>\n<circle cx=\"50\" cy=\"26\" r=\"4\" fill=\"url(#g-bl)\"/>\n<rect x=\"56\" y=\"62\" width=\"12\" height=\"10\" rx=\"2\" fill=\"#F7F2EF\"/>\n</g><ellipse cx=\"34\" cy=\"54\" rx=\"3\" ry=\"12\" transform=\"rotate(0 34 54)\" fill=\"#fff\" opacity=\".55\"/>", "carta": "<ellipse cx=\"50\" cy=\"86\" rx=\"34\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<rect x=\"12\" y=\"26\" width=\"76\" height=\"52\" rx=\"5\" fill=\"url(#parch)\"/>\n<path d=\"M12 30L50 58L88 30\" fill=\"none\"/>\n<path d=\"M12 76L40 52M88 76L60 52\" fill=\"none\" stroke=\"#DDB871\"/>\n<rect x=\"66\" y=\"32\" width=\"14\" height=\"16\" rx=\"1\" fill=\"url(#g-pk)\" stroke-dasharray=\"2 1.4\"/>\n<path d=\"M50 70s-6-3.4-6-7a3 3 0 016-1 3 3 0 016 1c0 3.6-6 7-6 7z\" fill=\"url(#g-rd)\"/>\n</g><ellipse cx=\"26\" cy=\"34\" rx=\"8\" ry=\"2\" transform=\"rotate(-5 26 34)\" fill=\"#fff\" opacity=\".55\"/>", "telefono": "<ellipse cx=\"50\" cy=\"90\" rx=\"34\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M16 34Q16 22 30 22H70Q84 22 84 34L80 40H66V34H34V40H20Z\" fill=\"url(#g-rd)\"/>\n<path d=\"M24 86L30 46Q32 40 40 40H60Q68 40 70 46L76 86Z\" fill=\"url(#g-rd)\"/>\n<circle cx=\"50\" cy=\"64\" r=\"15\" fill=\"url(#g-wh)\"/>\n<circle cx=\"50\" cy=\"64\" r=\"5\" fill=\"url(#g-gy)\"/>\n</g>\n<g fill=\"#6E4D72\"><circle cx=\"44.11498882744654\" cy=\"55.9150359618041\" r=\"1.8\"/><circle cx=\"49.70800477698711\" cy=\"54.00426396958495\" r=\"1.8\"/><circle cx=\"55.4030230586814\" cy=\"55.585290151921036\" r=\"1.8\"/><circle cx=\"59.210609940028846\" cy=\"60.10581657691349\" r=\"1.8\"/><circle cx=\"59.800665778412416\" cy=\"65.98669330795062\" r=\"1.8\"/><circle cx=\"56.967067093471655\" cy=\"71.17356090899523\" r=\"1.8\"/><circle cx=\"51.699671429002414\" cy=\"73.8544972998846\" r=\"1.8\"/><circle cx=\"45.83853163452858\" cy=\"73.09297426825682\" r=\"1.8\"/></g>\n<ellipse cx=\"30\" cy=\"28\" rx=\"8\" ry=\"2.4\" transform=\"rotate(-5 30 28)\" fill=\"#fff\" opacity=\".55\"/><ellipse cx=\"36\" cy=\"58\" rx=\"2.4\" ry=\"8\" transform=\"rotate(0 36 58)\" fill=\"#fff\" opacity=\".55\"/>\n<path d=\"M84 50q4 4 0 8M88 46q8 8 0 16\" fill=\"none\" stroke=\"#B79BBE\" stroke-width=\"2\" stroke-linecap=\"round\"/>", "barrilete": "<path d=\"M50 74Q40 82 48 88T40 98\" fill=\"none\" stroke=\"#6E4D72\" stroke-width=\"1.6\"/>\n<g stroke=\"#6E4D72\" stroke-width=\"1.2\"><path d=\"M44 82l-5-3 1 6zM46 90l-5-3 1 6z\" fill=\"#F8B4C8\"/></g>\n<g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<path d=\"M50 6L82 36L50 74L18 36Z\" fill=\"url(#g-pu)\"/>\n<path d=\"M50 6L82 36L50 36Z\" fill=\"url(#g-yl)\"/><path d=\"M18 36L50 36L50 74Z\" fill=\"url(#g-bl)\"/>\n<path d=\"M50 6V74M18 36H82\" fill=\"none\"/>\n</g><ellipse cx=\"40\" cy=\"24\" rx=\"4\" ry=\"7\" transform=\"rotate(40 40 24)\" fill=\"#fff\" opacity=\".55\"/>\n<path d=\"M86 66Q87.0 69.0 90 70Q87.0 71.0 86 74Q85.0 71.0 82 70Q85.0 69.0 86 66Z\" fill=\"#FFD86B\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M16 69Q16.75 71.25 19 72Q16.75 72.75 16 75Q15.25 72.75 13 72Q15.25 71.25 16 69Z\" fill=\"#F8B4C8\" stroke=\"#6E4D72\" stroke-width=\"1\"/>"};
+  // [objeto, pregunta o propuesta, edades, ayuda]   a = 2 y 3 años · b = 4 y 5 años
+  const M = [
+    ['trompo','Pregunten a una persona grande a qué jugaba en su infancia.','ab'],
+    ['trompo','Pregunten si sabe hacer bailar un trompo y pidan que les muestre.','b'],
+    ['balero','Pidan a alguien grande que les enseñe un juego de su infancia.','ab','Puede ser con las manos, con una pelota o con una canción.'],
+    ['soga','Pregunten si saltaba la soga y qué canción cantaban para saltar.','b'],
+    ['bolitas','Pregunten si jugaba a las bolitas y cómo era el juego.','b'],
+    ['barrilete','Pregunten a qué jugaban afuera: en la vereda, el patio o la plaza.','ab'],
+    ['barrilete','Pregunten si alguna vez remontó un barrilete.','b'],
+    ['muneca','Pregunten cuál era su juguete preferido y cómo era.','ab'],
+    ['muneca','Pregunten si tenía un muñeco o una muñeca con nombre.','a'],
+    ['autito','Pregunten si alguna vez fabricó un juguete con sus manos.','b'],
+    ['foto','Pidan a alguien grande que les cuente cómo era de bebé.','a'],
+    ['foto','Busquen juntos una foto de una persona grande en su infancia.','ab'],
+    ['foto','Miren una foto familiar de hace mucho y cuenten quién es quién.','ab'],
+    ['radio','Pidan que les canten la canción que les cantaban para dormir.','ab'],
+    ['radio','Pregunten qué canción escuchaba o cantaba en su infancia, y apréndanla.','b'],
+    ['cuchara','Pregunten cuál era su comida preferida en su infancia.','ab'],
+    ['cuchara','Pregunten quién cocinaba en su casa y qué cocinaba.','b'],
+    ['cuchara','Cocinen juntos una receta de la familia.','ab','Las niñas y los niños pueden lavar, mezclar o decorar.'],
+    ['guardapolvo','Pregunten cómo era su jardín o su escuela.','b'],
+    ['guardapolvo','Pregunten cómo se llamaba su maestra o su maestro.','b'],
+    ['carta','Pidan que les cuenten algo que le pasó cuando tenía su edad.','ab'],
+    ['carta','Dibujen juntos un recuerdo que les contaron.','ab'],
+    ['telefono','Llamen a una abuela, un abuelo o alguien querido y pregúntenle a qué jugaba.','ab','Puede ser cualquier persona querida de la familia.'],
+    ['telefono','Pregunten qué hacían los días de lluvia en su infancia.','b']
+  ];
+
+  const screens = ['s-start','s-play','s-pause','s-rest','s-end'];
+  const show = id => screens.forEach(s => $(s).hidden = s !== id);
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let age = 'a', deck = [], current = null, played = 0, busy = false;
+  function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+  function refill(){ deck = shuffle(M.filter(m => m[2].includes(age))); }
+  function next(){ if(!deck.length) refill(); return deck.pop(); }
+
+  // Sonido: timbre de cajita de música
+  let actx = null, soundOn = true;
+  function audio(){ if(!soundOn) return null; try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume(); return actx; }catch(e){ return null; } }
+  function bell(f, t0, vol){
+    const c = audio(); if(!c) return;
+    [[1,vol],[2.01,vol*.35],[3.98,vol*.12]].forEach(([m,v])=>{
+      const o=c.createOscillator(), g=c.createGain(); o.type='sine'; o.frequency.value=f*m;
+      const t=c.currentTime+t0; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+.005); g.gain.exponentialRampToValueAtTime(.0001,t+1.1);
+      o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+1.2);
+    });
+  }
+  function creak(){ const c=audio(); if(!c) return; const o=c.createOscillator(), f=c.createBiquadFilter(), g=c.createGain(); o.type='sawtooth';
+    const t=c.currentTime; o.frequency.setValueAtTime(90,t); o.frequency.linearRampToValueAtTime(140,t+.25); o.frequency.linearRampToValueAtTime(70,t+.55);
+    f.type='bandpass'; f.frequency.value=700; f.Q.value=6; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.12,t+.05); g.gain.linearRampToValueAtTime(.08,t+.4); g.gain.exponentialRampToValueAtTime(.0001,t+.6);
+    o.connect(f); f.connect(g); g.connect(c.destination); o.start(t); o.stop(t+.65); }
+  function magic(){ [1046.5,1318.5,1568,2093,1568,2093].forEach((f,i)=>bell(f, .55+i*.09, .05)); }
+
+  function dust(){
+    if(reduce) return;
+    const box = $('box-btn');
+    for(let i=0;i<16;i++){
+      const d = document.createElement('span'); d.className='dust';
+      d.style.left = (30+Math.random()*40)+'%'; d.style.top = '44%';
+      d.style.setProperty('--x', (Math.random()*140-70)+'px'); d.style.setProperty('--y', (-40-Math.random()*90)+'px');
+      d.style.animationDelay = (Math.random()*.3)+'s'; box.appendChild(d); setTimeout(()=>d.remove(), 1600);
+    }
+  }
+  const found = [];
+  function addFound(k){
+    if(found.includes(k)) return; found.push(k);
+    $('found').innerHTML = found.map(x=>`<svg viewBox="0 0 100 100" aria-hidden="true">${OBJ[x]}</svg>`).join('');
+  }
+
+  function render(m){
+    const [obj, txt, , tip] = m;
+    const card = $('card');
+    $('cat-ico').outerHTML = `<svg id="cat-ico" viewBox="0 0 100 100" aria-hidden="true">${OBJ[obj]}</svg>`;
+    $('mission').textContent = txt;
+    $('tip').hidden = !tip; $('tip').textContent = tip || '';
+    card.hidden = false;
+    card.classList.remove('pop'); void card.offsetWidth; card.classList.add('pop');
+    $('count').textContent = `Recuerdo ${played + 1}`;
+  }
+
+  function openBox(){
+    if(busy) return;
+    busy = true; audio();
+    current = next();
+    const btn = $('box-btn'), fl = $('float');
+    $('card').hidden = true;
+    btn.classList.remove('open','shake'); fl.classList.remove('up'); void btn.offsetWidth;
+    fl.innerHTML = `<svg viewBox="0 0 100 100" aria-hidden="true">${OBJ[current[0]]}</svg>`;
+    btn.classList.add('shake');
+    $('open').disabled = true; $('open-text').textContent = 'Abriendo el baúl…';
+    setTimeout(()=>{ btn.classList.add('open'); fl.classList.add('up'); dust(); magic(); }, reduce ? 0 : 550);
+    setTimeout(()=>{
+      render(current); addFound(current[0]);
+      $('open').disabled = false; $('open-text').textContent = 'Abrir otra vez';
+      busy = false;
+      setTimeout(()=>$('card').scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block:'nearest'}), 120);
+    }, reduce ? 50 : 1700);
+  }
+
+  function startAge(a){
+    age = a; refill(); played = 0;
+    $('age-label').textContent = a === 'a' ? '2 y 3 años' : '4 y 5 años';
+    $('card').hidden = true; $('box-btn').classList.remove('open'); $('float').classList.remove('up');
+    $('open-text').textContent = '¡Abrir el baúl!';
+    $('count').textContent = 'Recuerdo 1';
+    show('s-play'); window.scrollTo(0,0);
+  }
+  const goBack = ()=>{ if(busy) return; $('card').hidden = true; show('s-start'); window.scrollTo(0,0); };
+
+  $('age-a').addEventListener('click', ()=>startAge('a'));
+  $('age-b').addEventListener('click', ()=>startAge('b'));
+  $('change-age').addEventListener('click', goBack);
+  $('back').addEventListener('click', goBack);
+  $('box-btn').addEventListener('click', openBox);
+  $('open').addEventListener('click', openBox);
+  $('skip').addEventListener('click', ()=>{ $('box-btn').scrollIntoView({behavior: reduce?'auto':'smooth', block:'center'}); openBox(); });
+  $('sound').addEventListener('click', ()=>{ soundOn = !soundOn; $('sound').textContent = 'Sonido: ' + (soundOn ? 'sí' : 'no'); $('sound').setAttribute('aria-pressed', String(soundOn)); });
+  $('go').addEventListener('click', ()=>{ $('pause-mission').textContent = current ? current[1] : ''; show('s-pause'); window.scrollTo(0,0); });
+  $('done').addEventListener('click', ()=>{
+    played++;
+    $('card').hidden = true; $('box-btn').classList.remove('open'); $('float').classList.remove('up');
+    $('open-text').textContent = '¡Abrir el baúl!';
+    $('count').textContent = `Recuerdo ${played + 1}`;
+    show(played % 3 === 0 ? 's-rest' : 's-play'); window.scrollTo(0,0);
+  });
+  $('more').addEventListener('click', ()=>show('s-play'));
+  $('finish').addEventListener('click', ()=>{ show('s-end'); window.scrollTo(0,0); });
+  $('restart').addEventListener('click', ()=>show('s-start'));
+})();
+</script>
+</body>
+</html>
