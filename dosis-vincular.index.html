@@ -1,0 +1,232 @@
+<title>Corazón de la dosis vincular</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@500;600;700&display=swap">
+<style>
+/* Proyección en penumbra: franja amarilla del congreso, frases "sin pantalla" a la izquierda, corazón con luces al centro, frases "con pantalla" a la derecha. Look único oscuro, pensado para el proyector. */
+:root{
+  color-scheme: dark;
+  --night:#161A2E;
+  --night-2:#1F2440;
+  --ink:#F4F1E6;
+  --muted:#A9AEC8;
+  --band:#FDF00C;
+  --band-ink:#1B1B12;
+  --wire:#4A5180;
+  --bulb-off:#2E3458;
+  --light:#FFD66B;
+  --light-hot:#FFF3C4;
+  --heart-fill:#F2B84B;
+  --heart-ink:#2A1C04;
+  --ctrl:#11142A;
+  --ctrl-line:#343A63;
+  --focus:#7FA6FF;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Figtree","Segoe UI",system-ui,sans-serif;
+}
+html,body{height:100%}
+body{background:var(--night);color:var(--ink);font-family:var(--body);display:flex;flex-direction:column;overflow-x:hidden}
+.band{background:var(--band);color:var(--band-ink);padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.band b{font-family:var(--display);font-weight:700;font-size:clamp(14px,1.4vw,20px)}
+.band span{font-size:clamp(12px,1.1vw,16px);font-weight:600}
+main{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding-block:14px 6px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:radial-gradient(ellipse at 50% 60%,var(--night-2),var(--night) 70%)}
+h1{margin:0;font-family:var(--display);font-weight:700;font-size:clamp(22px,3vw,46px);line-height:1.08;text-wrap:balance;text-align:center}
+.stage{position:relative;flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr) minmax(0,1fr);gap:clamp(8px,2vw,32px);align-items:center}
+.col{display:flex;flex-direction:column;gap:clamp(6px,1vh,12px);min-width:0}
+.col h2{margin:0 0 4px;font-family:var(--display);font-weight:700;font-size:clamp(16px,1.9vw,30px);letter-spacing:.02em;color:var(--light)}
+.col.left{text-align:right;align-items:flex-end}
+.col ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:clamp(6px,1.1vh,14px)}
+.col li{font-size:clamp(14px,1.55vw,26px);line-height:1.2;font-weight:600;display:flex;gap:10px;align-items:baseline;animation:fadein .6s ease both}
+.col.left li{flex-direction:row-reverse}
+.col li::before{content:"";flex:none;width:.6em;height:.6em;border-radius:50%;background:var(--light);box-shadow:0 0 10px var(--light);transform:translateY(-.05em)}
+.col .empty{color:var(--muted);font-size:clamp(13px,1.2vw,19px);font-weight:500}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.heartbox{min-width:0;height:100%;display:flex;align-items:center;justify-content:center}
+.heartbox svg{width:100%;height:100%;max-height:100%;display:block;overflow:visible}
+.outline{fill:none;stroke:var(--wire);stroke-width:4;stroke-dasharray:3 10;stroke-linecap:round;transition:stroke .8s}
+.fillh{fill:var(--heart-fill);opacity:0;transition:opacity 1.2s}
+.halfglow{opacity:0;transition:opacity 1s}
+.halfglow.on{opacity:.28}
+.divider{stroke:var(--wire);stroke-width:3;stroke-dasharray:6 8;transition:opacity .8s}
+.wire{fill:none;stroke:var(--wire);stroke-width:2.5;opacity:.9}
+.bulb .glow{opacity:0;transition:opacity .8s}
+.bulb .core{fill:var(--bulb-off);stroke:var(--wire);stroke-width:2;transition:fill .5s}
+.bulb.on .glow{opacity:1}
+.bulb.on .core{fill:var(--light-hot);stroke:var(--light)}
+.bulb.on.new{animation:spark 1s ease-out}
+.bulb.on .twinkle{animation:twinkle 3.2s ease-in-out infinite}
+@keyframes spark{0%{transform:scale(.3)}60%{transform:scale(1.5)}100%{transform:scale(1)}}
+@keyframes twinkle{50%{opacity:.65}}
+.bulb{transform-box:fill-box;transform-origin:center}
+.side-label{font-family:var(--display);font-weight:700;font-size:26px;fill:var(--muted);letter-spacing:.04em}
+.final{opacity:0;transition:opacity 1s .5s;font-family:var(--display);font-weight:800;fill:var(--heart-ink)}
+.done .fillh{opacity:1}
+.done .outline{stroke:var(--light);stroke-dasharray:none}
+.done .divider,.done .side-label,.done .wire{opacity:0}
+.done .final{opacity:1}
+.done .bulb .core{fill:var(--light-hot);opacity:.55}
+.done .bulb .glow{opacity:.3}
+.beat{transform-box:fill-box;transform-origin:50% 55%}
+.done .beat{animation:beat 1.6s ease-in-out infinite .6s}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.07)}30%{transform:scale(.99)}45%{transform:scale(1.05)}60%{transform:scale(1)}}
+.arrival{position:absolute;left:50%;top:2%;transform:translateX(-50%) scale(.96);width:min(92%,1000px);text-align:center;background:rgba(17,20,42,.94);border:1px solid var(--ctrl-line);border-radius:14px;padding:14px 22px;opacity:0;pointer-events:none;transition:opacity .35s,transform .35s;box-shadow:0 12px 40px rgba(0,0,0,.4)}
+.arrival.show{opacity:1;transform:translateX(-50%) scale(1)}
+.arrival small{display:block;font-size:clamp(12px,1.1vw,17px);letter-spacing:.08em;text-transform:uppercase;color:var(--light);font-weight:700;margin-bottom:4px}
+.arrival p{margin:0;font-family:var(--display);font-weight:600;font-size:clamp(22px,3vw,48px);line-height:1.15}
+.sign{text-align:right;font-size:clamp(10px,.95vw,14px);color:var(--muted);line-height:1.35}
+.sign b{color:var(--ink);font-weight:600}
+/* controles */
+.controls{position:relative;z-index:5;flex:none;background:var(--ctrl);border-top:1px solid var(--ctrl-line);padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.seg{display:flex;border:1px solid var(--ctrl-line);border-radius:9px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent}
+.seg button[aria-pressed="true"]{background:var(--light);color:var(--heart-ink)}
+.entry{display:flex;gap:8px;flex:1 1 380px;min-width:0}
+.entry input{flex:1;min-width:0;font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--ctrl-line);border-radius:8px;background:#0C0E20;color:var(--ink)}
+button{font:inherit;font-size:14px;font-weight:600;padding:9px 13px;border-radius:8px;border:1px solid var(--ctrl-line);background:#1A1E3A;color:var(--ink);cursor:pointer}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.primary{background:var(--light);color:var(--heart-ink);border-color:var(--light)}
+button.warn{color:#FF9C87;border-color:#7A3A30}
+button:focus-visible,input:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.count{font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px}
+.tools{display:flex;flex-wrap:wrap;gap:6px}
+body.hide-ctrl .controls{display:none}
+.showctrl{position:fixed;right:calc(8px + env(safe-area-inset-right,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px));opacity:.3;font-size:12px;padding:6px 9px}
+.showctrl:hover{opacity:1}
+@media (max-width:720px){.stage{grid-template-columns:1fr;align-items:start;flex:none}.heartbox{order:-1;height:auto}.heartbox svg{height:auto;max-height:46vh}.col.left{text-align:left;align-items:flex-start}.col.left li{flex-direction:row}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="band"><b>Tecnología que abraza</b><span>Dosis vincular</span></div>
+
+<main>
+  <h1 id="title">¿Qué hace que haya dosis vincular, con o sin pantalla?</h1>
+  <div class="stage">
+    <section class="col left" aria-label="Sin pantalla">
+      <h2>Sin pantalla</h2>
+      <ol id="listSin"></ol>
+      <p class="empty" id="emptySin">Todavía no hay frases</p>
+    </section>
+    <div class="heartbox">
+      <svg id="heart" viewBox="0 0 800 700" role="img" aria-label="Corazón con luces que se encienden con cada frase">
+        <defs>
+          <radialGradient id="glow"><stop offset="0" stop-color="#FFD66B" stop-opacity=".95"/><stop offset=".35" stop-color="#FFD66B" stop-opacity=".45"/><stop offset="1" stop-color="#FFD66B" stop-opacity="0"/></radialGradient>
+          <clipPath id="clipL"><rect x="0" y="0" width="400" height="700"/></clipPath>
+          <clipPath id="clipR"><rect x="400" y="0" width="400" height="700"/></clipPath>
+        </defs>
+        <g class="beat">
+          <path id="hp" class="fillh" d="M400 650 C 150 480, 55 340, 110 205 C 165 80, 335 85, 400 205 C 465 85, 635 80, 690 205 C 745 340, 650 480, 400 650 Z"/>
+          <path class="halfglow" id="glowSin" clip-path="url(#clipL)" fill="#FFD66B" d="M400 650 C 150 480, 55 340, 110 205 C 165 80, 335 85, 400 205 C 465 85, 635 80, 690 205 C 745 340, 650 480, 400 650 Z"/>
+          <path class="halfglow" id="glowCon" clip-path="url(#clipR)" fill="#FFD66B" d="M400 650 C 150 480, 55 340, 110 205 C 165 80, 335 85, 400 205 C 465 85, 635 80, 690 205 C 745 340, 650 480, 400 650 Z"/>
+          <path class="outline" d="M400 650 C 150 480, 55 340, 110 205 C 165 80, 335 85, 400 205 C 465 85, 635 80, 690 205 C 745 340, 650 480, 400 650 Z"/>
+          <line class="divider" x1="400" y1="215" x2="400" y2="636"/>
+          <text class="side-label" x="250" y="600" text-anchor="middle">SIN</text>
+          <text class="side-label" x="550" y="600" text-anchor="middle">CON</text>
+          <path class="wire" d="M230 190 Q 175 240 170 300 Q 240 270 310 290 Q 260 330 240 390 Q 300 390 345 420 Q 320 470 335 520"/>
+          <path class="wire" d="M570 190 Q 625 240 630 300 Q 560 270 490 290 Q 540 330 560 390 Q 500 390 455 420 Q 480 470 465 520"/>
+          <g id="bulbs"></g>
+          <text class="final" x="400" y="390" text-anchor="middle" font-size="84">Dosis</text>
+          <text class="final" x="400" y="470" text-anchor="middle" font-size="84">vincular</text>
+        </g>
+      </svg>
+    </div>
+    <section class="col right" aria-label="Con pantalla">
+      <h2>Con pantalla</h2>
+      <ol id="listCon"></ol>
+      <p class="empty" id="emptyCon">Todavía no hay frases</p>
+    </section>
+    <div class="arrival" id="arrival" aria-live="polite"><small id="arrSide"></small><p id="arrText"></p></div>
+  </div>
+  <div class="sign">Karina Doello · <b>@pensareninicial</b><br>Tecnología que abraza</div>
+</main>
+
+<div class="controls">
+  <div class="seg" role="group" aria-label="Elegí el lado">
+    <button type="button" id="sideSin" aria-pressed="true">Sin pantalla</button>
+    <button type="button" id="sideCon" aria-pressed="false">Con pantalla</button>
+  </div>
+  <div class="entry">
+    <input id="phrase" maxlength="80" autocomplete="off" enterkeyhint="done" placeholder="Escribí lo que dice el público y apretá Enter" aria-label="Frase del público">
+    <button type="button" class="primary" id="addBtn">Agregar</button>
+  </div>
+  <span class="count" id="count">Sin: 0 de 6 · Con: 0 de 6</span>
+  <div class="tools">
+    <button type="button" id="undo">Deshacer</button>
+    <button type="button" id="finish">Completar corazón</button>
+    <button type="button" id="examples">Probar con ejemplos</button>
+    <button type="button" class="warn" id="reset">Empezar de nuevo</button>
+    <button type="button" id="full">Pantalla completa</button>
+    <button type="button" id="hide">Ocultar controles</button>
+  </div>
+</div>
+<button type="button" class="showctrl" id="showctrl" hidden>Mostrar controles</button>
+
+<script>
+(function(){
+  const MAX=6;
+  const POS={sin:[[230,190],[170,300],[310,290],[240,390],[345,420],[335,520]]};
+  POS.con=POS.sin.map(([x,y])=>[800-x,y]);
+  const LABEL={sin:"Sin pantalla",con:"Con pantalla"};
+  const EXAMPLES=[["sin","Mirarnos a los ojos"],["con","Jugar juntos el mismo juego"],["sin","Leer un cuento en upa"],["con","Preguntarle qué está viendo"]];
+  const NS="http://www.w3.org/2000/svg";
+  const svg=document.getElementById("heart"), bulbsG=document.getElementById("bulbs");
+  let items=[], done=false, side="sin";
+
+  const bulbs={sin:[],con:[]};
+  ["sin","con"].forEach(s=>POS[s].forEach(([x,y])=>{
+    const g=document.createElementNS(NS,"g"); g.setAttribute("class","bulb");
+    const gl=document.createElementNS(NS,"circle"); gl.setAttribute("class","glow twinkle"); gl.setAttribute("cx",x); gl.setAttribute("cy",y); gl.setAttribute("r",58); gl.setAttribute("fill","url(#glow)");
+    const c=document.createElementNS(NS,"circle"); c.setAttribute("class","core"); c.setAttribute("cx",x); c.setAttribute("cy",y); c.setAttribute("r",15);
+    g.append(gl,c); bulbsG.appendChild(g); bulbs[s].push(g);
+  }));
+
+  function count(s){return items.filter(i=>i.side===s).length}
+  function render(newIdx){
+    const lists={sin:document.getElementById("listSin"),con:document.getElementById("listCon")};
+    lists.sin.textContent="";lists.con.textContent="";
+    const k={sin:0,con:0};
+    bulbs.sin.concat(bulbs.con).forEach(b=>b.setAttribute("class","bulb"));
+    items.forEach((it,i)=>{
+      const li=document.createElement("li"); const sp=document.createElement("span"); sp.textContent=it.text; li.appendChild(sp); lists[it.side].appendChild(li);
+      bulbs[it.side][k[it.side]].setAttribute("class","bulb on"+(i===newIdx?" new":"")); k[it.side]++;
+    });
+    if(done){["sin","con"].forEach(s=>bulbs[s].forEach(b=>b.setAttribute("class","bulb on")))}
+    document.getElementById("emptySin").hidden=k.sin>0;
+    document.getElementById("emptyCon").hidden=k.con>0;
+    document.getElementById("glowSin").classList.toggle("on",k.sin>=MAX&&!done);
+    document.getElementById("glowCon").classList.toggle("on",k.con>=MAX&&!done);
+    svg.classList.toggle("done",done);
+    document.getElementById("title").textContent=done?"Lo encendieron ustedes":"¿Qué hace que haya dosis vincular, con o sin pantalla?";
+    document.getElementById("count").textContent="Sin: "+k.sin+" de "+MAX+" · Con: "+k.con+" de "+MAX;
+    document.getElementById("addBtn").disabled=count(side)>=MAX||done;
+    try{localStorage.setItem("dosisVincular",JSON.stringify({items,done}))}catch(e){}
+  }
+  function setSide(s){side=s;document.getElementById("sideSin").setAttribute("aria-pressed",s==="sin");document.getElementById("sideCon").setAttribute("aria-pressed",s==="con");render();document.getElementById("phrase").focus()}
+  let t;
+  function arrival(s,text){document.getElementById("arrSide").textContent=LABEL[s];document.getElementById("arrText").textContent="“"+text+"”";const a=document.getElementById("arrival");a.classList.add("show");clearTimeout(t);t=setTimeout(()=>a.classList.remove("show"),2600)}
+  function add(s,text){
+    text=text.trim(); if(!text||done||count(s)>=MAX) return false;
+    items.push({side:s,text}); arrival(s,text);
+    if(count("sin")>=MAX&&count("con")>=MAX) done=true;
+    render(items.length-1); return true;
+  }
+  const input=document.getElementById("phrase");
+  function submit(){if(add(side,input.value)) input.value="";input.focus()}
+  document.getElementById("addBtn").addEventListener("click",submit);
+  input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.isComposing){e.preventDefault();submit()}});
+  document.getElementById("sideSin").onclick=()=>setSide("sin");
+  document.getElementById("sideCon").onclick=()=>setSide("con");
+  document.getElementById("undo").onclick=()=>{if(done&&!(count("sin")>=MAX&&count("con")>=MAX)){done=false}else{items.pop();done=false}render()};
+  document.getElementById("finish").onclick=()=>{done=true;render()};
+  document.getElementById("examples").onclick=()=>{let i=0;const next=()=>{if(i<EXAMPLES.length){add(EXAMPLES[i][0],EXAMPLES[i][1]);i++;setTimeout(next,1500)}};next()};
+  const rb=document.getElementById("reset"); let armed=null;
+  rb.onclick=()=>{if(armed){clearTimeout(armed);armed=null;rb.textContent="Empezar de nuevo";items=[];done=false;render();return}
+    rb.textContent="¿Seguro? Tocá de nuevo";armed=setTimeout(()=>{armed=null;rb.textContent="Empezar de nuevo"},3000)};
+  document.getElementById("full").onclick=()=>{try{(document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()).catch(()=>{})}catch(e){}};
+  const sc=document.getElementById("showctrl");
+  document.getElementById("hide").onclick=()=>{document.body.classList.add("hide-ctrl");sc.hidden=false};
+  sc.onclick=()=>{document.body.classList.remove("hide-ctrl");sc.hidden=true;input.focus()};
+  try{const s=JSON.parse(localStorage.getItem("dosisVincular")||"null");if(s&&Array.isArray(s.items)){items=s.items.filter(i=>i&&(i.side==="sin"||i.side==="con")).map(i=>({side:i.side,text:String(i.text)}));done=!!s.done}}catch(e){}
+  render();
+})();
+</script>
