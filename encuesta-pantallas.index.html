@@ -227,8 +227,11 @@ const PARA_QUE = "Las respuestas forman parte de una investigación de Karina Do
   $('gift-link').href = ENLACE_REGALO;
 
   // Opciones: el texto debe ser IGUAL al del formulario de Google
-  const EDADES = ['Menos de 1 año','1 año','2 años','3 años','4 años','5 años','6 años o más'];
+  const EDADES = ['Menos de 1 año','2 años','3 años','4 años','5 años','6 años o más'];
   const USO = ['Sí, todos los días','Sí, algunos días','No'];
+  // Cómo se guarda cada respuesta en el formulario de Google (tiene que coincidir letra por letra con el formulario)
+  const AL_FORMULARIO = { 'Sí, todos los días':'Si, todos los días', 'Sí, algunos días':'Si, algunos días' };
+  const enviar = v => AL_FORMULARIO[v] || v;
   const INICIO = ['Antes del año','Entre 1 y 2 años','Entre 2 y 3 años','Entre 3 y 4 años','Entre 4 y 5 años','Después de los 5 años','No usa pantallas'];
   const ICO = {"pantallas": "<ellipse cx=\"50\" cy=\"92\" rx=\"38\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<rect x=\"8\" y=\"22\" width=\"58\" height=\"42\" rx=\"6\" fill=\"url(#g-pu)\"/><rect x=\"14\" y=\"28\" width=\"46\" height=\"30\" rx=\"3\" fill=\"#E6F3FF\"/>\n<path d=\"M30 64l-4 12h22l-4-12\" fill=\"url(#g-pu)\"/>\n<rect x=\"56\" y=\"40\" width=\"34\" height=\"48\" rx=\"6\" fill=\"url(#g-pk)\"/><rect x=\"60\" y=\"45\" width=\"26\" height=\"36\" rx=\"2\" fill=\"#FFF3EF\"/>\n<rect x=\"20\" y=\"58\" width=\"22\" height=\"34\" rx=\"5\" fill=\"url(#g-mint)\"/><rect x=\"23\" y=\"62\" width=\"16\" height=\"24\" rx=\"2\" fill=\"#FFF7D1\"/>\n</g><ellipse cx=\"20\" cy=\"32\" rx=\"6\" ry=\"2\" transform=\"rotate(0 20 32)\" fill=\"#fff\" opacity=\".55\"/><ellipse cx=\"66\" cy=\"50\" rx=\"3\" ry=\"6\" transform=\"rotate(0 66 50)\" fill=\"#fff\" opacity=\".55\"/>\n<path d=\"M66 60q7 6 14 0M30 70q4 4 8 0\" fill=\"none\" stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linecap=\"round\"/>\n<circle cx=\"70\" cy=\"55\" r=\"1.4\" fill=\"#6E4D72\"/><circle cx=\"76\" cy=\"55\" r=\"1.4\" fill=\"#6E4D72\"/>", "todos": "<circle cx=\"50\" cy=\"50\" r=\"18\" fill=\"url(#g-gold)\" stroke=\"#6E4D72\" stroke-width=\"1.6\"/>\n<g stroke=\"#EEAE38\" stroke-width=\"4\" stroke-linecap=\"round\"><path d=\"M50 14v10M50 76v10M14 50h10M76 50h10M25 25l7 7M68 68l7 7M75 25l-7 7M32 68l-7 7\"/></g>\n<ellipse cx=\"44\" cy=\"44\" rx=\"5\" ry=\"3\" transform=\"rotate(-30 44 44)\" fill=\"#fff\" opacity=\".55\"/>", "algunos": "<circle cx=\"40\" cy=\"42\" r=\"14\" fill=\"url(#g-gold)\" stroke=\"#6E4D72\" stroke-width=\"1.6\"/>\n<path d=\"M30 74a14 14 0 012-26 18 18 0 0132-4 14 14 0 0112 26Z\" fill=\"url(#g-wh)\" stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\"/>\n<ellipse cx=\"40\" cy=\"58\" rx=\"10\" ry=\"3\" transform=\"rotate(-5 40 58)\" fill=\"#fff\" opacity=\".55\"/>", "no": "<ellipse cx=\"50\" cy=\"90\" rx=\"34\" ry=\"4.5\" fill=\"#5B3A5F\" opacity=\".13\"/><g stroke=\"#6E4D72\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\">\n<rect x=\"16\" y=\"58\" width=\"30\" height=\"28\" rx=\"5\" fill=\"url(#g-bl)\"/><rect x=\"50\" y=\"58\" width=\"30\" height=\"28\" rx=\"5\" fill=\"url(#g-gr)\"/>\n<rect x=\"32\" y=\"28\" width=\"30\" height=\"28\" rx=\"5\" fill=\"url(#g-pk)\" transform=\"rotate(-6 47 42)\"/>\n</g><text x=\"31\" y=\"79\" font-family=\"Baloo 2,sans-serif\" font-weight=\"800\" font-size=\"16\" fill=\"#fff\" text-anchor=\"middle\">A</text>\n<text x=\"65\" y=\"79\" font-family=\"Baloo 2,sans-serif\" font-weight=\"800\" font-size=\"16\" fill=\"#fff\" text-anchor=\"middle\">B</text>\n<text x=\"47\" y=\"49\" font-family=\"Baloo 2,sans-serif\" font-weight=\"800\" font-size=\"16\" fill=\"#fff\" text-anchor=\"middle\" transform=\"rotate(-6 47 42)\">C</text>\n<ellipse cx=\"24\" cy=\"64\" rx=\"4\" ry=\"2\" transform=\"rotate(0 24 64)\" fill=\"#fff\" opacity=\".55\"/><ellipse cx=\"58\" cy=\"64\" rx=\"4\" ry=\"2\" transform=\"rotate(0 58 64)\" fill=\"#fff\" opacity=\".55\"/><path d=\"M86 26Q87.0 29.0 90 30Q87.0 31.0 86 34Q85.0 31.0 82 30Q85.0 29.0 86 26Z\" fill=\"#FFD86B\" stroke=\"#6E4D72\" stroke-width=\"1\"/>", "gracias": "<path d=\"M50 90C20 70 8 52 8 36a20 20 0 0142-8 20 20 0 0142 8c0 16-12 34-42 54z\" fill=\"url(#g-pk)\" stroke=\"#6E4D72\" stroke-width=\"2\" stroke-linejoin=\"round\"/>\n<path d=\"M36 40q4-4 8 0M56 40q4-4 8 0\" fill=\"none\" stroke=\"#3E2445\" stroke-width=\"2.4\" stroke-linecap=\"round\"/>\n<path d=\"M38 54q12 10 24 0\" fill=\"none\" stroke=\"#3E2445\" stroke-width=\"2.6\" stroke-linecap=\"round\"/><ellipse cx=\"28\" cy=\"30\" rx=\"7\" ry=\"4\" transform=\"rotate(-30 28 30)\" fill=\"#fff\" opacity=\".55\"/>\n<path d=\"M88 13Q89.25 16.75 93 18Q89.25 19.25 88 23Q86.75 19.25 83 18Q86.75 16.75 88 13Z\" fill=\"#FFD86B\" stroke=\"#6E4D72\" stroke-width=\"1\"/><path d=\"M12 12Q13.0 15.0 16 16Q13.0 17.0 12 20Q11.0 17.0 8 16Q11.0 15.0 12 12Z\" fill=\"#C9B8F2\" stroke=\"#6E4D72\" stroke-width=\"1\"/>"};
   const COLS = ['--p1','--p2','--p3','--p4','--p5','--p6','--p7'];
@@ -253,8 +256,9 @@ const PARA_QUE = "Las respuestas forman parte de una investigación de Karina Do
   // Pregunta 1
   $('ages').innerHTML = EDADES.map((t,i)=>{
     const m = t.match(/^(\d+)/); const big = i===0 ? '&lt;1' : (m ? m[1] : t);
-    const small = i===0 ? 'menos de 1 año' : (i===6 ? 'años o más' : (t==='1 año' ? 'año' : 'años'));
-    return `<button class="age${i===6?' wide':''}" data-v="${t}" style="--c:var(${COLS[i]})"><b>${i===6?'6 +':big}</b><small>${small}</small></button>`;
+    const last = i===EDADES.length-1;
+    const small = i===0 ? 'menos de 1 año' : (last ? 'años o más' : (t==='1 año' ? 'año' : 'años'));
+    return `<button class="age${last?' wide':''}" data-v="${t}" style="--c:var(${COLS[i]})"><b>${last?'6 +':big}</b><small>${small}</small></button>`;
   }).join('');
   $('ages').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; ans.edad=b.dataset.v; mark($('ages'),ans.edad); setTimeout(()=>show('s2'),180); });
 
@@ -284,9 +288,21 @@ const PARA_QUE = "Las respuestas forman parte de una investigación de Karina Do
     const btn = $('send'); btn.disabled = true; btn.innerHTML = '<span class="spin" aria-hidden="true"></span> Enviando…';
     let ok = true;
     if(connected){
-      const body = new URLSearchParams();
-      body.append(entries[0], ans.edad); body.append(entries[1], ans.uso); body.append(entries[2], ans.inicio);
-      try{ await fetch(action, { method:'POST', mode:'no-cors', body }); }catch(e){ ok = false; }
+      if(!navigator.onLine){ ok = false; }
+      else {
+        // Envío con un formulario oculto: funciona en todos los navegadores, también dentro de Instagram o WhatsApp
+        ok = await new Promise(resolve=>{
+          const name = 'envio' + Date.now();
+          const ifr = document.createElement('iframe'); ifr.name = name; ifr.hidden = true; ifr.setAttribute('aria-hidden','true');
+          const form = document.createElement('form'); form.method = 'POST'; form.action = action; form.target = name; form.hidden = true;
+          [[entries[0], enviar(ans.edad)],[entries[1], enviar(ans.uso)],[entries[2], enviar(ans.inicio)]].forEach(([k,v])=>{ const i=document.createElement('input'); i.type='hidden'; i.name=k; i.value=v; form.appendChild(i); });
+          let done = false; const finish = r=>{ if(done) return; done = true; setTimeout(()=>{ form.remove(); ifr.remove(); }, 1500); resolve(r); };
+          ifr.addEventListener('load', ()=>finish(true));
+          setTimeout(()=>finish(navigator.onLine), 5000);
+          document.body.appendChild(ifr); document.body.appendChild(form);
+          try{ form.submit(); }catch(e){ finish(false); }
+        });
+      }
     } else {
       await new Promise(r=>setTimeout(r,600));
     }
