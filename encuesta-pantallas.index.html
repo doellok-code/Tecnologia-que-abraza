@@ -266,8 +266,8 @@ const PARA_QUE = "Las respuestas forman parte de una investigación de Karina Do
     if(ans.uso==='No'){ ans.inicio='No usa pantallas'; setTimeout(review,180); } else { if(ans.inicio==='No usa pantallas') ans.inicio=null; setTimeout(()=>show('s3'),180); }
   });
 
-  // Pregunta 3 (sin la opción "No usa pantallas": se completa sola si en la 2 respondieron "No")
-  $('start-age').innerHTML = INICIO.slice(0,6).map((t,i)=>`<button class="opt" data-v="${t}" style="--c:var(${COLS[i]})">${t}</button>`).join('');
+  // Pregunta 3 (si en la 2 respondieron "No", se saltea y se completa sola con "No usa pantallas")
+  $('start-age').innerHTML = INICIO.map((t,i)=>`<button class="opt${i===6?' wide':''}" data-v="${t}" style="--c:var(${COLS[i]})">${t}</button>`).join('');
   $('start-age').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; ans.inicio=b.dataset.v; mark($('start-age'),ans.inicio); setTimeout(review,180); });
 
   function review(){
